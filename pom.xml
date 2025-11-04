@@ -13,9 +13,9 @@
 
     <developers>
         <developer>
-            <name>OpenMRS</name>
-            <organization>OpenMRS</organization>
-            <organizationUrl>https://openmrs.org</organizationUrl> <!-- CHANGED: https -->
+            <name>Hexam Creation Consult</name>
+            <organization>Hexam Creation Consult</organization>
+            <organizationUrl>https://hexam.health</organizationUrl>
         </developer>
     </developers>
 
