@@ -1,11 +1,9 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>org.openmrs.content</groupId>
     <artifactId>epcare</artifactId>
-    <version>1.0.0-SNAPSHOT</version>
+    <version>1.0.0</version>
     <packaging>pom</packaging>
 
     <name>ePCare</name>
@@ -23,7 +21,8 @@
         <connection>scm:git:git@github.com:epcare/openmrs-content-epcare.git</connection>
         <developerConnection>scm:git:git@github.com:epcare/openmrs-content-epcare.git</developerConnection>
         <url>https://github.com/epcare/openmrs-content-epcare.git</url>
-    </scm>
+      <tag>1.0.0</tag>
+  </scm>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -35,7 +34,7 @@
             <plugin>
                 <groupId>org.openmrs.maven.plugins</groupId>
                 <artifactId>openmrs-packager-maven-plugin</artifactId>
-                <version>1.9.0-SNAPSHOT</version>
+                <version>1.9.0</version>
                 <executions>
                     <execution>
                         <id>validate-content-package</id>
@@ -136,7 +135,7 @@
                         <eclipse>
                             <file>${project.basedir}/OpenMRSFormatter.xml</file>
                         </eclipse>
-                        <removeUnusedImports/>
+                        <removeUnusedImports />
                         <importOrder>
                             <order>javax,java</order>
                         </importOrder>
