@@ -1,0 +1,5 @@
+Uuid,Void/Retire,Name,Description
+a0b03050-c99b-11e0-9572-0800200c9a66,,Unknown,Unknown encounter role for legacy providers with no encounter role set
+240b26f9-dd88-4172-823d-4a8bfeb7841f,,Clinician,"Doctor or Nurse who is the primary provider for an encounter, and will sign the note"
+22498b0c-f509-4ff6-9982-4c654c1e4dc3,,Assistant Circumciser,A role for a person who Assists During a Circumcision
+8da340f3-c690-439f-b21f-3a8367ff4057,,Pharmacist,This role is for persons who dispense medication fo patients
