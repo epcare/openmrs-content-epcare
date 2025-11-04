@@ -166,59 +166,92 @@
         </plugins>
     </build>
     <repositories>
+        <!-- OpenMRS release artifacts -->
         <repository>
-            <id>openmrs-repo</id>
-            <name>OpenMRS Public Repository</name>
+            <id>openmrs-repo-releases</id>
+            <name>OpenMRS Releases (Nexus)</name>
             <url>https://mavenrepo.openmrs.org/public</url>
-            <snapshots>
-                <enabled>false</enabled>
-            </snapshots>
-        </repository>
-        <repository>
-            <id>openmrs-snapshots</id>
-            <name>OpenMRS Snapshot Repository</name>
-            <url>https://mavenrepo.openmrs.org/snapshots</url>
-            <snapshots>
+            <releases>
                 <enabled>true</enabled>
-            </snapshots>
-        </repository>
-        <repository>
-            <id>central</id>
-            <name>Maven Repository Switchboard</name>
-            <url>https://repo1.maven.org/maven2</url>
-        </repository>
-    </repositories>
-    <pluginRepositories>
-        <pluginRepository>
-            <id>openmrs-releases</id>
-            <name>OpenMRS Public</name>
-            <url>https://mavenrepo.openmrs.org/public</url>
+                <updatePolicy>never</updatePolicy>
+                <checksumPolicy>fail</checksumPolicy>
+            </releases>
             <snapshots>
                 <enabled>false</enabled>
             </snapshots>
-        </pluginRepository>
-        <pluginRepository>
-            <id>openmrs-snapshots</id>
-            <name>OpenMRS Snapshots</name>
+        </repository>
+
+        <!-- OpenMRS snapshot artifacts -->
+        <repository>
+            <id>openmrs-repo-snapshots</id>
+            <name>OpenMRS Snapshots (Nexus)</name>
             <url>https://mavenrepo.openmrs.org/snapshots</url>
             <releases>
                 <enabled>false</enabled>
             </releases>
             <snapshots>
                 <enabled>true</enabled>
+                <updatePolicy>always</updatePolicy>
+                <checksumPolicy>fail</checksumPolicy>
+            </snapshots>
+        </repository>
+
+        <!-- Maven Central (optional: Maven includes this by default) -->
+        <repository>
+            <id>central</id>
+            <name>Maven Central</name>
+            <url>https://repo1.maven.org/maven2</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </repository>
+    </repositories>
+
+    <pluginRepositories>
+        <!-- Plugin releases from OpenMRS Nexus public group -->
+        <pluginRepository>
+            <id>openmrs-repo-plugins</id>
+            <name>OpenMRS Plugin Releases (Nexus)</name>
+            <url>https://mavenrepo.openmrs.org/public</url>
+            <releases>
+                <enabled>true</enabled>
+                <updatePolicy>never</updatePolicy>
+                <checksumPolicy>fail</checksumPolicy>
+            </releases>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </pluginRepository>
+
+        <!-- Plugin snapshots -->
+        <pluginRepository>
+            <id>openmrs-repo-plugin-snapshots</id>
+            <name>OpenMRS Plugin Snapshots (Nexus)</name>
+            <url>https://mavenrepo.openmrs.org/snapshots</url>
+            <releases>
+                <enabled>false</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+                <updatePolicy>always</updatePolicy>
+                <checksumPolicy>fail</checksumPolicy>
             </snapshots>
         </pluginRepository>
     </pluginRepositories>
+
     <distributionManagement>
         <repository>
             <id>openmrs-repo-modules</id>
             <name>OpenMRS Nexus Modules</name>
-            <url>http://mavenrepo.openmrs.org/releases</url>
+            <url>https://mavenrepo.openmrs.org/releases</url>
         </repository>
         <snapshotRepository>
-            <id>openmrs-repo-snapshots</id>
-            <name>OpenMRS Nexus Snapshots</name>
-            <url>http://mavenrepo.openmrs.org/nexus/content/repositories/snapshots</url>
+            <id>openmrs-repo-module-snapshots</id>
+            <name>OpenMRS Nexus Module Snapshots</name>
+            <url>https://mavenrepo.openmrs.org/snapshots</url>
         </snapshotRepository>
     </distributionManagement>
 </project>
