@@ -245,13 +245,13 @@
     <distributionManagement>
         <repository>
             <id>openmrs-repo-modules</id>
-            <name>OpenMRS Nexus Modules</name>
-            <url>https://mavenrepo.openmrs.org/releases</url>
+            <name>OpenMRS Modules</name>
+            <url>https://openmrs.jfrog.io/artifactory/modules/</url>
         </repository>
         <snapshotRepository>
-            <id>openmrs-repo-module-snapshots</id>
-            <name>OpenMRS Nexus Module Snapshots</name>
-            <url>https://mavenrepo.openmrs.org/snapshots</url>
+            <id>openmrs-repo-snapshots</id>
+            <name>OpenMRS Snapshots</name>
+            <url>https://openmrs.jfrog.io/openmrs/snapshots</url>
         </snapshotRepository>
     </distributionManagement>
 </project>
