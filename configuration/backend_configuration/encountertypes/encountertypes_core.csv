@@ -1,2 +1,3 @@
 Uuid,Void/Retire,Name,Description,View privilege,Edit privilege,_order:1000
 7b2eed30-59cb-4a0e-9741-a568952b3d76,,General Clinical Assessment,Encounter used for general clinical assessment,
+ddc92bae-ca5f-4ead-945e-b4ff73951f31,,Admission Request,An intent towards Admission of patient to the hospital,

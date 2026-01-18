@@ -1,0 +1,209 @@
+{
+  "name": "Admission Request",
+  "processor": "EncounterFormProcessor",
+  "encounter": "Admission Request",
+  "encounterType": "ddc92bae-ca5f-4ead-945e-b4ff73951f31",
+  "referencedForms": [],
+  "uuid": "c6ee1b07-7fec-485d-a28e-f948bcc7bfe5",
+  "description": "Create an admission request to an inpatient ward",
+  "version": "1.0.0",
+  "published": true,
+  "retired": false,
+  "pages": [
+    {
+      "label": "Registration Details",
+      "sections": [
+        {
+          "label": "Admission Registration ",
+          "isExpanded": "true",
+          "questions": [
+            {
+              "type": "obs",
+              "questionOptions": {
+                "rendering": "text",
+                "concept": "475f8db8-2350-421b-a669-eea70ef443c0"
+              },
+              "id": "ipdNumber",
+              "label": "IPD Number"
+            },
+            {
+              "type": "obsGroup",
+              "questionOptions": {
+                "rendering": "group",
+                "concept": "7e387826-630c-4a4a-b0d0-ccc8471de994"
+              },
+              "id": "nextOfKin",
+              "questions": [
+                {
+                  "type": "obs",
+                  "questionOptions": {
+                    "concept": "162729AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+                    "rendering": "text"
+                  },
+                  "id": "nextOfKinName",
+                  "label": "Next of kin name"
+                },
+                {
+                  "type": "obs",
+                  "questionOptions": {
+                    "rendering": "text",
+                    "concept": "165052AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+                  },
+                  "id": "nextOfKinContact",
+                  "label": "Next of kin contact"
+                },
+                {
+                  "type": "obs",
+                  "questionOptions": {
+                    "rendering": "select",
+                    "concept": "dce138f8-30ab-102d-86b0-7a5022ba4115",
+                    "answers": [
+                      {
+                        "concept": "dce186ca-30ab-102d-86b0-7a5022ba4115",
+                        "label": "AUNT/UNCLE"
+                      },
+                      {
+                        "concept": "dd21e8b5-30ab-102d-86b0-7a5022ba4115",
+                        "label": "BROTHER/SISTER"
+                      },
+                      {
+                        "concept": "dce180a8-30ab-102d-86b0-7a5022ba4115",
+                        "label": "CHILD"
+                      },
+                      {
+                        "concept": "dd22614e-30ab-102d-86b0-7a5022ba4115",
+                        "label": "COUSIN"
+                      },
+                      {
+                        "concept": "dcc374a5-30ab-102d-86b0-7a5022ba4115",
+                        "label": "FRIEND"
+                      },
+                      {
+                        "concept": "dd1e43f2-30ab-102d-86b0-7a5022ba4115",
+                        "label": "GRANDCHILD"
+                      },
+                      {
+                        "concept": "dd1e1d59-30ab-102d-86b0-7a5022ba4115",
+                        "label": "GRANDPARENT"
+                      },
+                      {
+                        "concept": "dd1df716-30ab-102d-86b0-7a5022ba4115",
+                        "label": "NIECE/NEPHEW"
+                      },
+                      {
+                        "concept": "dd22b709-30ab-102d-86b0-7a5022ba4115",
+                        "label": "NOT FAMILY"
+                      },
+                      {
+                        "concept": "dce17a7d-30ab-102d-86b0-7a5022ba4115",
+                        "label": "PARENT"
+                      },
+                      {
+                        "concept": "dd23c975-30ab-102d-86b0-7a5022ba4115",
+                        "label": "SPOUSE/PARTNER"
+                      }
+                    ]
+                  },
+                  "id": "relationship",
+                  "label": "Relationship"
+                }
+              ],
+              "label": "Next of Kin"
+            }
+          ]
+        },
+        {
+          "label": "Admission Details",
+          "isExpanded": "true",
+          "questions": [
+            {
+              "type": "obs",
+              "questionOptions": {
+                "rendering": "radio",
+                "concept": "165044AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+                "answers": [
+                  {
+                    "concept": "165043AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+                    "label": "Admission"
+                  },
+                  {
+                    "concept": "165042AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+                    "label": "Re-admission"
+                  }
+                ]
+              },
+              "id": "admissionType",
+              "label": "Admission Type"
+            }
+          ]
+        },
+        {
+          "label": "Inpatient disposition",
+          "isExpanded": "true",
+          "questions": [
+            {
+              "type": "obsGroup",
+              "questionOptions": {
+                "rendering": "group",
+                "concept": "16708da8-d0e1-44c8-bca2-1323015346f5"
+              },
+              "id": "inpatientDispositionConstruct",
+              "label": "Inpatient disposition construct",
+              "questions": [
+                {
+                  "type": "obs",
+                  "questionOptions": {
+                    "rendering": "radio",
+                    "concept": "1c9548f2-fcd9-4818-9784-c8ccdd037ee3",
+                    "answers": [
+                      {
+                        "concept": "00d49abd-39a8-447b-9cdd-a97309ce1fa6",
+                        "label": "admit to hospital"
+                      },
+                      {
+                        "concept": "70cd1f1b-ab94-4348-aed8-359891f24302",
+                        "label": "Internal facility transfer/referral"
+                      },
+                      {
+                        "concept": "348f694c-d40c-438f-a229-5b5f1c9599ba",
+                        "label": "Discharge from hospital"
+                      }
+                    ]
+                  },
+                  "id": "InpatientPatientDisposition",
+                  "label": "Inpatient patient disposition"
+                },
+                {
+                  "type": "obs",
+                  "questionOptions": {
+                    "rendering": "text",
+                    "concept": "b269679d-2262-4e40-9d8b-ad9a798a75ef"
+                  },
+                  "id": "internalTransferLocation",
+                  "label": "Internal transfer location"
+                },
+                {
+                  "id": "admitToLocation",
+                  "label": "Admitted to location",
+                  "type": "obs",
+                  "required": true,
+                  "questionOptions": {
+                    "rendering": "ui-select-extended",
+                    "required": true,
+                    "concept": "7dbfe324-9855-4f00-aa38-657dcaae737b",
+                    "datasource": {
+                      "name": "location_datasource",
+                      "config": {
+                        "tag": "Admission Location"
+                      }
+                    }
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
