@@ -1,10 +1,10 @@
 {
-  "name": "Admission Request",
+  "name": "Ward Admission Request",
   "processor": "EncounterFormProcessor",
   "encounter": "Admission Request",
-  "encounterType": "ddc92bae-ca5f-4ead-945e-b4ff73951f31",
+  "encounterType": "e22e39fd-7db2-45e7-80f1-60fa0d5a4378",
   "referencedForms": [],
-  "uuid": "c6ee1b07-7fec-485d-a28e-f948bcc7bfe5",
+  "uuid": "33d55356-8e3c-42ec-bcc6-5ae610a93cf2",
   "description": "Create an admission request to an inpatient ward",
   "version": "1.0.0",
   "published": true,
@@ -30,7 +30,7 @@
               "type": "obsGroup",
               "questionOptions": {
                 "rendering": "group",
-                "concept": "7e387826-630c-4a4a-b0d0-ccc8471de994"
+                "concept": "c1113ef3-2de4-4c16-b217-4ce73ccfc00a"
               },
               "id": "nextOfKin",
               "questions": [
@@ -172,15 +172,6 @@
                   },
                   "id": "InpatientPatientDisposition",
                   "label": "Inpatient patient disposition"
-                },
-                {
-                  "type": "obs",
-                  "questionOptions": {
-                    "rendering": "text",
-                    "concept": "b269679d-2262-4e40-9d8b-ad9a798a75ef"
-                  },
-                  "id": "internalTransferLocation",
-                  "label": "Internal transfer location"
                 },
                 {
                   "id": "admitToLocation",
