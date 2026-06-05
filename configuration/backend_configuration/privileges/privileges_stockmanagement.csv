@@ -1,0 +1,11 @@
+Uuid,Privilege name,Description,_order:1000
+4a61b6db-03dd-43f2-969c-17dfa66ad41e,Task: stockmanagement.stockItems.mutate,Able to create and update stock items
+83871f7a-467e-11ed-8109-00155dcc3fc0,Task: stockmanagement.stockItems.dispense.qty,Able to view stock item quantities at dispensing locations
+6292e17d-4694-11ed-8109-00155dcc3fc0,Task: stockmanagement.stockItems.dispense,Able to dispense stock items
+cc5a7ba4-ee34-4c2f-98c7-ae65cacf0094,Task: stockmanagement.userRoleScopes.mutate,Able to create and update user role scopes
+63b8815f-2188-11ed-9dff-507b9dea1806,Task: stockmanagement.stockoperations.mutate,Able to create and update stock operations
+7aef02ad-2189-11ed-9dff-507b9dea1806,Task: stockmanagement.stockoperations.approve,Able to aprove stock operations
+fd391f90-3335-11ed-a667-507b9dea1806,Task: stockmanagement.stockoperations.receiveitems,Able to receive dispatched stock items
+557acdab-262a-11ed-a544-507b9dea1806,Task: stockmanagement.stockSources.mutate,Able to create and update stock sources
+55670834-28ad-11ed-bdcb-507b9dea1806,Task: stockmanagement.party.read,Able to read party information
+8f0cecbb-6b11-11ed-93a2-806d973f13a9,Task: stockmanagement.reports.mutate,Able to create stock reports

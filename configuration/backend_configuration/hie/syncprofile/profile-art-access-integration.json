@@ -1,0 +1,268 @@
+{
+  "metadata": {
+    "id": "0a7fff77-6ac7-416c-831e-4e3f1f2c853b",
+    "name": "ART Access Integration",
+    "category": "DEFAULT",
+    "description": "FHIR sync profile for ART Access Integration",
+    "version": "1.0"
+  },
+  "configuration": {
+    "name": "ART Access Integration",
+    "resourceTypes": "Patient,Encounter,Observation",
+    "isCaseBasedProfile": true,
+    "caseBasedPrimaryResourceType": "CohortType",
+    "caseBasedPrimaryResourceTypeId": "e50fa0af-df36-4a26-853f-feb05244e5ca",
+    "resourceSearchParameter": {
+      "observationFilter": {
+        "encounterReference": [],
+        "patientReference": [],
+        "hasMemberReference": [],
+        "valueConcept": "valueConceptUUIDS",
+        "valueDateParam": {
+          "lowerBound": "",
+          "myUpperBound": ""
+        },
+        "valueQuantityParam": [],
+        "valueStringParam": [],
+        "date": {
+          "lowerBound": "",
+          "myUpperBound": ""
+        },
+        "code": [
+          { "uuid": "ab505422-26d9-41f1-a079-c3d222000440", "display": "BASELINE REGIMEN START DATE", "id": 99161 },
+          { "uuid": "dd2b0b4d-30ab-102d-86b0-7a5022ba4115", "display": "CURRENT ARV REGIMEN", "id": 90315 },
+          { "uuid": "dcac04cf-30ab-102d-86b0-7a5022ba4115", "display": "RETURN VISIT DATE", "id": 5096 },
+          { "uuid": "dce03b2f-30ab-102d-86b0-7a5022ba4115", "display": "ANTI-RETROVIRAL DRUG ADHERENCE ASSESSMENT CODE", "id": 90221 },
+          { "uuid": "0b434cfa-b11c-4d14-aaa2-9aed6ca2da88", "display": "HIV VIRAL LOAD DATE", "id": 163023 },
+          { "uuid": "dc8d83e3-30ab-102d-86b0-7a5022ba4115", "display": "HIV VIRAL LOAD", "id": 856 },
+          { "uuid": "dca12261-30ab-102d-86b0-7a5022ba4115", "display": "VIRAL LOAD QUALITATIVE", "id": 1305 },
+          { "uuid": "7a22cfcb-a272-4eff-968c-5e9467125a7b", "display": "Refill Point Code", "id": 166500 }
+        ],
+        "category": [],
+        "id": [],
+        "lastUpdated": {
+          "lowerBound": "",
+          "myUpperBound": ""
+        }
+      },
+      "patientFilter": {
+        "name": [],
+        "given": [],
+        "family": [],
+        "identifier": [],
+        "gender": [],
+        "birthDate": {
+          "lowerBound": "",
+          "myUpperBound": ""
+        },
+        "deathDate": {
+          "lowerBound": "",
+          "myUpperBound": ""
+        },
+        "deceased": [],
+        "city": [],
+        "state": [],
+        "postalCode": [],
+        "country": [],
+        "id": [],
+        "lastUpdated": {
+          "lowerBound": "",
+          "myUpperBound": ""
+        }
+      },
+      "encounterFilter": {
+        "date": {
+          "lowerBound": "",
+          "myUpperBound": ""
+        },
+        "location": [],
+        "participant": [],
+        "subject": [],
+        "type": [
+          { "uuid": "8d5b27bc-c2cc-11de-8d13-0010c6dffd0f", "display": "ART Card - Summary", "description": "Outpatient Adult Initial Visit" },
+          { "uuid": "8d5b2be0-c2cc-11de-8d13-0010c6dffd0f", "display": "ART Card - Encounter", "description": "Outpatient Adult & Child Return Visit" }
+        ],
+        "id": [],
+        "lastUpdated": {
+          "lowerBound": "",
+          "myUpperBound": ""
+        }
+      },
+      "personFilter": {
+        "name": [],
+        "gender": [],
+        "birthDate": {
+          "lowerBound": "",
+          "myUpperBound": ""
+        },
+        "deceased": [],
+        "city": [],
+        "state": [],
+        "postalCode": [],
+        "country": [],
+        "id": [],
+        "lastUpdated": {
+          "lowerBound": "",
+          "myUpperBound": ""
+        }
+      },
+      "practitionerFilter": {
+        "identifier": [],
+        "name": [],
+        "given": [],
+        "family": [],
+        "deceased": [],
+        "city": [],
+        "state": [],
+        "postalCode": [],
+        "country": [],
+        "id": [],
+        "lastUpdated": {
+          "lowerBound": "",
+          "myUpperBound": ""
+        }
+      },
+      "episodeofcareFilter": {
+        "type": [
+          ""
+        ],
+        "lastUpdated": {
+          "lowerBound": "",
+          "myUpperBound": ""
+        }
+      },
+      "medicationdispenseFilter": {
+        "encounterReference": [],
+        "patientReference": [],
+        "hasMemberReference": [],
+        "valueConcept": "valueConceptUUIDS",
+        "valueDateParam": {
+          "lowerBound": "",
+          "myUpperBound": ""
+        },
+        "valueQuantityParam": [],
+        "valueStringParam": [],
+        "date": {
+          "lowerBound": "",
+          "myUpperBound": ""
+        },
+        "code": [],
+        "category": [],
+        "id": [],
+        "lastUpdated": {
+          "lowerBound": "",
+          "myUpperBound": ""
+        }
+      },
+      "medicationrequestFilter": {
+        "encounterReference": [],
+        "patientReference": [],
+        "hasMemberReference": [],
+        "valueConcept": "valueConceptUUIDS",
+        "valueDateParam": {
+          "lowerBound": "",
+          "myUpperBound": ""
+        },
+        "valueQuantityParam": [],
+        "valueStringParam": [],
+        "date": {
+          "lowerBound": "",
+          "myUpperBound": ""
+        },
+        "code": [],
+        "category": [],
+        "id": [],
+        "lastUpdated": {
+          "lowerBound": "",
+          "myUpperBound": ""
+        }
+      },
+      "diagnosticreportFilter": {
+        "encounterReference": [],
+        "patientReference": [],
+        "hasMemberReference": [],
+        "valueConcept": "valueConceptUUIDS",
+        "valueDateParam": {
+          "lowerBound": "",
+          "myUpperBound": ""
+        },
+        "valueQuantityParam": [],
+        "valueStringParam": [],
+        "date": {
+          "lowerBound": "",
+          "myUpperBound": ""
+        },
+        "code": [],
+        "category": [],
+        "id": [],
+        "lastUpdated": {
+          "lowerBound": "",
+          "myUpperBound": ""
+        }
+      },
+      "conditionFilter": {
+        "encounterReference": [],
+        "patientReference": [],
+        "hasMemberReference": [],
+        "valueConcept": "valueConceptUUIDS",
+        "valueDateParam": {
+          "lowerBound": "",
+          "myUpperBound": ""
+        },
+        "valueQuantityParam": [],
+        "valueStringParam": [],
+        "date": {
+          "lowerBound": "",
+          "myUpperBound": ""
+        },
+        "code": [],
+        "category": [],
+        "id": [],
+        "lastUpdated": {
+          "lowerBound": "",
+          "myUpperBound": ""
+        }
+      },
+      "servicerequestFilter": {
+        "encounterReference": [],
+        "patientReference": [],
+        "hasMemberReference": [],
+        "valueConcept": "valueConceptUUIDS",
+        "valueDateParam": {
+          "lowerBound": "",
+          "myUpperBound": ""
+        },
+        "valueQuantityParam": [],
+        "valueStringParam": [],
+        "date": {
+          "lowerBound": "",
+          "myUpperBound": ""
+        },
+        "code": [],
+        "category": [],
+        "id": [],
+        "lastUpdated": {
+          "lowerBound": "",
+          "myUpperBound": ""
+        }
+      }
+    },
+    "generateBundle": true,
+    "numberOfResourcesInBundle": 100,
+    "profileEnabled": true,
+    "keepProfileIdentifierOnly": false,
+    "durationToKeepSyncedResources": 30,
+    "syncLimit": 50,
+    "searchable": false,
+    "searchURL": "",
+    "patientIdentifierType": "4",
+    "patientIdentifierTypeName": "",
+    "customTaskClass": "org.openmrs.module.ugandaemrsync.tasks.ARTAccessIntegrationTask",
+    "endpoint": {
+      "url": "https://ugisl.mets.or.ug/crpddp/send-test",
+      "username": null,
+      "password": null,
+      "token": null
+    }
+  }
+}

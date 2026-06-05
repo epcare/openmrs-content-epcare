@@ -1,0 +1,5 @@
+Uuid,Void/Retire,Entity name,Name,Description,Min occurs,Max occurs,Datatype classname,Datatype config,Preferred handler classname,Handler config,_order:1000
+13a721e4-68e5-4f7a-8aee-3cbcec127179,,Provider,Default Location,The location which is assigned to a clinical provider,0,1,org.openmrs.customdatatype.datatype.LocationDatatype,null,org.openmrs.web.attribute.handler.LocationFieldGenDatatypeHandler,,
+d4c0df19-530b-4988-b9e9-f54930ceb64a,,Provider,Contract Category,The category of the Contract for a Provider,0,,org.openmrs.customdatatype.datatype.SpecifiedTextOptionsDatatype,null,org.openmrs.web.attribute.handler.SpecifiedTextOptionsDropdownHandler,"Government, IP, Volunteer",
+d376f27c-cb93-45b4-be0a-6be88c520233,,Provider,eAFYA ID,,0,,org.openmrs.customdatatype.datatype.FreeTextDatatype,,,,
+e5f40492-fd90-11ef-b1d2-774806444281,,Provider,Employee ID,The Employee ID No.,0,,org.openmrs.customdatatype.datatype.FreeTextDatatype,,"",,

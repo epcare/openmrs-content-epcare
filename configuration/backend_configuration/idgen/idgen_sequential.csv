@@ -1,0 +1,3 @@
+Uuid,Void/Retire,Identifier type,Name,Description,Prefix,Suffix,First identifier base,Min length,Max length,Base character set,_version:1,_order:1000
+691eed12-c0f1-11e2-94be-8c13b969e334,,05a29f94-c0ed-11e2-94be-8c13b969e334,Generator for OpenMRS ID,,,,10000,6,,0123456789ACDEFGHJKLMNPRTUVWXY,,
+66bfa314-4881-11ef-9d0e-00155d78897e,,66bfa314-4881-11ef-9d0e-00155d78897e,Generator for Laboratory Barcode,,,,100,3,,0123456789,,

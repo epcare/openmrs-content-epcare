@@ -1,0 +1,21 @@
+name,description,uuid
+Appointment Location,"When a user creates an appointment service and chooses a location, they may only choose one with this tag",a6b9df4e-b803-11f0-b8b7-f4d343d76c98
+Queue Room,A tag to indicate a queue room used by the queuing module,c0e1d1d8-c97d-4869-ba16-68d351d3d5f5
+Main Pharmacy,Main pharmacy location.,89a80c4d-2899-11ed-bdcb-507b9dea1806
+Dispensary,A dispensary.,fe7c970f-2aba-11ed-ba4a-507b9dea1806
+Main Store,A location which is the main facility stock holding area.,e539ebca-2899-11ed-bdcb-507b9dea1806
+Admission Location,Patients may only be admitted to inpatient care in a location with this tag,1c783dca-fd54-4ea8-a0fc-2875374e9cb6
+Login Location,"When a user logs in and chooses a session location, they may only choose one with this tag",b8bbf83e-645f-451f-8efe-a0db56f09676
+Transfer Location,Patients may only be transferred (within the hospital) to a location with this tag,8d4626ca-7abd-42ad-be48-56767bbcf272
+Visit Location,Visits are only allowed to happen at locations tagged with this location tag or at locations that descend from a location tagged with this tag.,37dd4458-dc9e-4ae6-a1f1-789c1162d37b
+Organization,Identifies an Organization,1d3e456c-382a-11ee-be56-0242ac120002
+Department,Identifies a department in a Hospital/clinic etc,1d3e4706-382a-11ee-be56-0242ac120002
+Clinic,Identifies a clinic in the organization/hospital,1d3e4224-382a-11ee-be56-0242ac120002
+Reception,The tag to identify a reception point,376df607-be89-4d8f-87e7-47919904523c
+Triage,The tag to identify a triage point,3e525526-cd66-46ad-96b3-224d46e75676
+Clinical Room,The tag to identify a Clinical Room point,96be1b53-e65c-494b-be41-b36899cb5d09
+Laboratory,A tag to indicate a laboratory,1e6acc3e-696d-47de-8f74-63ed7bbe6e81
+Theater,A tag to indicate a theater,303ab6e0-3844-11ee-be56-0242ac120002
+Radiology,A tag to indicate a radiology service room,7984dc1e-3848-11ee-be56-0242ac120002
+Supportive Service,Services that support patient care such as lab pharmacy,50b2a204-4887-11ee-be56-0242ac120002
+Main Laboratory,A main area for carrying out patient tests,d55e52c2-35eb-11ef-9df0-00155d919f83
