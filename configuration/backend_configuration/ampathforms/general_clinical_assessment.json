@@ -4,6 +4,7 @@
   "version": "5.0.8",
   "processor": "EncounterForm",
   "encounterType": "7b2eed30-59cb-4a0e-9741-a568952b3d76",
+  "encounter": "General Clinical Assessment",
   "pages": [
     {
       "label": "General Clinical Assessment",

@@ -1,0 +1,7 @@
+Uuid,Void/Retire,Name,Description,View privilege,Edit privilege,_order:1000
+7b2eed30-59cb-4a0e-9741-a568952b3d76,,General Clinical Assessment,Encounter used for general clinical assessment,
+ddc92bae-ca5f-4ead-945e-b4ff73951f31,,Admission,An intent towards Admission of patient to the hospital,
+29c02aff-9a93-46c9-bf6f-48b552fcb1fa,,Immunizations,Encounter for capturing immunizations,,,
+f47ac10b-58cc-4372-a567-0e02b2c3d479,,Bed Assignment,Assigning a new bed to a patient without admitting or transferring them,,,
+550e8400-e29b-41d4-a716-446655440000,,Cancel ADT,An encounter that notes that a request to admit/transfer/discharge a patient is being overridden,,,
+b2c4d5e6-7f8a-4e9b-8c1d-2e3f8e4a3b8f,,Transfer Request,A stand-alone encounter type for a transfer request not part of a larger note,,,

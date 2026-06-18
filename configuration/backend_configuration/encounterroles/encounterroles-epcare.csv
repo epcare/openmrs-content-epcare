@@ -1,0 +1,17 @@
+Uuid,Void/Retire,Name,Description
+5dce0a10-07f3-4c31-87fd-8f2e59cbf001,,Receptionist,Registers patients and manages patient check-in
+6f812fe8-0a77-4925-a0f7-5f3df457f002,,Laboratory Technician,Collects specimens and records laboratory test results
+70c05a19-ef42-437c-9122-b68292f7f003,,Triage Nurse,Performs triage assessment and captures vital signs
+cbf5dc5b-29d0-4a10-8d2f-6ab43c40f004,,Nurse,Provides nursing care and documents nursing observations
+d02b7511-0e9a-4b76-a6e4-78b8d2e0f005,,Doctor,Provides medical consultation diagnosis treatment and orders
+8afdb52a-96dc-4f30-b9e4-944ec95cf006,,Clinical Officer,Provides clinical assessment diagnosis treatment and follow-up care
+38cd9705-4161-4293-9f5e-91589a5df007,,Midwife,Provides maternity antenatal delivery and postnatal care
+32ea9b63-38f2-449e-bc47-2c7f5d49f008,,Radiology Technician,Performs imaging procedures and records imaging-related encounter information
+98a9091d-25f6-4c9b-a0ce-bbd332bbf009,,Counsellor,Provides counselling services and documents counselling encounters
+1f0c923b-74f2-479c-9c39-b908e8d5f010,,Nutritionist,Provides nutrition assessment counselling and follow-up care
+6eab9c72-7c54-4b58-8f89-493d0dfbf011,,Social Worker,Provides social support assessment and linkage to services
+7d879c3a-f7c4-4f0a-b841-26a6b8d5f012,,Data Clerk,Enters or updates clinical and administrative encounter data
+4a692b3d-b174-43ea-96f1-79007db4f013,,Ward Nurse,Provides inpatient ward care and documents ward observations
+a0cc6095-f625-42d8-9d2d-b8fce8d7f014,,Admitting Officer,Completes admission-related documentation and assigns admission details
+4e2d37d0-1904-47f3-9dd9-d9d4eeb6f015,,Discharging Officer,Completes discharge-related documentation and discharge instructions
+f9f158de-29ce-4b08-9bb8-f94fd0abf016,,Theatre Staff,Documents procedures and care provided in theatre or operating room

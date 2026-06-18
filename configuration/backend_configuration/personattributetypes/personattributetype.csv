@@ -6,7 +6,7 @@ Uuid,Void/Retire,Name,Description,Format,Foreign uuid,Searchable,_order:1000
 8d871f2a-c2cc-11de-8d13-0010c6dffd0f,false,Marital Status,Marital status of this person,org.openmrs.Concept,,true
 8d872150-c2cc-11de-8d13-0010c6dffd0f,false,Health Facility District,District/region in which this patient' home health center resides,java.lang.String,,false
 8d87236c-c2cc-11de-8d13-0010c6dffd0f,false,Health Center,Specific Location of this person's home health center,org.openmrs.Location,,false
-bd93839a-4983-11ef-afae-3cebe5bbf8ab,false,email,Email Address,java.lang.String,,true
+bd93839a-4983-11ef-afae-3cebe5bbf8ab,false,Email Address,Email Address,java.lang.String,,true
 14d4f066-15f5-102d-96e4-000c29c2a5d7,false,Telephone Number,The telephone number for the person,java.lang.String,,false
 8b56eac7-5c76-4b9c-8c6f-1deab8d3fc47,false,Unknown patient,Used to flag patients that cannot be identified during the check-in process,java.lang.String,,false
 4f07985c-88a5-4abd-aa0c-f3ec8324d8e7,false,Test Patient,Flag to describe if the patient was created to a test or not,java.lang.Boolean,,false
@@ -20,6 +20,5 @@ e493f4ec-51f1-4a77-8d3c-5791f8cb02cd,false,Care giver's Name,Care givers name to
 56aef1a8-e4ef-476a-9998-9d2d67c3b01e,false,Land Mark Feature,This is an easily visible feature when looking for the location of the patient,java.lang.String,,false
 01c0111d-3bbc-4de6-8c5a-1cc91e86cc38,false,Directions to Patient's Home,Detailed description of how one can get to the location of the patient,java.lang.String,,false
 b0868a16-4f8e-43da-abfc-6338c9d8f56a,false,Occupation,Occupation,java.lang.String,,false
-dec484be-1c43-416a-9ad0-18bd9ef28929,false,Natioinality,The Nationality of the patient,org.openmrs.Concept,,true
-5ecfd59d-5988-4aa3-84f8-8b43599fc67c,false,Email Address,Email Address,java.lang.String,,false
+dec484be-1c43-416a-9ad0-18bd9ef28929,false,Nationality,The Nationality of the patient,org.openmrs.Concept,,true
 ec6e8300-38e8-4c95-8e57-27c9cdfba104,false,Education Level,Person Education Level,org.openmrs.Concept,,true

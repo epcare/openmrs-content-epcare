@@ -1,12 +1,11 @@
 {
   "name": "Ward Admission Request",
-  "processor": "EncounterFormProcessor",
-  "encounter": "Admission Request",
-  "encounterType": "e22e39fd-7db2-45e7-80f1-60fa0d5a4378",
-  "referencedForms": [],
-  "uuid": "33d55356-8e3c-42ec-bcc6-5ae610a93cf2",
-  "description": "Create an admission request to an inpatient ward",
   "version": "5.0.8",
+  "description": "Create an admission request to an inpatient ward",
+  "encounterType": "e22e39fd-7db2-45e7-80f1-60fa0d5a4378",
+  "encounter": "Admission",
+  "uuid": "33d55356-8e3c-42ec-bcc6-5ae610a93cf2",
+  "processor": "EncounterFormProcessor",
   "published": true,
   "retired": false,
   "pages": [
@@ -18,13 +17,16 @@
           "isExpanded": "true",
           "questions": [
             {
+              "label": "IPD Number",
               "type": "obs",
+              "id": "ipdNumber",
               "questionOptions": {
                 "rendering": "text",
-                "concept": "475f8db8-2350-421b-a669-eea70ef443c0"
+                "concept": "475f8db8-2350-421b-a669-eea70ef443c0",
+                "conceptMappings": [],
+                "answers": []
               },
-              "id": "ipdNumber",
-              "label": "IPD Number"
+              "validators": []
             },
             {
               "type": "obsGroup",
@@ -33,82 +35,101 @@
                 "concept": "c1113ef3-2de4-4c16-b217-4ce73ccfc00a"
               },
               "id": "nextOfKin",
+              "label": "Next of Kin",
+              "validators": [],
               "questions": [
                 {
+                  "label": "Next of kin name",
                   "type": "obs",
+                  "id": "nextOfKinName",
                   "questionOptions": {
                     "concept": "162729AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
-                    "rendering": "text"
+                    "rendering": "text",
+                    "conceptMappings": [],
+                    "answers": []
                   },
-                  "id": "nextOfKinName",
-                  "label": "Next of kin name"
+                  "validators": []
                 },
                 {
+                  "label": "Next of kin contact",
                   "type": "obs",
+                  "id": "nextOfKinContact",
                   "questionOptions": {
                     "rendering": "text",
-                    "concept": "165052AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+                    "concept": "165052AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+                    "conceptMappings": [],
+                    "answers": []
                   },
-                  "id": "nextOfKinContact",
-                  "label": "Next of kin contact"
+                  "validators": []
                 },
                 {
+                  "label": "Relationship",
                   "type": "obs",
+                  "id": "relationship",
                   "questionOptions": {
                     "rendering": "select",
                     "concept": "dce138f8-30ab-102d-86b0-7a5022ba4115",
                     "answers": [
                       {
                         "concept": "dce186ca-30ab-102d-86b0-7a5022ba4115",
-                        "label": "AUNT/UNCLE"
+                        "label": "AUNT/UNCLE",
+                        "conceptMappings": []
                       },
                       {
                         "concept": "dd21e8b5-30ab-102d-86b0-7a5022ba4115",
-                        "label": "BROTHER/SISTER"
+                        "label": "BROTHER/SISTER",
+                        "conceptMappings": []
                       },
                       {
                         "concept": "dce180a8-30ab-102d-86b0-7a5022ba4115",
-                        "label": "CHILD"
+                        "label": "CHILD",
+                        "conceptMappings": []
                       },
                       {
                         "concept": "dd22614e-30ab-102d-86b0-7a5022ba4115",
-                        "label": "COUSIN"
+                        "label": "COUSIN",
+                        "conceptMappings": []
                       },
                       {
                         "concept": "dcc374a5-30ab-102d-86b0-7a5022ba4115",
-                        "label": "FRIEND"
+                        "label": "FRIEND",
+                        "conceptMappings": []
                       },
                       {
                         "concept": "dd1e43f2-30ab-102d-86b0-7a5022ba4115",
-                        "label": "GRANDCHILD"
+                        "label": "GRANDCHILD",
+                        "conceptMappings": []
                       },
                       {
                         "concept": "dd1e1d59-30ab-102d-86b0-7a5022ba4115",
-                        "label": "GRANDPARENT"
+                        "label": "GRANDPARENT",
+                        "conceptMappings": []
                       },
                       {
                         "concept": "dd1df716-30ab-102d-86b0-7a5022ba4115",
-                        "label": "NIECE/NEPHEW"
+                        "label": "NIECE/NEPHEW",
+                        "conceptMappings": []
                       },
                       {
                         "concept": "dd22b709-30ab-102d-86b0-7a5022ba4115",
-                        "label": "NOT FAMILY"
+                        "label": "NOT FAMILY",
+                        "conceptMappings": []
                       },
                       {
                         "concept": "dce17a7d-30ab-102d-86b0-7a5022ba4115",
-                        "label": "PARENT"
+                        "label": "PARENT",
+                        "conceptMappings": []
                       },
                       {
                         "concept": "dd23c975-30ab-102d-86b0-7a5022ba4115",
-                        "label": "SPOUSE/PARTNER"
+                        "label": "SPOUSE/PARTNER",
+                        "conceptMappings": []
                       }
                     ]
                   },
-                  "id": "relationship",
-                  "label": "Relationship"
+                  "validators": []
                 }
-              ],
-              "label": "Next of Kin"
+              ]
             }
           ]
         },
@@ -117,23 +138,26 @@
           "isExpanded": "true",
           "questions": [
             {
+              "label": "Admission Type",
               "type": "obs",
+              "id": "admissionType",
               "questionOptions": {
                 "rendering": "radio",
                 "concept": "165044AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
                 "answers": [
                   {
                     "concept": "165043AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
-                    "label": "Admission"
+                    "label": "Admission",
+                    "conceptMappings": []
                   },
                   {
                     "concept": "165042AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
-                    "label": "Re-admission"
+                    "label": "Re-admission",
+                    "conceptMappings": []
                   }
                 ]
               },
-              "id": "admissionType",
-              "label": "Admission Type"
+              "validators": []
             }
           ]
         },
@@ -149,46 +173,54 @@
               },
               "id": "inpatientDispositionConstruct",
               "label": "Inpatient disposition construct",
+              "validators": [],
               "questions": [
                 {
+                  "label": "Inpatient patient disposition",
                   "type": "obs",
+                  "id": "InpatientPatientDisposition",
                   "questionOptions": {
                     "rendering": "radio",
                     "concept": "1c9548f2-fcd9-4818-9784-c8ccdd037ee3",
                     "answers": [
                       {
                         "concept": "00d49abd-39a8-447b-9cdd-a97309ce1fa6",
-                        "label": "admit to hospital"
+                        "label": "admit to hospital",
+                        "conceptMappings": []
                       },
                       {
                         "concept": "70cd1f1b-ab94-4348-aed8-359891f24302",
-                        "label": "Internal facility transfer/referral"
+                        "label": "Internal facility transfer/referral",
+                        "conceptMappings": []
                       },
                       {
                         "concept": "348f694c-d40c-438f-a229-5b5f1c9599ba",
-                        "label": "Discharge from hospital"
+                        "label": "Discharge from hospital",
+                        "conceptMappings": []
                       }
                     ]
                   },
-                  "id": "InpatientPatientDisposition",
-                  "label": "Inpatient patient disposition"
+                  "validators": []
                 },
                 {
-                  "id": "admitToLocation",
                   "label": "Admitted to location",
                   "type": "obs",
+                  "id": "admitToLocation",
                   "required": true,
                   "questionOptions": {
                     "rendering": "ui-select-extended",
                     "required": true,
                     "concept": "7dbfe324-9855-4f00-aa38-657dcaae737b",
+                    "conceptMappings": [],
+                    "answers": [],
                     "datasource": {
                       "name": "location_datasource",
                       "config": {
                         "tag": "Admission Location"
                       }
                     }
-                  }
+                  },
+                  "validators": []
                 }
               ]
             }
@@ -196,5 +228,6 @@
         }
       ]
     }
-  ]
+  ],
+  "referencedForms": []
 }

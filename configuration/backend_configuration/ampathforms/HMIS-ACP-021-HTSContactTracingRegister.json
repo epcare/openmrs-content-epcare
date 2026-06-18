@@ -3,7 +3,7 @@
   "version": "5.0.8",
   "description": "Encounter to record all clients eligible for index testing and SNS",
   "encounterType": "3849c43c-f14d-40ab-80d7-670cf251e525",
-  "encounter": "HTS Contact Tracing",
+  "encounter": "HTS Contact Tracing Encounter",
   "uuid": "e446b778-0410-43b1-8446-192eb1b65193",
   "processor": "EncounterFormProcessor",
   "published": true,
