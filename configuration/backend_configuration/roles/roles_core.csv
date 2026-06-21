@@ -1,0 +1,8 @@
+Uuid,Role name,Description,Inherited roles,Privileges,_order:1000
+f4c4d14d-2188-11ed-9dff-507b9dea1001,System Developer,Full system access with all privileges,,,
+f4c4d14d-2188-11ed-9dff-507b9dea1002,Data Clerk,Role for data entry clerks,,,
+f4c4d14d-2188-11ed-9dff-507b9dea1003,HIV Clinic,Clinic role for HIV program,,,
+f4c4d14d-2188-11ed-9dff-507b9dea1004,Organizational: Clinician,Clinician role,,,
+f4c4d14d-2188-11ed-9dff-507b9dea1005,HIV Data Management,Data management role for HIV program,,,
+f4c4d14d-2188-11ed-9dff-507b9dea1006,TB Clinic,Clinic role for TB program,,,
+f4c4d14d-2188-11ed-9dff-507b9dea1007,MCH Clinic,Clinic role for MCH program,,,
