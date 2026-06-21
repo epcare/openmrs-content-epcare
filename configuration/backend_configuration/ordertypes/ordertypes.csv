@@ -1,0 +1,5 @@
+uuid,name,description,java_class_name,concept_classes,parent
+131168f4-15f5-102d-96e4-000c29c2a5d7,Drug Order,An order for a medication to be given to the patient,org.openmrs.DrugOrder,,
+52a447d3-a64a-11e3-9aeb-50e549534c5e,Test Order,Order type for test orders,org.openmrs.TestOrder,,
+4237a01f-29c5-4167-9d8e-96d6e590aa33,Procedure Order,Procedure order type used for radiology and other procedures,org.openmrs.module.orderexpansion.api.model.ProcedureOrder,,131168f4-15f5-102d-96e4-000c29c2a5d7
+dab3ab30-2feb-48ec-b4af-8332a0831b49,Medical Supplies Order,Medical supplies order type used for non-pharmaceutical supplies,org.openmrs.module.orderexpansion.api.model.MedicalSupplyOrder,,131168f4-15f5-102d-96e4-000c29c2a5d7
