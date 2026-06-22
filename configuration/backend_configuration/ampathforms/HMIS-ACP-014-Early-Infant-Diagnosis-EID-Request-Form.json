@@ -4,6 +4,7 @@
   "encounterType": "d211f5a7-b0b7-4021-8224-72c58866600e",
   "uuid": "84eb332d-e977-41e2-a081-03f6f875b323",
   "description": "This form is used to carry out tests on an exposed infant",
+  "encounter": "Early Infant Diagnosis (EID) Request",
   "version": "5.0.8",
   "published": true,
   "retired": false,

@@ -1,5 +1,6 @@
 {
   "encounterType": "6d647bd4-33d6-4d04-a04a-595d2159b456",
+  "encounter": "CaCx Treatment Encounter",
   "name": "HMIS ACP 044: Cervical Cancer Pre-Treatment Form",
   "processor": "EncounterFormProcessor",
   "referencedForms": [],
