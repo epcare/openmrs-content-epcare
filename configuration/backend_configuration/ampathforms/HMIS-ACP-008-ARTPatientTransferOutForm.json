@@ -262,7 +262,7 @@
               "validators": []
             },
             {
-              "label": "WHO Clinical Stage",
+              "label": "Baseline WHO Clinical Stage",
               "type": "obs",
               "id": "whoClinicalStage",
               "readonly": true,
@@ -676,7 +676,7 @@
               "label": "WHO Clinical Stage",
               "type": "obs",
               "id": "currentWHOClinicStage",
-              "readonly": true,
+              "readonly": false,
               "questionOptions": {
                 "rendering": "select",
                 "concept": "dcdff274-30ab-102d-86b0-7a5022ba4115",
@@ -686,43 +686,35 @@
                 "answers": [
                   {
                     "concept": "dcda2bc2-30ab-102d-86b0-7a5022ba4115",
-                    "label": "1",
-                    "conceptMappings": []
+                    "label": "Stage 1"
                   },
                   {
                     "concept": "dcda3251-30ab-102d-86b0-7a5022ba4115",
-                    "label": "2",
-                    "conceptMappings": []
+                    "label": "Stage 2"
                   },
                   {
                     "concept": "dcda3663-30ab-102d-86b0-7a5022ba4115",
-                    "label": "3",
-                    "conceptMappings": []
+                    "label": "Stage 3"
                   },
                   {
                     "concept": "dcda3a80-30ab-102d-86b0-7a5022ba4115",
-                    "label": "4",
-                    "conceptMappings": []
+                    "label": "Stage 4"
                   },
                   {
                     "concept": "dd25e735-30ab-102d-86b0-7a5022ba4115",
-                    "label": "T1",
-                    "conceptMappings": []
+                    "label": "Stage T1"
                   },
                   {
                     "concept": "dd2666a5-30ab-102d-86b0-7a5022ba4115",
-                    "label": "T2",
-                    "conceptMappings": []
+                    "label": "Stage T2"
                   },
                   {
                     "concept": "dd266d64-30ab-102d-86b0-7a5022ba4115",
-                    "label": "T3",
-                    "conceptMappings": []
+                    "label": "Stage T3"
                   },
                   {
                     "concept": "dd269c18-30ab-102d-86b0-7a5022ba4115",
-                    "label": "T4",
-                    "conceptMappings": []
+                    "label": "Stage T4"
                   }
                 ]
               },
