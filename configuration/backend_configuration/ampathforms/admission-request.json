@@ -2,9 +2,9 @@
   "name": "Ward Admission Request",
   "version": "5.0.8",
   "description": "Create an admission request to an inpatient ward",
-  "encounterType": "e22e39fd-7db2-45e7-80f1-60fa0d5a4378",
-  "encounter": "Admission",
-  "uuid": "33d55356-8e3c-42ec-bcc6-5ae610a93cf2",
+  "encounterType": "b2c4d5e6-7f8a-4e9b-8c1d-2e3f8e4a3b8f",
+  "encounter": "Transfer Request",
+  "uuid": "3d1442a5-85f3-42ad-bc04-1680ebeb7cb7",
   "processor": "EncounterFormProcessor",
   "published": true,
   "retired": false,
@@ -13,7 +13,7 @@
       "label": "Registration Details",
       "sections": [
         {
-          "label": "Admission Registration ",
+          "label": "Admission Identification",
           "isExpanded": "true",
           "questions": [
             {
@@ -27,7 +27,13 @@
                 "answers": []
               },
               "validators": []
-            },
+            }
+          ]
+        },
+        {
+          "label": "Next Of Kin",
+          "isExpanded": "true",
+          "questions": [
             {
               "type": "obsGroup",
               "questionOptions": {
@@ -134,7 +140,7 @@
           ]
         },
         {
-          "label": "Admission Details",
+          "label": "Admission Instructions",
           "isExpanded": "true",
           "questions": [
             {
@@ -158,13 +164,7 @@
                 ]
               },
               "validators": []
-            }
-          ]
-        },
-        {
-          "label": "Inpatient disposition",
-          "isExpanded": "true",
-          "questions": [
+            },
             {
               "type": "obsGroup",
               "questionOptions": {
@@ -185,17 +185,7 @@
                     "answers": [
                       {
                         "concept": "00d49abd-39a8-447b-9cdd-a97309ce1fa6",
-                        "label": "admit to hospital",
-                        "conceptMappings": []
-                      },
-                      {
-                        "concept": "70cd1f1b-ab94-4348-aed8-359891f24302",
-                        "label": "Internal facility transfer/referral",
-                        "conceptMappings": []
-                      },
-                      {
-                        "concept": "348f694c-d40c-438f-a229-5b5f1c9599ba",
-                        "label": "Discharge from hospital",
+                        "label": "Admit To",
                         "conceptMappings": []
                       }
                     ]
