@@ -2,9 +2,9 @@
   "name": "Ward Admission Request",
   "version": "5.0.8",
   "description": "Create an admission request to an inpatient ward",
-  "encounterType": "b2c4d5e6-7f8a-4e9b-8c1d-2e3f8e4a3b8f",
-  "encounter": "Transfer Request",
-  "uuid": "3d1442a5-85f3-42ad-bc04-1680ebeb7cb7",
+  "encounterType": "e22e39fd-7db2-45e7-80f1-60fa0d5a4378",
+  "encounter": "Admission",
+  "uuid": "33d55356-8e3c-42ec-bcc6-5ae610a93cf2",
   "processor": "EncounterFormProcessor",
   "published": true,
   "retired": false,
@@ -13,7 +13,7 @@
       "label": "Registration Details",
       "sections": [
         {
-          "label": "Admission Identification",
+          "label": "Admission Registration ",
           "isExpanded": "true",
           "questions": [
             {
@@ -27,13 +27,7 @@
                 "answers": []
               },
               "validators": []
-            }
-          ]
-        },
-        {
-          "label": "Next Of Kin",
-          "isExpanded": "true",
-          "questions": [
+            },
             {
               "type": "obsGroup",
               "questionOptions": {
@@ -140,7 +134,7 @@
           ]
         },
         {
-          "label": "Admission Instructions",
+          "label": "Admission Details",
           "isExpanded": "true",
           "questions": [
             {
@@ -164,12 +158,18 @@
                 ]
               },
               "validators": []
-            },
+            }
+          ]
+        },
+        {
+          "label": "Inpatient disposition",
+          "isExpanded": "true",
+          "questions": [
             {
               "type": "obsGroup",
               "questionOptions": {
                 "rendering": "group",
-                "concept": "16708da8-d0e1-44c8-bca2-1323015346f5"
+                "concept": "CIEL:169405"
               },
               "id": "inpatientDispositionConstruct",
               "label": "Inpatient disposition construct",
@@ -181,10 +181,10 @@
                   "id": "InpatientPatientDisposition",
                   "questionOptions": {
                     "rendering": "radio",
-                    "concept": "1c9548f2-fcd9-4818-9784-c8ccdd037ee3",
+                    "concept": "CIEL:169402",
                     "answers": [
                       {
-                        "concept": "00d49abd-39a8-447b-9cdd-a97309ce1fa6",
+                        "concept": "CIEL:168619",
                         "label": "Admit To",
                         "conceptMappings": []
                       }
