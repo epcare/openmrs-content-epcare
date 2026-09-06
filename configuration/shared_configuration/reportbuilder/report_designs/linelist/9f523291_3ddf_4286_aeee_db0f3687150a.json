@@ -1,0 +1,239 @@
+{
+  "name" : "Emergency ART Refill Register",
+  "description" : "Emergency ART Refill Register",
+  "category" : "FACILITY_REPORTS",
+  "reportType" : "LINELIST",
+  "limit" : 1000,
+  "parameters" : [ {
+    "name" : "startDate",
+    "label" : "Start Date",
+    "type" : "DATE",
+    "required" : true
+  }, {
+    "name" : "endDate",
+    "label" : "End Date",
+    "type" : "DATE",
+    "required" : true
+  } ],
+  "baseCohortDefinition" : {
+    "type" : "SQL",
+    "name" : "Patients with emergency ART refill encounters during period",
+    "config" : {
+      "sql" : "SELECT DISTINCT e.patient_id FROM encounter e WHERE e.encounter_type = (SELECT encounter_type_id FROM encounter_type WHERE uuid = 'd18bd8f2-dfcd-11eb-ba80-0242ac130004') AND e.encounter_datetime >= :startDate AND e.encounter_datetime <= :endDate AND e.voided = 0"
+    }
+  },
+  "dataSetDefinitions" : [ {
+    "name" : "DATASET",
+    "type" : "PATIENT_DATA_SET",
+    "rowFilter" : {
+      "type" : "SQL",
+      "name" : "Patients with emergency ART refill encounters during period",
+      "config" : {
+        "sql" : "SELECT DISTINCT e.patient_id FROM encounter e WHERE e.encounter_type = (SELECT encounter_type_id FROM encounter_type WHERE uuid = 'd18bd8f2-dfcd-11eb-ba80-0242ac130004') AND e.encounter_datetime >= :startDate AND e.encounter_datetime <= :endDate AND e.voided = 0"
+      }
+    },
+    "columns" : [ {
+      "name" : "date",
+      "key" : "date",
+      "dataDefinition" : {
+        "type" : "SQL",
+        "config" : {
+          "sql" : "SELECT DATE(e.encounter_datetime) FROM encounter e WHERE e.patient_id = :patientId AND e.encounter_type = (SELECT encounter_type_id FROM encounter_type WHERE uuid = 'd18bd8f2-dfcd-11eb-ba80-0242ac130004') AND e.encounter_datetime >= :startDate AND e.encounter_datetime <= :endDate AND e.voided = 0 ORDER BY e.encounter_datetime ASC LIMIT 1"
+        }
+      },
+      "repeatResolution" : {
+        "strategy" : "LATEST",
+        "restrictToPeriod" : false,
+        "ignoreVoided" : true
+      }
+    }, {
+      "name" : "familyName",
+      "key" : "familyname",
+      "dataDefinition" : {
+        "type" : "PERSON_NAME",
+        "config" : {
+          "type" : "FAMILY_NAME"
+        }
+      }
+    }, {
+      "name" : "givenName",
+      "key" : "givenname",
+      "dataDefinition" : {
+        "type" : "PERSON_NAME",
+        "config" : {
+          "type" : "GIVEN_NAME"
+        }
+      }
+    }, {
+      "name" : "serialNo",
+      "key" : "serialno",
+      "dataDefinition" : {
+        "type" : "SQL",
+        "config" : {
+          "sql" : "SELECT o.value_text FROM obs o WHERE o.concept_id = 1646 AND o.person_id = :patientId AND o.obs_datetime >= :startDate AND o.obs_datetime <= :endDate AND o.voided = 0 ORDER BY o.obs_datetime ASC LIMIT 1"
+        }
+      },
+      "repeatResolution" : {
+        "strategy" : "LATEST",
+        "restrictToPeriod" : false,
+        "ignoreVoided" : true,
+        "orderBy" : "obs_datetime"
+      }
+    }, {
+      "name" : "ARTNo",
+      "key" : "artno",
+      "dataDefinition" : {
+        "type" : "IDENTIFIER",
+        "config" : {
+          "identifierTypeUuid" : "e1731641-30ab-102d-86b0-7a5022ba4115",
+          "preferred" : true
+        }
+      }
+    }, {
+      "name" : "telephone",
+      "key" : "telephone",
+      "dataDefinition" : {
+        "type" : "PERSON_ATTRIBUTE",
+        "config" : {
+          "type" : "ATTRIBUTE",
+          "attributeTypeUuid" : "14d4f066-15f5-102d-96e4-000c29c2a5d7"
+        }
+      }
+    }, {
+      "name" : "clientCategory",
+      "key" : "clientcategory",
+      "dataDefinition" : {
+        "type" : "SQL",
+        "config" : {
+          "sql" : "SELECT (SELECT cn.name FROM concept_name cn WHERE cn.concept_id = o.value_coded AND cn.locale = 'en' AND cn.concept_name_type = 'FULLY_SPECIFIED' AND cn.voided = 0) FROM obs o WHERE o.concept_id = (SELECT concept_id FROM concept WHERE uuid = '165169') AND o.person_id = :patientId AND o.obs_datetime >= :startDate AND o.obs_datetime <= :endDate AND o.voided = 0 ORDER BY o.obs_datetime DESC LIMIT 1"
+        }
+      },
+      "repeatResolution" : {
+        "strategy" : "LATEST",
+        "restrictToPeriod" : false,
+        "ignoreVoided" : true,
+        "orderBy" : "obs_datetime"
+      }
+    }, {
+      "name" : "facilityName",
+      "key" : "facilityname",
+      "dataDefinition" : {
+        "type" : "SQL",
+        "config" : {
+          "sql" : "SELECT o.value_text FROM obs o WHERE o.concept_id = (SELECT concept_id FROM concept WHERE uuid = '166453') AND o.person_id = :patientId AND o.obs_datetime >= :startDate AND o.obs_datetime <= :endDate AND o.voided = 0 ORDER BY o.obs_datetime DESC LIMIT 1"
+        }
+      },
+      "repeatResolution" : {
+        "strategy" : "LATEST",
+        "restrictToPeriod" : false,
+        "ignoreVoided" : true,
+        "orderBy" : "obs_datetime"
+      }
+    }, {
+      "name" : "parentDistrict",
+      "key" : "parentdistrict",
+      "dataDefinition" : {
+        "type" : "SQL",
+        "config" : {
+          "sql" : "SELECT o.value_text FROM obs o WHERE o.concept_id = (SELECT concept_id FROM concept WHERE uuid = '166454') AND o.person_id = :patientId AND o.obs_datetime >= :startDate AND o.obs_datetime <= :endDate AND o.voided = 0 ORDER BY o.obs_datetime DESC LIMIT 1"
+        }
+      },
+      "repeatResolution" : {
+        "strategy" : "LATEST",
+        "restrictToPeriod" : false,
+        "ignoreVoided" : true,
+        "orderBy" : "obs_datetime"
+      }
+    }, {
+      "name" : "reasonForVisit",
+      "key" : "reasonforvisit",
+      "dataDefinition" : {
+        "type" : "SQL",
+        "config" : {
+          "sql" : "SELECT (SELECT cn.name FROM concept_name cn WHERE cn.concept_id = o.value_coded AND cn.locale = 'en' AND cn.concept_name_type = 'FULLY_SPECIFIED' AND cn.voided = 0) FROM obs o WHERE o.concept_id = (SELECT concept_id FROM concept WHERE uuid = '160288') AND o.person_id = :patientId AND o.obs_datetime >= :startDate AND o.obs_datetime <= :endDate AND o.voided = 0 ORDER BY o.obs_datetime DESC LIMIT 1"
+        }
+      },
+      "repeatResolution" : {
+        "strategy" : "LATEST",
+        "restrictToPeriod" : false,
+        "ignoreVoided" : true,
+        "orderBy" : "obs_datetime"
+      }
+    }, {
+      "name" : "currentRegimen",
+      "key" : "currentregimen",
+      "dataDefinition" : {
+        "type" : "SQL",
+        "config" : {
+          "sql" : "SELECT (SELECT cn.name FROM concept_name cn WHERE cn.concept_id = o.value_coded AND cn.locale = 'en' AND cn.concept_name_type = 'FULLY_SPECIFIED' AND cn.voided = 0) FROM obs o WHERE o.concept_id = 90315 AND o.person_id = :patientId AND o.obs_datetime >= :startDate AND o.obs_datetime <= :endDate AND o.voided = 0 ORDER BY o.obs_datetime DESC LIMIT 1"
+        }
+      },
+      "repeatResolution" : {
+        "strategy" : "LATEST",
+        "restrictToPeriod" : false,
+        "ignoreVoided" : true,
+        "orderBy" : "obs_datetime"
+      }
+    }, {
+      "name" : "weight",
+      "key" : "weight",
+      "dataDefinition" : {
+        "type" : "SQL",
+        "config" : {
+          "sql" : "SELECT o.value_numeric FROM obs o WHERE o.concept_id = 5089 AND o.person_id = :patientId AND o.obs_datetime >= :startDate AND o.obs_datetime <= :endDate AND o.voided = 0 ORDER BY o.obs_datetime DESC LIMIT 1"
+        }
+      },
+      "repeatResolution" : {
+        "strategy" : "LATEST",
+        "restrictToPeriod" : false,
+        "ignoreVoided" : true,
+        "orderBy" : "obs_datetime"
+      }
+    }, {
+      "name" : "temperature",
+      "key" : "temperature",
+      "dataDefinition" : {
+        "type" : "SQL",
+        "config" : {
+          "sql" : "SELECT o.value_numeric FROM obs o WHERE o.concept_id = 5088 AND o.person_id = :patientId AND o.obs_datetime >= :startDate AND o.obs_datetime <= :endDate AND o.voided = 0 ORDER BY o.obs_datetime DESC LIMIT 1"
+        }
+      },
+      "repeatResolution" : {
+        "strategy" : "LATEST",
+        "restrictToPeriod" : false,
+        "ignoreVoided" : true,
+        "orderBy" : "obs_datetime"
+      }
+    }, {
+      "name" : "TBStatus",
+      "key" : "tbstatus",
+      "dataDefinition" : {
+        "type" : "SQL",
+        "config" : {
+          "sql" : "SELECT (SELECT cn.name FROM concept_name cn WHERE cn.concept_id = o.value_coded AND cn.locale = 'en' AND cn.concept_name_type = 'FULLY_SPECIFIED' AND cn.voided = 0) FROM obs o WHERE o.concept_id = 90216 AND o.person_id = :patientId AND o.obs_datetime >= :startDate AND o.obs_datetime <= :endDate AND o.voided = 0 ORDER BY o.obs_datetime DESC LIMIT 1"
+        }
+      },
+      "repeatResolution" : {
+        "strategy" : "LATEST",
+        "restrictToPeriod" : false,
+        "ignoreVoided" : true,
+        "orderBy" : "obs_datetime"
+      }
+    }, {
+      "name" : "pills",
+      "key" : "pills",
+      "dataDefinition" : {
+        "type" : "SQL",
+        "config" : {
+          "sql" : "SELECT o.value_numeric FROM obs o WHERE o.concept_id = 99038 AND o.person_id = :patientId AND o.obs_datetime >= :startDate AND o.obs_datetime <= :endDate AND o.voided = 0 ORDER BY o.obs_datetime DESC LIMIT 1"
+        }
+      },
+      "repeatResolution" : {
+        "strategy" : "LATEST",
+        "restrictToPeriod" : false,
+        "ignoreVoided" : true,
+        "orderBy" : "obs_datetime"
+      }
+    } ]
+  } ]
+}

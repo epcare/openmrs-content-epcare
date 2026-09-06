@@ -1,0 +1,546 @@
+{
+  "name" : "PMTCT Audit Tool",
+  "description" : "Comprehensive PMTCT (Prevention of Mother-to-Child Transmission) audit tool with CQI indicators, EID integration, and mother-infant pairing",
+  "category" : "FACILITY REPORTS",
+  "reportType" : "LINE_LIST",
+  "limit" : 1000,
+  "parameters" : [ {
+    "name" : "startDate",
+    "label" : "Start Date",
+    "type" : "DATE",
+    "required" : true
+  }, {
+    "name" : "endDate",
+    "label" : "End Date",
+    "type" : "DATE",
+    "required" : true
+  }, {
+    "name" : "location",
+    "label" : "Location",
+    "type" : "LOCATION",
+    "required" : true
+  } ],
+  "baseCohortDefinition" : {
+    "type" : "SQL",
+    "name" : "Pregnant women in PMTCT program during period",
+    "config" : {
+      "sql" : "SELECT DISTINCT pp.patient_id FROM patient_program pp INNER JOIN program p ON pp.program_id = p.program_id WHERE p.uuid = 'c4c19396-537b-4b4a-aa5c-1f83d09a2e30' AND pp.date_enrolled <= :endDate AND (pp.date_completed IS NULL OR pp.date_completed >= :startDate) AND pp.location_id = :location AND pp.voided = 0"
+    }
+  },
+  "dataSetDefinitions" : [ {
+    "name" : "PMTCT_AUDIT",
+    "type" : "PATIENT_DATA_SET",
+    "rowFilter" : {
+      "type" : "SQL",
+      "name" : "Pregnant women in PMTCT program during period",
+      "config" : {
+        "sql" : "SELECT DISTINCT pp.patient_id FROM patient_program pp INNER JOIN program p ON pp.program_id = p.program_id WHERE p.uuid = 'c4c19396-537b-4b4a-aa5c-1f83d09a2e30' AND pp.date_enrolled <= :endDate AND (pp.date_completed IS NULL OR pp.date_completed >= :startDate) AND pp.location_id = :location AND pp.voided = 0"
+      }
+    },
+    "columns" : [ {
+      "name" : "Mother Clinic No",
+      "key" : "mother_clinic_no",
+      "dataDefinition" : {
+        "type" : "IDENTIFIER",
+        "config" : {
+          "identifierTypeUuid" : "e1731641-30ab-102d-86b0-7a5022ba4115",
+          "preferred" : true
+        }
+      }
+    }, {
+      "name" : "Mother Name",
+      "key" : "mother_name",
+      "dataDefinition" : {
+        "type" : "PERSON_NAME",
+        "config" : {
+          "type" : "FULL_NAME",
+          "preferred" : true
+        }
+      }
+    }, {
+      "name" : "Mother Age",
+      "key" : "mother_age",
+      "dataDefinition" : {
+        "type" : "CALCULATION",
+        "config" : {
+          "calculation" : "AGE",
+          "onDate" : "${endDate}"
+        }
+      }
+    }, {
+      "name" : "EDD",
+      "key" : "edd",
+      "dataDefinition" : {
+        "type" : "SQL",
+        "config" : {
+          "sql" : "SELECT DATE(o.value_datetime) FROM obs o WHERE o.concept_id = 99769 AND o.person_id = :patientId AND o.voided = 0 ORDER BY o.obs_datetime DESC LIMIT 1"
+        }
+      },
+      "repeatResolution" : {
+        "strategy" : "LATEST",
+        "restrictToPeriod" : false,
+        "ignoreVoided" : true,
+        "orderBy" : "obs_datetime"
+      }
+    }, {
+      "name" : "HIV Test Date",
+      "key" : "hiv_test_date",
+      "dataDefinition" : {
+        "type" : "SQL",
+        "config" : {
+          "sql" : "SELECT DATE(o.obs_datetime) FROM obs o WHERE o.concept_id = 99493 AND o.person_id = :patientId AND o.obs_datetime >= :startDate AND o.obs_datetime <= :endDate AND o.voided = 0 ORDER BY o.obs_datetime DESC LIMIT 1"
+        }
+      },
+      "repeatResolution" : {
+        "strategy" : "LATEST",
+        "restrictToPeriod" : false,
+        "ignoreVoided" : true,
+        "orderBy" : "obs_datetime"
+      }
+    }, {
+      "name" : "HIV Test Result",
+      "key" : "hiv_test_result",
+      "dataDefinition" : {
+        "type" : "SQL",
+        "config" : {
+          "sql" : "SELECT (SELECT cn.name FROM concept_name cn WHERE cn.concept_id = o.value_coded AND cn.locale = 'en' AND cn.concept_name_type = 'FULLY_SPECIFIED' AND cn.voided = 0) FROM obs o WHERE o.concept_id = 99493 AND o.person_id = :patientId AND o.obs_datetime >= :startDate AND o.obs_datetime <= :endDate AND o.voided = 0 ORDER BY o.obs_datetime DESC LIMIT 1"
+        }
+      },
+      "repeatResolution" : {
+        "strategy" : "LATEST",
+        "restrictToPeriod" : false,
+        "ignoreVoided" : true,
+        "orderBy" : "obs_datetime"
+      }
+    }, {
+      "name" : "HIV Positive Date",
+      "key" : "hiv_positive_date",
+      "dataDefinition" : {
+        "type" : "SQL",
+        "config" : {
+          "sql" : "SELECT DATE(o.obs_datetime) FROM obs o WHERE o.concept_id = 99493 AND o.value_coded IN (SELECT concept_id FROM concept WHERE uuid = '90003') AND o.person_id = :patientId AND o.obs_datetime >= :startDate AND o.obs_datetime <= :endDate AND o.voided = 0 ORDER BY o.obs_datetime DESC LIMIT 1"
+        }
+      },
+      "repeatResolution" : {
+        "strategy" : "LATEST",
+        "restrictToPeriod" : false,
+        "ignoreVoided" : true,
+        "orderBy" : "obs_datetime"
+      }
+    }, {
+      "name" : "ART Status",
+      "key" : "art_status",
+      "dataDefinition" : {
+        "type" : "SQL",
+        "config" : {
+          "sql" : "SELECT CASE WHEN EXISTS (SELECT 1 FROM patient_program pp INNER JOIN program p ON pp.program_id = p.program_id WHERE p.uuid = 'ba882722-3d9f-4e58-a830-6d636003d38d' AND pp.patient_id = :patientId AND pp.date_enrolled <= :endDate AND (pp.date_completed IS NULL OR pp.date_completed >= :startDate) AND pp.voided = 0) THEN 'On ART' ELSE 'Not on ART' END"
+        }
+      }
+    }, {
+      "name" : "Current Regimen",
+      "key" : "current_regimen",
+      "dataDefinition" : {
+        "type" : "SQL",
+        "config" : {
+          "sql" : "SELECT (SELECT cn.name FROM concept_name cn WHERE cn.concept_id = o.value_coded AND cn.locale = 'en' AND cn.concept_name_type = 'FULLY_SPECIFIED' AND cn.voided = 0) FROM obs o WHERE o.concept_id IN (SELECT concept_id FROM concept WHERE uuid IN ('e5aaaa9a-2224-42c7-b6d3-efd6a56064da', '162942AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA')) AND o.person_id = :patientId AND o.obs_datetime <= :endDate AND o.voided = 0 ORDER BY o.obs_datetime DESC LIMIT 1"
+        }
+      },
+      "repeatResolution" : {
+        "strategy" : "LATEST",
+        "restrictToPeriod" : false,
+        "ignoreVoided" : true,
+        "orderBy" : "obs_datetime"
+      }
+    }, {
+      "name" : "ART Start Date",
+      "key" : "art_start_date",
+      "dataDefinition" : {
+        "type" : "SQL",
+        "config" : {
+          "sql" : "SELECT DATE(pp.date_enrolled) FROM patient_program pp INNER JOIN program p ON pp.program_id = p.program_id WHERE p.uuid = 'ba882722-3d9f-4e58-a830-6d636003d38d' AND pp.patient_id = :patientId AND pp.date_enrolled <= :endDate AND pp.voided = 0 ORDER BY pp.date_enrolled ASC LIMIT 1"
+        }
+      },
+      "repeatResolution" : {
+        "strategy" : "LATEST",
+        "restrictToPeriod" : false,
+        "ignoreVoided" : true
+      }
+    }, {
+      "name" : "CD4 Count",
+      "key" : "cd4_count",
+      "dataDefinition" : {
+        "type" : "SQL",
+        "config" : {
+          "sql" : "SELECT o.value_numeric FROM obs o WHERE o.concept_id = 5497 AND o.person_id = :patientId AND o.obs_datetime <= :endDate AND o.voided = 0 ORDER BY o.obs_datetime DESC LIMIT 1"
+        }
+      },
+      "repeatResolution" : {
+        "strategy" : "LATEST",
+        "restrictToPeriod" : false,
+        "ignoreVoided" : true,
+        "orderBy" : "obs_datetime"
+      }
+    }, {
+      "name" : "CD4 Date",
+      "key" : "cd4_date",
+      "dataDefinition" : {
+        "type" : "SQL",
+        "config" : {
+          "sql" : "SELECT DATE(o.obs_datetime) FROM obs o WHERE o.concept_id = 5497 AND o.person_id = :patientId AND o.obs_datetime <= :endDate AND o.voided = 0 ORDER BY o.obs_datetime DESC LIMIT 1"
+        }
+      },
+      "repeatResolution" : {
+        "strategy" : "LATEST",
+        "restrictToPeriod" : false,
+        "ignoreVoided" : true,
+        "orderBy" : "obs_datetime"
+      }
+    }, {
+      "name" : "VL Result",
+      "key" : "vl_result",
+      "dataDefinition" : {
+        "type" : "SQL",
+        "config" : {
+          "sql" : "SELECT o.value_numeric FROM obs o WHERE o.concept_id = 856 AND o.person_id = :patientId AND o.obs_datetime <= :endDate AND o.voided = 0 ORDER BY o.obs_datetime DESC LIMIT 1"
+        }
+      },
+      "repeatResolution" : {
+        "strategy" : "LATEST",
+        "restrictToPeriod" : false,
+        "ignoreVoided" : true,
+        "orderBy" : "obs_datetime"
+      }
+    }, {
+      "name" : "VL Date",
+      "key" : "vl_date",
+      "dataDefinition" : {
+        "type" : "SQL",
+        "config" : {
+          "sql" : "SELECT DATE(o.obs_datetime) FROM obs o WHERE o.concept_id = 856 AND o.person_id = :patientId AND o.obs_datetime <= :endDate AND o.voided = 0 ORDER BY o.obs_datetime DESC LIMIT 1"
+        }
+      },
+      "repeatResolution" : {
+        "strategy" : "LATEST",
+        "restrictToPeriod" : false,
+        "ignoreVoided" : true,
+        "orderBy" : "obs_datetime"
+      }
+    }, {
+      "name" : "VL Suppressed",
+      "key" : "vl_suppressed",
+      "dataDefinition" : {
+        "type" : "SQL",
+        "config" : {
+          "sql" : "SELECT CASE WHEN (SELECT o.value_numeric FROM obs o WHERE o.concept_id = 856 AND o.person_id = :patientId AND o.obs_datetime <= :endDate AND o.voided = 0 ORDER BY o.obs_datetime DESC LIMIT 1) < 1000 THEN 'Yes' ELSE 'No' END"
+        }
+      },
+      "repeatResolution" : {
+        "strategy" : "LATEST",
+        "restrictToPeriod" : false,
+        "ignoreVoided" : true,
+        "orderBy" : "obs_datetime"
+      }
+    }, {
+      "name" : "CTX Prophylaxis",
+      "key" : "ctx_prophylaxis",
+      "dataDefinition" : {
+        "type" : "SQL",
+        "config" : {
+          "sql" : "SELECT CASE WHEN EXISTS (SELECT 1 FROM obs o WHERE o.concept_id = 1654 AND o.person_id = :patientId AND o.obs_datetime <= :endDate AND o.voided = 0) THEN 'Yes' ELSE 'No' END"
+        }
+      },
+      "repeatResolution" : {
+        "strategy" : "LATEST",
+        "restrictToPeriod" : false,
+        "ignoreVoided" : true,
+        "orderBy" : "obs_datetime"
+      }
+    }, {
+      "name" : "NVP Prophylaxis",
+      "key" : "nvp_prophylaxis",
+      "dataDefinition" : {
+        "type" : "SQL",
+        "config" : {
+          "sql" : "SELECT CASE WHEN EXISTS (SELECT 1 FROM obs o WHERE o.concept_id = 1653 AND o.person_id = :patientId AND o.obs_datetime <= :endDate AND o.voided = 0) THEN 'Yes' ELSE 'No' END"
+        }
+      },
+      "repeatResolution" : {
+        "strategy" : "LATEST",
+        "restrictToPeriod" : false,
+        "ignoreVoided" : true,
+        "orderBy" : "obs_datetime"
+      }
+    }, {
+      "name" : "Partner Tested",
+      "key" : "partner_tested",
+      "dataDefinition" : {
+        "type" : "SQL",
+        "config" : {
+          "sql" : "SELECT CASE WHEN o.value_coded IN (SELECT concept_id FROM concept WHERE uuid = '90003') THEN 'Yes' ELSE 'No' END FROM obs o WHERE o.concept_id = 162918 AND o.person_id = :patientId AND o.obs_datetime >= :startDate AND o.obs_datetime <= :endDate AND o.voided = 0 ORDER BY o.obs_datetime DESC LIMIT 1"
+        }
+      },
+      "repeatResolution" : {
+        "strategy" : "LATEST",
+        "restrictToPeriod" : false,
+        "ignoreVoided" : true,
+        "orderBy" : "obs_datetime"
+      }
+    }, {
+      "name" : "Partner Result",
+      "key" : "partner_result",
+      "dataDefinition" : {
+        "type" : "SQL",
+        "config" : {
+          "sql" : "SELECT (SELECT cn.name FROM concept_name cn WHERE cn.concept_id = o.value_coded AND cn.locale = 'en' AND cn.concept_name_type = 'FULLY_SPECIFIED' AND cn.voided = 0) FROM obs o WHERE o.concept_id = 162919 AND o.person_id = :patientId AND o.obs_datetime >= :startDate AND o.obs_datetime <= :endDate AND o.voided = 0 ORDER BY o.obs_datetime DESC LIMIT 1"
+        }
+      },
+      "repeatResolution" : {
+        "strategy" : "LATEST",
+        "restrictToPeriod" : false,
+        "ignoreVoided" : true,
+        "orderBy" : "obs_datetime"
+      }
+    }, {
+      "name" : "Delivery Date",
+      "key" : "delivery_date",
+      "dataDefinition" : {
+        "type" : "SQL",
+        "config" : {
+          "sql" : "SELECT DATE(o.obs_datetime) FROM obs o WHERE o.concept_id = 99768 AND o.person_id = :patientId AND o.obs_datetime >= :startDate AND o.obs_datetime <= :endDate AND o.voided = 0 ORDER BY o.obs_datetime DESC LIMIT 1"
+        }
+      },
+      "repeatResolution" : {
+        "strategy" : "LATEST",
+        "restrictToPeriod" : false,
+        "ignoreVoided" : true,
+        "orderBy" : "obs_datetime"
+      }
+    }, {
+      "name" : "Delivery Mode",
+      "key" : "delivery_mode",
+      "dataDefinition" : {
+        "type" : "SQL",
+        "config" : {
+          "sql" : "SELECT (SELECT cn.name FROM concept_name cn WHERE cn.concept_id = o.value_coded AND cn.locale = 'en' AND cn.concept_name_type = 'FULLY_SPECIFIED' AND cn.voided = 0) FROM obs o WHERE o.concept_id = 99770 AND o.person_id = :patientId AND o.obs_datetime >= :startDate AND o.obs_datetime <= :endDate AND o.voided = 0 ORDER BY o.obs_datetime DESC LIMIT 1"
+        }
+      },
+      "repeatResolution" : {
+        "strategy" : "LATEST",
+        "restrictToPeriod" : false,
+        "ignoreVoided" : true,
+        "orderBy" : "obs_datetime"
+      }
+    }, {
+      "name" : "Baby Alive",
+      "key" : "baby_alive",
+      "dataDefinition" : {
+        "type" : "SQL",
+        "config" : {
+          "sql" : "SELECT CASE WHEN o.value_coded IN (SELECT concept_id FROM concept WHERE uuid = '90003') THEN 'Yes' ELSE 'No' END FROM obs o WHERE o.concept_id = 99771 AND o.person_id = :patientId AND o.obs_datetime >= :startDate AND o.obs_datetime <= :endDate AND o.voided = 0 ORDER BY o.obs_datetime DESC LIMIT 1"
+        }
+      },
+      "repeatResolution" : {
+        "strategy" : "LATEST",
+        "restrictToPeriod" : false,
+        "ignoreVoided" : true,
+        "orderBy" : "obs_datetime"
+      }
+    }, {
+      "name" : "Baby Sex",
+      "key" : "baby_sex",
+      "dataDefinition" : {
+        "type" : "SQL",
+        "config" : {
+          "sql" : "SELECT CASE WHEN o.value_coded IN (SELECT concept_id FROM concept WHERE uuid = '90003') THEN 'Male' ELSE 'Female' END FROM obs o WHERE o.concept_id = 99772 AND o.person_id = :patientId AND o.obs_datetime >= :startDate AND o.obs_datetime <= :endDate AND o.voided = 0 ORDER BY o.obs_datetime DESC LIMIT 1"
+        }
+      },
+      "repeatResolution" : {
+        "strategy" : "LATEST",
+        "restrictToPeriod" : false,
+        "ignoreVoided" : true,
+        "orderBy" : "obs_datetime"
+      }
+    }, {
+      "name" : "EID No",
+      "key" : "eid_no",
+      "dataDefinition" : {
+        "type" : "SQL",
+        "config" : {
+          "sql" : "SELECT i.identifier FROM patient_identifier i WHERE i.identifier_type = (SELECT patient_identifier_type_id FROM patient_identifier_type WHERE uuid = '2c5b695d-4bf3-452f-8a7c-fe3ee3432ffe') AND i.patient_id IN (SELECT p2.person_id FROM person_relationship pr INNER JOIN person p2 ON pr.relative_b = p2.person_id WHERE pr.person_a = :patientId AND pr.relationship_type = (SELECT relationship_type_id FROM relationship_type WHERE uuid = '8f705b6c-0986-4e0f-885b-23ad4a9f8e63') AND pr.voided = 0 AND p2.voided = 0) AND i.voided = 0 ORDER BY i.date_created DESC LIMIT 1"
+        }
+      }
+    }, {
+      "name" : "Infant Name",
+      "key" : "infant_name",
+      "dataDefinition" : {
+        "type" : "SQL",
+        "config" : {
+          "sql" : "SELECT CONCAT(gn.given_name, ' ', fn.family_name) FROM person_relationship pr INNER JOIN person p2 ON pr.relative_b = p2.person_id INNER JOIN person_name gn ON p2.person_id = gn.person_id AND gn.preferred = 1 INNER JOIN person_name fn ON p2.person_id = fn.person_id AND fn.preferred = 1 WHERE pr.person_a = :patientId AND pr.relationship_type = (SELECT relationship_type_id FROM relationship_type WHERE uuid = '8f705b6c-0986-4e0f-885b-23ad4a9f8e63') AND pr.voided = 0 AND p2.voided = 0 ORDER BY pr.date_created DESC LIMIT 1"
+        }
+      }
+    }, {
+      "name" : "Infant DOB",
+      "key" : "infant_dob",
+      "dataDefinition" : {
+        "type" : "SQL",
+        "config" : {
+          "sql" : "SELECT DATE(p2.birthdate) FROM person_relationship pr INNER JOIN person p2 ON pr.relative_b = p2.person_id WHERE pr.person_a = :patientId AND pr.relationship_type = (SELECT relationship_type_id FROM relationship_type WHERE uuid = '8f705b6c-0986-4e0f-885b-23ad4a9f8e63') AND pr.voided = 0 AND p2.voided = 0 ORDER BY pr.date_created DESC LIMIT 1"
+        }
+      }
+    }, {
+      "name" : "Infant HIV Status",
+      "key" : "infant_hiv_status",
+      "dataDefinition" : {
+        "type" : "SQL",
+        "config" : {
+          "sql" : "SELECT (SELECT cn.name FROM concept_name cn WHERE cn.concept_id = o.value_coded AND cn.locale = 'en' AND cn.concept_name_type = 'FULLY_SPECIFIED' AND cn.voided = 0) FROM obs o WHERE o.concept_id = 99493 AND o.person_id IN (SELECT p2.person_id FROM person_relationship pr INNER JOIN person p2 ON pr.relative_b = p2.person_id WHERE pr.person_a = :patientId AND pr.relationship_type = (SELECT relationship_type_id FROM relationship_type WHERE uuid = '8f705b6c-0986-4e0f-885b-23ad4a9f8e63') AND pr.voided = 0 AND p2.voided = 0) AND o.obs_datetime >= :startDate AND o.obs_datetime <= :endDate AND o.voided = 0 ORDER BY o.obs_datetime DESC LIMIT 1"
+        }
+      },
+      "repeatResolution" : {
+        "strategy" : "LATEST",
+        "restrictToPeriod" : false,
+        "ignoreVoided" : true,
+        "orderBy" : "obs_datetime"
+      }
+    }, {
+      "name" : "PCR 1 Date",
+      "key" : "pcr_1_date",
+      "dataDefinition" : {
+        "type" : "SQL",
+        "config" : {
+          "sql" : "SELECT DATE(o.obs_datetime) FROM obs o WHERE o.concept_id = 99606 AND o.person_id IN (SELECT p2.person_id FROM person_relationship pr INNER JOIN person p2 ON pr.relative_b = p2.person_id WHERE pr.person_a = :patientId AND pr.relationship_type = (SELECT relationship_type_id FROM relationship_type WHERE uuid = '8f705b6c-0986-4e0f-885b-23ad4a9f8e63') AND pr.voided = 0 AND p2.voided = 0) AND o.obs_datetime >= :startDate AND o.obs_datetime <= :endDate AND o.voided = 0 ORDER BY o.obs_datetime ASC LIMIT 1"
+        }
+      },
+      "repeatResolution" : {
+        "strategy" : "LATEST",
+        "restrictToPeriod" : false,
+        "ignoreVoided" : true,
+        "orderBy" : "obs_datetime"
+      }
+    }, {
+      "name" : "PCR 1 Result",
+      "key" : "pcr_1_result",
+      "dataDefinition" : {
+        "type" : "SQL",
+        "config" : {
+          "sql" : "SELECT (SELECT cn.name FROM concept_name cn WHERE cn.concept_id = o.value_coded AND cn.locale = 'en' AND cn.concept_name_type = 'FULLY_SPECIFIED' AND cn.voided = 0) FROM obs o WHERE o.concept_id = 99435 AND o.person_id IN (SELECT p2.person_id FROM person_relationship pr INNER JOIN person p2 ON pr.relative_b = p2.person_id WHERE pr.person_a = :patientId AND pr.relationship_type = (SELECT relationship_type_id FROM relationship_type WHERE uuid = '8f705b6c-0986-4e0f-885b-23ad4a9f8e63') AND pr.voided = 0 AND p2.voided = 0) AND o.obs_datetime >= :startDate AND o.obs_datetime <= :endDate AND o.voided = 0 ORDER BY o.obs_datetime DESC LIMIT 1"
+        }
+      },
+      "repeatResolution" : {
+        "strategy" : "LATEST",
+        "restrictToPeriod" : false,
+        "ignoreVoided" : true,
+        "orderBy" : "obs_datetime"
+      }
+    }, {
+      "name" : "PCR 2 Date",
+      "key" : "pcr_2_date",
+      "dataDefinition" : {
+        "type" : "SQL",
+        "config" : {
+          "sql" : "SELECT DATE(o.obs_datetime) FROM obs o WHERE o.concept_id = 99436 AND o.person_id IN (SELECT p2.person_id FROM person_relationship pr INNER JOIN person p2 ON pr.relative_b = p2.person_id WHERE pr.person_a = :patientId AND pr.relationship_type = (SELECT relationship_type_id FROM relationship_type WHERE uuid = '8f705b6c-0986-4e0f-885b-23ad4a9f8e63') AND pr.voided = 0 AND p2.voided = 0) AND o.obs_datetime >= :startDate AND o.obs_datetime <= :endDate AND o.voided = 0 ORDER BY o.obs_datetime ASC LIMIT 1"
+        }
+      },
+      "repeatResolution" : {
+        "strategy" : "LATEST",
+        "restrictToPeriod" : false,
+        "ignoreVoided" : true,
+        "orderBy" : "obs_datetime"
+      }
+    }, {
+      "name" : "PCR 2 Result",
+      "key" : "pcr_2_result",
+      "dataDefinition" : {
+        "type" : "SQL",
+        "config" : {
+          "sql" : "SELECT (SELECT cn.name FROM concept_name cn WHERE cn.concept_id = o.value_coded AND cn.locale = 'en' AND cn.concept_name_type = 'FULLY_SPECIFIED' AND cn.voided = 0) FROM obs o WHERE o.concept_id = 99440 AND o.person_id IN (SELECT p2.person_id FROM person_relationship pr INNER JOIN person p2 ON pr.relative_b = p2.person_id WHERE pr.person_a = :patientId AND pr.relationship_type = (SELECT relationship_type_id FROM relationship_type WHERE uuid = '8f705b6c-0986-4e0f-885b-23ad4a9f8e63') AND pr.voided = 0 AND p2.voided = 0) AND o.obs_datetime >= :startDate AND o.obs_datetime <= :endDate AND o.voided = 0 ORDER BY o.obs_datetime DESC LIMIT 1"
+        }
+      },
+      "repeatResolution" : {
+        "strategy" : "LATEST",
+        "restrictToPeriod" : false,
+        "ignoreVoided" : true,
+        "orderBy" : "obs_datetime"
+      }
+    }, {
+      "name" : "Rapid Test Date",
+      "key" : "rapid_test_date",
+      "dataDefinition" : {
+        "type" : "SQL",
+        "config" : {
+          "sql" : "SELECT DATE(o.obs_datetime) FROM obs o WHERE o.concept_id = 162879 AND o.person_id IN (SELECT p2.person_id FROM person_relationship pr INNER JOIN person p2 ON pr.relative_b = p2.person_id WHERE pr.person_a = :patientId AND pr.relationship_type = (SELECT relationship_type_id FROM relationship_type WHERE uuid = '8f705b6c-0986-4e0f-885b-23ad4a9f8e63') AND pr.voided = 0 AND p2.voided = 0) AND o.obs_datetime >= :startDate AND o.obs_datetime <= :endDate AND o.voided = 0 ORDER BY o.obs_datetime ASC LIMIT 1"
+        }
+      },
+      "repeatResolution" : {
+        "strategy" : "LATEST",
+        "restrictToPeriod" : false,
+        "ignoreVoided" : true,
+        "orderBy" : "obs_datetime"
+      }
+    }, {
+      "name" : "Rapid Test Result",
+      "key" : "rapid_test_result",
+      "dataDefinition" : {
+        "type" : "SQL",
+        "config" : {
+          "sql" : "SELECT (SELECT cn.name FROM concept_name cn WHERE cn.concept_id = o.value_coded AND cn.locale = 'en' AND cn.concept_name_type = 'FULLY_SPECIFIED' AND cn.voided = 0) FROM obs o WHERE o.concept_id = 162880 AND o.person_id IN (SELECT p2.person_id FROM person_relationship pr INNER JOIN person p2 ON pr.relative_b = p2.person_id WHERE pr.person_a = :patientId AND pr.relationship_type = (SELECT relationship_type_id FROM relationship_type WHERE uuid = '8f705b6c-0986-4e0f-885b-23ad4a9f8e63') AND pr.voided = 0 AND p2.voided = 0) AND o.obs_datetime >= :startDate AND o.obs_datetime <= :endDate AND o.voided = 0 ORDER BY o.obs_datetime DESC LIMIT 1"
+        }
+      },
+      "repeatResolution" : {
+        "strategy" : "LATEST",
+        "restrictToPeriod" : false,
+        "ignoreVoided" : true,
+        "orderBy" : "obs_datetime"
+      }
+    }, {
+      "name" : "NVP Given to Baby",
+      "key" : "nvp_given_to_baby",
+      "dataDefinition" : {
+        "type" : "SQL",
+        "config" : {
+          "sql" : "SELECT DATE(o.value_datetime) FROM obs o WHERE o.concept_id = 99771 AND o.person_id = :patientId AND o.value_datetime >= :startDate AND o.value_datetime <= :endDate AND o.voided = 0 ORDER BY o.obs_datetime ASC LIMIT 1"
+        }
+      },
+      "repeatResolution" : {
+        "strategy" : "LATEST",
+        "restrictToPeriod" : false,
+        "ignoreVoided" : true,
+        "orderBy" : "obs_datetime"
+      }
+    }, {
+      "name" : "Cotrimoxazole Given to Baby",
+      "key" : "cotrimoxazole_given_to_baby",
+      "dataDefinition" : {
+        "type" : "SQL",
+        "config" : {
+          "sql" : "SELECT DATE(o.value_datetime) FROM obs o WHERE o.concept_id = 99773 AND o.person_id = :patientId AND o.value_datetime >= :startDate AND o.value_datetime <= :endDate AND o.voided = 0 ORDER BY o.obs_datetime ASC LIMIT 1"
+        }
+      },
+      "repeatResolution" : {
+        "strategy" : "LATEST",
+        "restrictToPeriod" : false,
+        "ignoreVoided" : true,
+        "orderBy" : "obs_datetime"
+      }
+    }, {
+      "name" : "Feeding Method",
+      "key" : "feeding_method",
+      "dataDefinition" : {
+        "type" : "SQL",
+        "config" : {
+          "sql" : "SELECT (SELECT cn.name FROM concept_name cn WHERE cn.concept_id = o.value_coded AND cn.locale = 'en' AND cn.concept_name_type = 'FULLY_SPECIFIED' AND cn.voided = 0) FROM obs o WHERE o.concept_id = 99451 AND o.person_id = :patientId AND o.obs_datetime >= :startDate AND o.obs_datetime <= :endDate AND o.voided = 0 ORDER BY o.obs_datetime DESC LIMIT 1"
+        }
+      },
+      "repeatResolution" : {
+        "strategy" : "LATEST",
+        "restrictToPeriod" : false,
+        "ignoreVoided" : true,
+        "orderBy" : "obs_datetime"
+      }
+    } ]
+  } ],
+  "categoryUuid" : "d947663c-24e8-11f1-b92d-f69d311cf98f",
+  "reportBuilderReportUuid" : "bc18e380-039e-482a-96c0-1555f3fdb773",
+  "reportDefinitionUuid" : "5d7206e0-b712-49f0-b75d-804c2aacf983",
+  "reportLibraryUuid" : "d752385b-bdd3-497b-b93c-3c519ac24bd6"
+}

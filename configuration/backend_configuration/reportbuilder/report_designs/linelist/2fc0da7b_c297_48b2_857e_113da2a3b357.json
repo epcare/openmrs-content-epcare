@@ -1,0 +1,252 @@
+{
+  "name" : "Patients on First Line Regimens",
+  "description" : "Patients on First Line Regimens",
+  "category" : "FACILITY_REPORTS",
+  "reportType" : "LINELIST",
+  "limit" : 1000,
+  "parameters" : [ {
+    "name" : "startDate",
+    "label" : "Start Date",
+    "type" : "DATE",
+    "required" : true
+  }, {
+    "name" : "endDate",
+    "label" : "End Date",
+    "type" : "DATE",
+    "required" : true
+  } ],
+  "baseCohortDefinition" : {
+    "type" : "SQL",
+    "name" : "Patients on first line regimen",
+    "config" : {
+      "sql" : "SELECT DISTINCT pg.patient_id FROM patient_program pg INNER JOIN patient_state ps ON pg.patient_program_id = ps.patient_program_id WHERE pg.voided = 0 AND ps.voided = 0 AND pg.program_id = (SELECT program_id FROM program WHERE uuid = 'da5a7e66-1d5f-11e0-b929-000c29ad1d07') AND ps.state IN (SELECT program_workflow_state_id FROM program_workflow_state WHERE uuid = '92576fdf-4e70-4df8-8da1-b8d4c7c9b8fe') AND ps.start_date <= :endDate AND (ps.end_date IS NULL OR ps.end_date >= :endDate)"
+    }
+  },
+  "dataSetDefinitions" : [ {
+    "name" : "ARTREGIMENSTATUS",
+    "type" : "PATIENT_DATA_SET",
+    "rowFilter" : {
+      "type" : "SQL",
+      "name" : "Patients on first line regimen",
+      "config" : {
+        "sql" : "SELECT DISTINCT pg.patient_id FROM patient_program pg INNER JOIN patient_state ps ON pg.patient_program_id = ps.patient_program_id WHERE pg.voided = 0 AND ps.voided = 0 AND pg.program_id = (SELECT program_id FROM program WHERE uuid = 'da5a7e66-1d5f-11e0-b929-000c29ad1d07') AND ps.state IN (SELECT program_workflow_state_id FROM program_workflow_state WHERE uuid = '92576fdf-4e70-4df8-8da1-b8d4c7c9b8fe') AND ps.start_date <= :endDate AND (ps.end_date IS NULL OR ps.end_date >= :endDate)"
+      }
+    },
+    "columns" : [ {
+      "name" : "Clinic number",
+      "key" : "clinic_number",
+      "dataDefinition" : {
+        "type" : "IDENTIFIER",
+        "config" : {
+          "identifierTypeUuid" : "e1731641-30ab-102d-86b0-7a5022ba4115",
+          "preferred" : true
+        }
+      }
+    }, {
+      "name" : "Middle Name",
+      "key" : "middle_name",
+      "dataDefinition" : {
+        "type" : "PERSON_NAME",
+        "config" : {
+          "type" : "MIDDLE_NAME",
+          "preferred" : true
+        }
+      }
+    }, {
+      "name" : "Surname",
+      "key" : "surname",
+      "dataDefinition" : {
+        "type" : "PERSON_NAME",
+        "config" : {
+          "type" : "FAMILY_NAME",
+          "preferred" : true
+        }
+      }
+    }, {
+      "name" : "Given Name",
+      "key" : "given_name",
+      "dataDefinition" : {
+        "type" : "PERSON_NAME",
+        "config" : {
+          "type" : "GIVEN_NAME",
+          "preferred" : true
+        }
+      }
+    }, {
+      "name" : "Sex",
+      "key" : "sex",
+      "dataDefinition" : {
+        "type" : "PERSON_ATTRIBUTE",
+        "config" : {
+          "type" : "GENDER"
+        }
+      }
+    }, {
+      "name" : "Birth Date",
+      "key" : "birth_date",
+      "dataDefinition" : {
+        "type" : "PERSON_ATTRIBUTE",
+        "config" : {
+          "type" : "BIRTHDATE"
+        }
+      },
+      "repeatResolution" : {
+        "strategy" : "LATEST",
+        "restrictToPeriod" : false,
+        "ignoreVoided" : true
+      }
+    }, {
+      "name" : "Age",
+      "key" : "age",
+      "dataDefinition" : {
+        "type" : "CALCULATION",
+        "config" : {
+          "calculation" : "AGE",
+          "onDate" : "${endDate}"
+        }
+      }
+    }, {
+      "name" : "HIV Enrolled Date",
+      "key" : "hiv_enrolled_date",
+      "dataDefinition" : {
+        "type" : "SQL",
+        "config" : {
+          "sql" : "SELECT MIN(DATE(e.encounter_datetime)) FROM encounter e WHERE e.patient_id = :patientId AND e.encounter_type = (SELECT encounter_type_id FROM encounter_type WHERE uuid = '8d5b27bc-c2cc-11de-8d13-0010c6dffd0f') AND e.voided = 0"
+        }
+      },
+      "repeatResolution" : {
+        "strategy" : "LATEST",
+        "restrictToPeriod" : false,
+        "ignoreVoided" : true
+      }
+    }, {
+      "name" : "Art Start Date",
+      "key" : "art_start_date",
+      "dataDefinition" : {
+        "type" : "SQL",
+        "config" : {
+          "sql" : "SELECT DATE(value_datetime) FROM obs WHERE concept_id = 99161 AND person_id = :patientId AND voided = 0 ORDER BY obs_datetime ASC LIMIT 1"
+        }
+      },
+      "repeatResolution" : {
+        "strategy" : "LATEST",
+        "restrictToPeriod" : false,
+        "ignoreVoided" : true,
+        "orderBy" : "obs_datetime"
+      }
+    }, {
+      "name" : "Regimen Start Date",
+      "key" : "regimen_start_date",
+      "dataDefinition" : {
+        "type" : "SQL",
+        "config" : {
+          "sql" : "SELECT MIN(DATE(o.obs_datetime)) FROM obs o WHERE o.concept_id IN (SELECT concept_id FROM concept WHERE uuid IN ('e5aaaa9a-2224-42c7-b6d3-efd6a56064da', '162942AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA')) AND o.person_id = :patientId AND o.voided = 0"
+        }
+      },
+      "repeatResolution" : {
+        "strategy" : "LATEST",
+        "restrictToPeriod" : false,
+        "ignoreVoided" : true,
+        "orderBy" : "obs_datetime"
+      }
+    }, {
+      "name" : "VL Date",
+      "key" : "vl_date",
+      "dataDefinition" : {
+        "type" : "SQL",
+        "config" : {
+          "sql" : "SELECT DATE(obs_datetime) FROM obs WHERE concept_id = 856 AND person_id = :patientId AND obs_datetime <= :endDate AND voided = 0 ORDER BY obs_datetime DESC LIMIT 1"
+        }
+      },
+      "repeatResolution" : {
+        "strategy" : "LATEST",
+        "restrictToPeriod" : false,
+        "ignoreVoided" : true,
+        "orderBy" : "obs_datetime"
+      }
+    }, {
+      "name" : "Clinic Stage",
+      "key" : "clinic_stage",
+      "dataDefinition" : {
+        "type" : "SQL",
+        "config" : {
+          "sql" : "SELECT (SELECT cn.name FROM concept_name cn WHERE cn.concept_id = o.value_coded AND cn.locale = 'en' AND cn.concept_name_type = 'FULLY_SPECIFIED' AND cn.voided = 0) FROM obs o WHERE o.concept_id = (SELECT concept_id FROM concept WHERE uuid = 'e5d967a6-1d5f-11e0-b929-000c29ad1d07') AND o.person_id = :patientId AND o.voided = 0 ORDER BY o.obs_datetime DESC LIMIT 1"
+        }
+      },
+      "repeatResolution" : {
+        "strategy" : "LATEST",
+        "restrictToPeriod" : false,
+        "ignoreVoided" : true,
+        "orderBy" : "obs_datetime"
+      }
+    }, {
+      "name" : "VL Qualitative",
+      "key" : "vl_qualitative",
+      "dataDefinition" : {
+        "type" : "SQL",
+        "config" : {
+          "sql" : "SELECT CASE WHEN (SELECT value_numeric FROM obs WHERE concept_id = 856 AND person_id = :patientId AND obs_datetime <= :endDate AND voided = 0 ORDER BY obs_datetime DESC LIMIT 1) < 1000 THEN 'Suppressed' ELSE 'Not Suppressed' END"
+        }
+      },
+      "repeatResolution" : {
+        "strategy" : "LATEST",
+        "restrictToPeriod" : false,
+        "ignoreVoided" : true,
+        "orderBy" : "obs_datetime"
+      }
+    }, {
+      "name" : "VL Copies",
+      "key" : "vl_copies",
+      "dataDefinition" : {
+        "type" : "SQL",
+        "config" : {
+          "sql" : "SELECT value_numeric FROM obs WHERE concept_id = 856 AND person_id = :patientId AND obs_datetime <= :endDate AND voided = 0 ORDER BY obs_datetime DESC LIMIT 1"
+        }
+      },
+      "repeatResolution" : {
+        "strategy" : "LATEST",
+        "restrictToPeriod" : false,
+        "ignoreVoided" : true,
+        "orderBy" : "obs_datetime"
+      }
+    }, {
+      "name" : "Current Regimen",
+      "key" : "current_regimen",
+      "dataDefinition" : {
+        "type" : "SQL",
+        "config" : {
+          "sql" : "SELECT (SELECT cn.name FROM concept_name cn WHERE cn.concept_id = o.value_coded AND cn.locale = 'en' AND cn.concept_name_type = 'FULLY_SPECIFIED' AND cn.voided = 0) FROM obs o WHERE o.concept_id = (SELECT concept_id FROM concept WHERE uuid IN ('e5aaaa9a-2224-42c7-b6d3-efd6a56064da', '162942AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA')) AND o.person_id = :patientId AND o.obs_datetime <= :endDate AND o.voided = 0 ORDER BY o.obs_datetime DESC LIMIT 1"
+        }
+      },
+      "repeatResolution" : {
+        "strategy" : "LATEST",
+        "restrictToPeriod" : false,
+        "ignoreVoided" : true,
+        "orderBy" : "obs_datetime"
+      }
+    }, {
+      "name" : "RegimenLine",
+      "key" : "regimenline",
+      "dataDefinition" : {
+        "type" : "SQL",
+        "config" : {
+          "sql" : "SELECT 'First Line'"
+        }
+      }
+    }, {
+      "name" : "RegimenLineStartDate",
+      "key" : "regimenlinestartdate",
+      "dataDefinition" : {
+        "type" : "SQL",
+        "config" : {
+          "sql" : "SELECT ps.start_date FROM patient_program pg INNER JOIN patient_state ps ON pg.patient_program_id = ps.patient_program_id WHERE pg.patient_id = :patientId AND pg.program_id = (SELECT program_id FROM program WHERE uuid = 'da5a7e66-1d5f-11e0-b929-000c29ad1d07') AND ps.state IN (SELECT program_workflow_state_id FROM program_workflow_state WHERE uuid = '92576fdf-4e70-4df8-8da1-b8d4c7c9b8fe') AND pg.voided = 0 AND ps.voided = 0 ORDER BY ps.start_date ASC LIMIT 1"
+        }
+      },
+      "repeatResolution" : {
+        "strategy" : "LATEST",
+        "restrictToPeriod" : false,
+        "ignoreVoided" : true
+      }
+    } ]
+  } ]
+}

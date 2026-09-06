@@ -1,0 +1,152 @@
+{
+  "name" : "Death List",
+  "description" : "Facility Dead patients List",
+  "category" : "FACILITY REPORTS",
+  "reportType" : "LINE_LIST",
+  "limit" : 1000,
+  "parameters" : [ {
+    "name" : "startDate",
+    "label" : "Start Date",
+    "type" : "DATE",
+    "required" : true
+  }, {
+    "name" : "endDate",
+    "label" : "End Date",
+    "type" : "DATE",
+    "required" : true
+  } ],
+  "baseCohortDefinition" : {
+    "type" : "SQL",
+    "name" : "Dead patients during period",
+    "config" : {
+      "sql" : "SELECT p.person_id FROM person p WHERE p.dead = 1 AND p.death_date BETWEEN :startDate AND :endDate AND p.voided = 0"
+    }
+  },
+  "dataSetDefinitions" : [ {
+    "name" : "DEATH_LIST",
+    "type" : "PATIENT_DATA_SET",
+    "rowFilter" : {
+      "type" : "SQL",
+      "name" : "Dead patients during period",
+      "config" : {
+        "sql" : "SELECT p.person_id FROM person p WHERE p.dead = 1 AND p.death_date BETWEEN :startDate AND :endDate AND p.voided = 0"
+      }
+    },
+    "columns" : [ {
+      "name" : "Clinic No",
+      "key" : "clinic_no",
+      "dataDefinition" : {
+        "type" : "IDENTIFIER",
+        "config" : {
+          "identifierTypeUuid" : "e1731641-30ab-102d-86b0-7a5022ba4115",
+          "preferred" : true
+        }
+      }
+    }, {
+      "name" : "EID No",
+      "key" : "eid_no",
+      "dataDefinition" : {
+        "type" : "IDENTIFIER",
+        "config" : {
+          "identifierTypeUuid" : "2c5b695d-4bf3-452f-8a7c-fe3ee3432ffe",
+          "preferred" : true
+        }
+      }
+    }, {
+      "name" : "Patient Name",
+      "key" : "patient_name",
+      "dataDefinition" : {
+        "type" : "PERSON_NAME",
+        "config" : {
+          "type" : "FULL_NAME",
+          "preferred" : true
+        }
+      }
+    }, {
+      "name" : "Sex",
+      "key" : "sex",
+      "dataDefinition" : {
+        "type" : "PERSON_ATTRIBUTE",
+        "config" : {
+          "type" : "GENDER"
+        }
+      }
+    }, {
+      "name" : "Birth Date",
+      "key" : "birth_date",
+      "dataDefinition" : {
+        "type" : "PERSON_ATTRIBUTE",
+        "config" : {
+          "type" : "BIRTHDATE"
+        }
+      },
+      "repeatResolution" : {
+        "strategy" : "LATEST",
+        "restrictToPeriod" : false,
+        "ignoreVoided" : true
+      }
+    }, {
+      "name" : "Parish",
+      "key" : "parish",
+      "dataDefinition" : {
+        "type" : "PERSON_ADDRESS",
+        "config" : {
+          "type" : "ADDRESS_FIELD",
+          "field" : "address4"
+        }
+      }
+    }, {
+      "name" : "Village",
+      "key" : "village",
+      "dataDefinition" : {
+        "type" : "PERSON_ADDRESS",
+        "config" : {
+          "type" : "ADDRESS_FIELD",
+          "field" : "address5"
+        }
+      }
+    }, {
+      "name" : "Death Date",
+      "key" : "death_date",
+      "dataDefinition" : {
+        "type" : "SQL",
+        "config" : {
+          "sql" : "SELECT death_date FROM person WHERE person_id = :patientId AND dead = 1"
+        }
+      },
+      "repeatResolution" : {
+        "strategy" : "LATEST",
+        "restrictToPeriod" : false,
+        "ignoreVoided" : true
+      }
+    }, {
+      "name" : "Age At Death",
+      "key" : "age_at_death",
+      "dataDefinition" : {
+        "type" : "SQL",
+        "config" : {
+          "sql" : "SELECT TIMESTAMPDIFF(YEAR, p.birthdate, p.death_date) FROM person p WHERE p.person_id = :patientId AND p.dead = 1"
+        }
+      }
+    }, {
+      "name" : "Death Course",
+      "key" : "death_course",
+      "dataDefinition" : {
+        "type" : "SQL",
+        "config" : {
+          "sql" : "SELECT value_text FROM obs WHERE concept_id = (SELECT concept_id FROM concept WHERE uuid = 'dce015bb-30ab-102d-86b0-7a5022ba4115') AND obs_datetime BETWEEN :startDate AND :endDate AND person_id = :patientId AND voided = 0 ORDER BY obs_datetime DESC LIMIT 1"
+        }
+      },
+      "repeatResolution" : {
+        "strategy" : "LATEST",
+        "restrictToPeriod" : false,
+        "ignoreVoided" : true,
+        "orderBy" : "obs_datetime"
+      }
+    } ]
+  } ],
+  "categoryUuid" : "d947663c-24e8-11f1-b92d-f69d311cf98f",
+  "reportBuilderReportUuid" : "9c85e2eb-c3ce-4dc1-b332-13f1d02f1c5a",
+  "reportDefinitionUuid" : "18c98a32-0e9b-426f-b99b-f688fdc5870e",
+  "reportLibraryUuid" : "d4a7f5f4-fd08-4beb-a020-5f9530524b50"
+}

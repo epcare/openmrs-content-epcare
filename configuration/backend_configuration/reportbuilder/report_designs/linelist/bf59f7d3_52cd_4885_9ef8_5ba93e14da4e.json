@@ -1,0 +1,224 @@
+{
+  "name" : "MER Tx New Patient List 2019",
+  "description" : "MER Tx New Patient List 2019 - List of patients newly enrolled on ART treatment",
+  "category" : "FACILITY_REPORTS",
+  "reportType" : "LINELIST",
+  "limit" : 1000,
+  "parameters" : [ {
+    "name" : "startDate",
+    "label" : "Start Date",
+    "type" : "DATE",
+    "required" : true
+  }, {
+    "name" : "endDate",
+    "label" : "End Date",
+    "type" : "DATE",
+    "required" : true
+  }, {
+    "name" : "location",
+    "label" : "Location",
+    "type" : "LOCATION",
+    "required" : true
+  } ],
+  "baseCohortDefinition" : {
+    "type" : "SQL",
+    "name" : "Patient Cohort",
+    "config" : {
+      "sql" : "SELECT DISTINCT pp.patient_id FROM patient_program pp INNER JOIN program p ON pp.program_id = p.program_id WHERE p.uuid = 'ba882722-3d9f-4e58-a830-6d636003d38d' AND pp.date_enrolled &gt;= :startDate AND pp.date_enrolled &lt;= :endDate AND (pp.location_id = :location OR :location IS NULL) AND pp.voided = 0"
+    }
+  },
+  "dataSetDefinitions" : [ {
+    "name" : "PATIENT_LIST",
+    "type" : "PATIENT_DATA_SET",
+    "rowFilter" : {
+      "type" : "SQL",
+      "name" : "Patient Cohort",
+      "config" : {
+        "sql" : "SELECT DISTINCT pp.patient_id FROM patient_program pp INNER JOIN program p ON pp.program_id = p.program_id WHERE p.uuid = 'ba882722-3d9f-4e58-a830-6d636003d38d' AND pp.date_enrolled &gt;= :startDate AND pp.date_enrolled &lt;= :endDate AND (pp.location_id = :location OR :location IS NULL) AND pp.voided = 0"
+      }
+    },
+    "columns" : [ {
+      "name" : "Clinic No",
+      "key" : "clinic_no",
+      "dataDefinition" : {
+        "type" : "SQL",
+        "config" : {
+          "sql" : "SELECT pi.identifier FROM patient_identifier pi WHERE pi.patient_id = :patientId AND pi.identifier_type = (SELECT patient_identifier_type_id FROM patient_identifier_type WHERE uuid = '7faf6b56-08a4-4c06-bc31-3a12f17bd05b') AND pi.voided = 0 ORDER BY pi.date_created DESC LIMIT 1"
+        }
+      },
+      "repeatResolution" : {
+        "strategy" : "LATEST",
+        "ignoreVoided" : true
+      }
+    }, {
+      "name" : "Patient Name",
+      "key" : "patient_name",
+      "dataDefinition" : {
+        "type" : "SQL",
+        "config" : {
+          "sql" : "SELECT CONCAT(given_name, ' ', family_name) FROM person_name WHERE person_id = :patientId AND voided = 0 ORDER BY preferred DESC LIMIT 1"
+        }
+      },
+      "repeatResolution" : {
+        "strategy" : "LATEST",
+        "ignoreVoided" : true
+      }
+    }, {
+      "name" : "Sex",
+      "key" : "sex",
+      "dataDefinition" : {
+        "type" : "SQL",
+        "config" : {
+          "sql" : "SELECT gender FROM person WHERE person_id = :patientId"
+        }
+      },
+      "repeatResolution" : {
+        "strategy" : "LATEST",
+        "ignoreVoided" : true
+      }
+    }, {
+      "name" : "Age",
+      "key" : "age",
+      "dataDefinition" : {
+        "type" : "SQL",
+        "config" : {
+          "sql" : "SELECT TIMESTAMPDIFF(YEAR, birthdate, :endDate) FROM person WHERE person_id = :patientId"
+        }
+      },
+      "repeatResolution" : {
+        "strategy" : "LATEST",
+        "ignoreVoided" : true
+      }
+    }, {
+      "name" : "Phone Number",
+      "key" : "phone_number",
+      "dataDefinition" : {
+        "type" : "SQL",
+        "config" : {
+          "sql" : "SELECT value FROM person_attribute WHERE person_id = :patientId AND person_attribute_type_id = (SELECT person_attribute_type_id FROM person_attribute_type WHERE uuid = 'a640f592-7c09-4b4e-b0e0-1f53b0354aba') AND voided = 0"
+        }
+      },
+      "repeatResolution" : {
+        "strategy" : "LATEST",
+        "ignoreVoided" : true
+      }
+    }, {
+      "name" : "ART Start Date",
+      "key" : "art_start_date",
+      "dataDefinition" : {
+        "type" : "SQL",
+        "config" : {
+          "sql" : "SELECT pp.date_enrolled FROM patient_program pp INNER JOIN program p ON pp.program_id = p.program_id WHERE p.uuid = 'ba882722-3d9f-4e58-a830-6d636003d38d' AND pp.patient_id = :patientId AND pp.voided = 0 ORDER BY pp.date_enrolled ASC LIMIT 1"
+        }
+      },
+      "repeatResolution" : {
+        "strategy" : "LATEST",
+        "ignoreVoided" : true
+      }
+    }, {
+      "name" : "WHO Stage",
+      "key" : "who_stage",
+      "dataDefinition" : {
+        "type" : "SQL",
+        "config" : {
+          "sql" : "SELECT cn.name FROM obs o INNER JOIN concept_name cn ON o.value_coded = cn.concept_id WHERE o.person_id = :patientId AND o.concept_id = (SELECT concept_id FROM concept WHERE uuid = 'de76ab0c-2f54-46eb-b5ee-f2c2f4d05f1e') AND o.obs_datetime &lt;= :endDate AND o.voided = 0 AND cn.voided = 0 AND cn.locale = 'en' AND cn.concept_name_type = 'FULLY_SPECIFIED' ORDER BY o.obs_datetime DESC LIMIT 1"
+        }
+      },
+      "repeatResolution" : {
+        "strategy" : "LATEST",
+        "ignoreVoided" : true
+      }
+    }, {
+      "name" : "Baseline CD4",
+      "key" : "baseline_cd4",
+      "dataDefinition" : {
+        "type" : "SQL",
+        "config" : {
+          "sql" : "SELECT o.value_numeric FROM obs o WHERE o.person_id = :patientId AND o.concept_id = (SELECT concept_id FROM concept WHERE uuid = 'de76ab0c-2f54-46eb-b5ee-f2c2f4d05f1e') AND o.obs_datetime &gt;= (SELECT pp.date_enrolled FROM patient_program pp INNER JOIN program p ON pp.program_id = p.program_id WHERE p.uuid = 'ba882722-3d9f-4e58-a830-6d636003d38d' AND pp.patient_id = :patientId AND pp.voided = 0 ORDER BY pp.date_enrolled ASC LIMIT 1) AND o.obs_datetime &lt;= DATE_ADD((SELECT pp.date_enrolled FROM patient_program pp INNER JOIN program p ON pp.program_id = p.program_id WHERE p.uuid = 'ba882722-3d9f-4e58-a830-6d636003d38d' AND pp.patient_id = :patientId AND pp.voided = 0 ORDER BY pp.date_enrolled ASC LIMIT 1), INTERVAL 30 DAY) AND o.voided = 0 ORDER BY o.obs_datetime ASC LIMIT 1"
+        }
+      },
+      "repeatResolution" : {
+        "strategy" : "LATEST",
+        "ignoreVoided" : true
+      }
+    }, {
+      "name" : "Pregnancy Status",
+      "key" : "pregnancy_status",
+      "dataDefinition" : {
+        "type" : "SQL",
+        "config" : {
+          "sql" : "SELECT cn.name FROM obs o INNER JOIN concept_name cn ON o.value_coded = cn.concept_id WHERE o.person_id = :patientId AND o.concept_id = (SELECT concept_id FROM concept WHERE uuid = 'de76ab0c-2f54-46eb-b5ee-f2c2f4d05f1e') AND o.obs_datetime &lt;= :endDate AND o.voided = 0 AND cn.voided = 0 AND cn.locale = 'en' AND cn.concept_name_type = 'FULLY_SPECIFIED' ORDER BY o.obs_datetime DESC LIMIT 1"
+        }
+      },
+      "repeatResolution" : {
+        "strategy" : "LATEST",
+        "ignoreVoided" : true
+      }
+    }, {
+      "name" : "TB Status",
+      "key" : "tb_status",
+      "dataDefinition" : {
+        "type" : "SQL",
+        "config" : {
+          "sql" : "SELECT cn.name FROM obs o INNER JOIN concept_name cn ON o.value_coded = cn.concept_id WHERE o.person_id = :patientId AND o.concept_id IN (SELECT concept_id FROM concept WHERE uuid LIKE '%tb%' OR name LIKE '%tb%') AND o.obs_datetime &lt;= :endDate AND o.voided = 0 AND cn.voided = 0 AND cn.locale = 'en' AND cn.concept_name_type = 'FULLY_SPECIFIED' ORDER BY o.obs_datetime DESC LIMIT 1"
+        }
+      },
+      "repeatResolution" : {
+        "strategy" : "LATEST",
+        "ignoreVoided" : true
+      }
+    }, {
+      "name" : "Entry Point",
+      "key" : "entry_point",
+      "dataDefinition" : {
+        "type" : "SQL",
+        "config" : {
+          "sql" : "SELECT cn.name FROM obs o INNER JOIN concept_name cn ON o.value_coded = cn.concept_id WHERE o.person_id = :patientId AND o.concept_id = (SELECT concept_id FROM concept WHERE uuid = 'de76ab0c-2f54-46eb-b5ee-f2c2f4d05f1e') AND o.obs_datetime &gt;= (SELECT pp.date_enrolled FROM patient_program pp INNER JOIN program p ON pp.program_id = p.program_id WHERE p.uuid = 'ba882722-3d9f-4e58-a830-6d636003d38d' AND pp.patient_id = :patientId AND pp.voided = 0 ORDER BY pp.date_enrolled ASC LIMIT 1) AND o.obs_datetime &lt;= DATE_ADD((SELECT pp.date_enrolled FROM patient_program pp INNER JOIN program p ON pp.program_id = p.program_id WHERE p.uuid = 'ba882722-3d9f-4e58-a830-6d636003d38d' AND pp.patient_id = :patientId AND pp.voided = 0 ORDER BY pp.date_enrolled ASC LIMIT 1), INTERVAL 7 DAY) AND o.voided = 0 AND cn.voided = 0 AND cn.locale = 'en' AND cn.concept_name_type = 'FULLY_SPECIFIED' ORDER BY o.obs_datetime ASC LIMIT 1"
+        }
+      },
+      "repeatResolution" : {
+        "strategy" : "LATEST",
+        "ignoreVoided" : true
+      }
+    }, {
+      "name" : "Transfer In",
+      "key" : "transfer_in",
+      "dataDefinition" : {
+        "type" : "SQL",
+        "config" : {
+          "sql" : "SELECT CASE WHEN EXISTS (SELECT 1 FROM obs o WHERE o.person_id = :patientId AND o.concept_id = (SELECT concept_id FROM concept WHERE uuid = 'de76ab0c-2f54-46eb-b5ee-f2c2f4d05f1e') AND o.value_coded IN (SELECT concept_id FROM concept WHERE uuid LIKE '%transfer%' OR name LIKE '%transfer%') AND o.obs_datetime &gt;= (SELECT pp.date_enrolled FROM patient_program pp INNER JOIN program p ON pp.program_id = p.program_id WHERE p.uuid = 'ba882722-3d9f-4e58-a830-6d636003d38d' AND pp.patient_id = :patientId AND pp.voided = 0 ORDER BY pp.date_enrolled ASC LIMIT 1) AND o.obs_datetime &lt;= DATE_ADD((SELECT pp.date_enrolled FROM patient_program pp INNER JOIN program p ON pp.program_id = p.program_id WHERE p.uuid = 'ba882722-3d9f-4e58-a830-6d636003d38d' AND pp.patient_id = :patientId AND pp.voided = 0 ORDER BY pp.date_enrolled ASC LIMIT 1), INTERVAL 7 DAY) AND o.voided = 0) THEN 'Yes' ELSE 'No' END"
+        }
+      },
+      "repeatResolution" : {
+        "strategy" : "LATEST",
+        "ignoreVoided" : true
+      }
+    }, {
+      "name" : "Current Regimen",
+      "key" : "current_regimen",
+      "dataDefinition" : {
+        "type" : "SQL",
+        "config" : {
+          "sql" : "SELECT cn.name FROM obs o INNER JOIN concept_name cn ON o.value_coded = cn.concept_id WHERE o.person_id = :patientId AND o.concept_id = (SELECT concept_id FROM concept WHERE uuid = 'de76ab0c-2f54-46eb-b5ee-f2c2f4d05f1e') AND o.obs_datetime &lt;= :endDate AND o.voided = 0 AND cn.voided = 0 AND cn.locale = 'en' AND cn.concept_name_type = 'FULLY_SPECIFIED' ORDER BY o.obs_datetime DESC LIMIT 1"
+        }
+      },
+      "repeatResolution" : {
+        "strategy" : "LATEST",
+        "ignoreVoided" : true
+      }
+    }, {
+      "name" : "Village",
+      "key" : "village",
+      "dataDefinition" : {
+        "type" : "SQL",
+        "config" : {
+          "sql" : "SELECT value FROM person_address WHERE person_id = :patientId AND voided = 0 ORDER BY date_created DESC LIMIT 1"
+        }
+      },
+      "repeatResolution" : {
+        "strategy" : "LATEST",
+        "ignoreVoided" : true
+      }
+    } ]
+  } ]
+}

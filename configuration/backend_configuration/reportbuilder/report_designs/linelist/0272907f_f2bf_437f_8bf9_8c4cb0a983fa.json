@@ -1,0 +1,392 @@
+{
+  "name" : "ART Care Patient List",
+  "description" : "A cumulative list of patients who are enrolled into care at the clinic to the specified dates",
+  "category" : "FACILITY_REPORTS",
+  "reportType" : "LINELIST",
+  "limit" : 1000,
+  "parameters" : [ {
+    "name" : "endDate",
+    "label" : "End Date",
+    "type" : "DATE",
+    "required" : true
+  } ],
+  "baseCohortDefinition" : {
+    "type" : "SQL",
+    "name" : "Patient Cohort",
+    "config" : {
+      "sql" : "SELECT DISTINCT e.patient_id\nFROM encounter e\n         INNER JOIN person p\n                    ON p.person_id = e.patient_id\n         INNER JOIN encounter_type et\n                    ON et.encounter_type_id = e.encounter_type\n         INNER JOIN obs o\n                    ON o.person_id = e.patient_id\nWHERE et.uuid in  ('8d5b27bc-c2cc-11de-8d13-0010c6dffd0f','c11774c1-3b4a-4bdb-a847-6060895e006d','8d5b2be0-c2cc-11de-8d13-0010c6dffd0f')\n  AND e.voided = 0\n  AND p.dead = 0\n  AND o.concept_id in  (90315,99064,99061,99268,99126,99269)\n  AND o.obs_datetime &lt;= :endDate;"
+    }
+  },
+  "dataSetDefinitions" : [ {
+    "name" : "PATIENT_LIST",
+    "type" : "PATIENT_DATA_SET",
+    "rowFilter" : {
+      "type" : "SQL",
+      "name" : "Patient Cohort",
+      "config" : {
+        "sql" : "SELECT DISTINCT e.patient_id\nFROM encounter e\n         INNER JOIN person p\n                    ON p.person_id = e.patient_id\n         INNER JOIN encounter_type et\n                    ON et.encounter_type_id = e.encounter_type\n         INNER JOIN obs o\n                    ON o.person_id = e.patient_id\nWHERE et.uuid in  ('8d5b27bc-c2cc-11de-8d13-0010c6dffd0f','c11774c1-3b4a-4bdb-a847-6060895e006d','8d5b2be0-c2cc-11de-8d13-0010c6dffd0f')\n  AND e.voided = 0\n  AND p.dead = 0\n  AND o.concept_id in  (90315,99064,99061,99268,99126,99269)\n  AND o.obs_datetime &lt;= :endDate;"
+      }
+    },
+    "columns" : [ {
+      "name" : "ID",
+      "key" : "id",
+      "dataDefinition" : {
+        "type" : "IDENTIFIER",
+        "config" : {
+          "identifierTypeUuid" : "e1731641-30ab-102d-86b0-7a5022ba4115",
+          "preferred" : true
+        }
+      },
+      "_metadata" : {
+        "id" : "col-0",
+        "position" : 0
+      }
+    }, {
+      "name" : "Family Name",
+      "key" : "family_name",
+      "dataDefinition" : {
+        "type" : "PERSON_NAME",
+        "config" : {
+          "type" : "FAMILY_NAME",
+          "preferred" : true
+        }
+      },
+      "_metadata" : {
+        "id" : "col-1",
+        "position" : 1
+      }
+    }, {
+      "name" : "Given Name",
+      "key" : "given_name",
+      "dataDefinition" : {
+        "type" : "PERSON_NAME",
+        "config" : {
+          "type" : "GIVEN_NAME",
+          "preferred" : true
+        }
+      },
+      "_metadata" : {
+        "id" : "col-2",
+        "position" : 2
+      }
+    }, {
+      "name" : "Gender",
+      "key" : "gender",
+      "dataDefinition" : {
+        "type" : "PERSON_ATTRIBUTE",
+        "config" : {
+          "type" : "GENDER"
+        }
+      },
+      "repeatResolution" : {
+        "strategy" : "LATEST",
+        "restrictToPeriod" : false,
+        "ignoreVoided" : true
+      },
+      "_metadata" : {
+        "id" : "col-3",
+        "position" : 3
+      }
+    }, {
+      "name" : "Date of Birth",
+      "key" : "date_of_birth",
+      "dataDefinition" : {
+        "type" : "PERSON_ATTRIBUTE",
+        "config" : {
+          "type" : "BIRTHDATE"
+        }
+      },
+      "repeatResolution" : {
+        "strategy" : "LATEST",
+        "restrictToPeriod" : false,
+        "ignoreVoided" : true
+      },
+      "_metadata" : {
+        "id" : "col-4",
+        "position" : 4
+      }
+    }, {
+      "name" : "Age",
+      "key" : "age",
+      "dataDefinition" : {
+        "type" : "CALCULATION",
+        "config" : {
+          "calculation" : "AGE",
+          "onDate" : ":endDate"
+        }
+      },
+      "_metadata" : {
+        "id" : "col-5",
+        "position" : 5
+      }
+    }, {
+      "name" : "Parish",
+      "key" : "parish",
+      "dataDefinition" : {
+        "type" : "PERSON_ADDRESS",
+        "config" : {
+          "type" : "ADDRESS_FIELD",
+          "field" : "address4"
+        }
+      },
+      "_metadata" : {
+        "id" : "col-6",
+        "position" : 6
+      }
+    }, {
+      "name" : "Village",
+      "key" : "village",
+      "dataDefinition" : {
+        "type" : "PERSON_ADDRESS",
+        "config" : {
+          "type" : "ADDRESS_FIELD",
+          "field" : "address5"
+        }
+      },
+      "_metadata" : {
+        "id" : "col-7",
+        "position" : 7
+      }
+    }, {
+      "name" : "Telephone",
+      "key" : "telephone",
+      "dataDefinition" : {
+        "type" : "PERSON_ATTRIBUTE",
+        "config" : {
+          "attributeTypeUuid" : "14d4f066-15f5-102d-96e4-000c29c2a5d7"
+        }
+      },
+      "_metadata" : {
+        "id" : "col-8",
+        "position" : 8
+      }
+    }, {
+      "name" : "Date Enrolled",
+      "key" : "date_enrolled",
+      "dataDefinition" : {
+        "type" : "SQL",
+        "config" : {
+          "sql" : "SELECT obs_datetime\nFROM obs\nWHERE concept_id = (SELECT concept_id FROM concept WHERE uuid = '73312fee-c321-11e8-a355-529269fb1459')\n  AND person_id = :patientId\n  AND voided = 0\nORDER BY obs_datetime ASC\nLIMIT 1"
+        }
+      },
+      "repeatResolution" : {
+        "strategy" : "LATEST",
+        "restrictToPeriod" : false,
+        "ignoreVoided" : true
+      },
+      "_metadata" : {
+        "id" : "col-9",
+        "position" : 9
+      }
+    }, {
+      "name" : "ART Start Date",
+      "key" : "art_start_date",
+      "dataDefinition" : {
+        "type" : "SQL",
+        "config" : {
+          "sql" : "SELECT value_datetime\nFROM obs\nWHERE concept_id = (SELECT concept_id FROM concept WHERE uuid = 'ab505422-26d9-41f1-a079-c3d222000440')\n  AND person_id = :patientId\n  AND obs_datetime &lt;= :endDate\n  AND voided = 0\nORDER BY obs_datetime ASC\nLIMIT 1"
+        }
+      },
+      "repeatResolution" : {
+        "strategy" : "LATEST",
+        "restrictToPeriod" : false,
+        "ignoreVoided" : true,
+        "orderBy" : "obs_datetime"
+      },
+      "_metadata" : {
+        "id" : "col-10",
+        "position" : 10
+      }
+    }, {
+      "name" : "Last Regimen Pickup Date",
+      "key" : "last_regimen_pickup_date",
+      "dataDefinition" : {
+        "type" : "SQL",
+        "config" : {
+          "sql" : "SELECT MAX(o.obs_datetime) FROM obs o INNER JOIN encounter e ON o.encounter_id = e.encounter_id WHERE o.concept_id = (SELECT concept_id FROM concept WHERE uuid = 'dd2b0b4d-30ab-102d-86b0-7a5022ba4115') AND e.encounter_type IN (SELECT encounter_type_id FROM encounter_type WHERE uuid IN ('8d5b27bc-c2cc-11de-8d13-0010c6dffd0f', '8d5b2be0-c2cc-11de-8d13-0010c6dffd0f')) AND o.person_id = :patientId AND o.obs_datetime &lt;= :endDate AND o.voided = 0 AND e.voided = 0"
+        }
+      },
+      "repeatResolution" : {
+        "strategy" : "LATEST",
+        "restrictToPeriod" : false,
+        "ignoreVoided" : true,
+        "orderBy" : "obs_datetime"
+      },
+      "_metadata" : {
+        "id" : "col-11",
+        "position" : 11
+      }
+    }, {
+      "name" : "ARV Duration",
+      "key" : "arv_duration",
+      "dataDefinition" : {
+        "type" : "SQL",
+        "config" : {
+          "sql" : "SELECT TIMESTAMPDIFF(DAY, (SELECT value_datetime FROM obs WHERE concept_id = (SELECT concept_id FROM concept WHERE uuid = 'ab505422-26d9-41f1-a079-c3d222000440') AND person_id = :patientId AND obs_datetime &lt;= :endDate AND voided = 0 ORDER BY obs_datetime ASC LIMIT 1), :endDate)"
+        }
+      },
+      "repeatResolution" : {
+        "strategy" : "LATEST",
+        "restrictToPeriod" : false,
+        "ignoreVoided" : true,
+        "orderBy" : "obs_datetime"
+      },
+      "_metadata" : {
+        "id" : "col-12",
+        "position" : 12
+      }
+    }, {
+      "name" : "Expected Return Date",
+      "key" : "expected_return_date",
+      "dataDefinition" : {
+        "type" : "SQL",
+        "config" : {
+          "sql" : "SELECT value_datetime FROM obs WHERE concept_id = (SELECT concept_id FROM concept WHERE uuid = 'dcac04cf-30ab-102d-86b0-7a5022ba4115') AND person_id = :patientId AND value_datetime &gt;= :endDate AND voided = 0 ORDER BY obs_datetime ASC LIMIT 1"
+        }
+      },
+      "repeatResolution" : {
+        "strategy" : "LATEST",
+        "restrictToPeriod" : false,
+        "ignoreVoided" : true,
+        "orderBy" : "obs_datetime"
+      },
+      "_metadata" : {
+        "id" : "col-13",
+        "position" : 13
+      }
+    }, {
+      "name" : "Current Regimen",
+      "key" : "current_regimen",
+      "dataDefinition" : {
+        "type" : "SQL",
+        "config" : {
+          "sql" : "SELECT regimen\nFROM (\n         SELECT\n             o.value_text AS regimen,\n             o.obs_datetime\n         FROM obs o\n                  INNER JOIN concept c\n                             ON c.concept_id = o.concept_id\n         WHERE c.uuid = '97c48198-3cf7-4892-a3e6-d61fb1125882'\n           AND o.person_id = :patientId\n           AND o.obs_datetime &lt;= :endDate\n           AND o.voided = 0\n           AND o.value_text IS NOT NULL\n\n         UNION ALL\n         SELECT\n             cn.name AS regimen,\n             o.obs_datetime\n         FROM obs o\n                  INNER JOIN concept c\n                             ON c.concept_id = o.concept_id\n                  INNER JOIN concept_name cn\n                             ON cn.concept_id = o.value_coded\n         WHERE c.uuid = 'dd2b0b4d-30ab-102d-86b0-7a5022ba4115'\n           AND o.person_id = :patientId\n           AND o.obs_datetime &lt;= :endDate\n           AND o.voided = 0\n           AND cn.voided = 0\n           AND cn.locale = 'en'\n           AND cn.locale_preferred = 1\n     ) regimen_results\nWHERE regimen IS NOT NULL\n  AND TRIM(regimen) &lt;&gt; ''\nORDER BY obs_datetime DESC\nLIMIT 1;"
+        }
+      },
+      "repeatResolution" : {
+        "strategy" : "LATEST",
+        "restrictToPeriod" : false,
+        "ignoreVoided" : true,
+        "orderBy" : "obs_datetime"
+      },
+      "_metadata" : {
+        "id" : "col-14",
+        "position" : 14
+      }
+    }, {
+      "name" : "Current Regimen Date",
+      "key" : "current_regimen_date",
+      "dataDefinition" : {
+        "type" : "SQL",
+        "config" : {
+          "sql" : "SELECT obs_datetime FROM obs WHERE concept_id = (SELECT concept_id FROM concept WHERE uuid = 'dd2b0b4d-30ab-102d-86b0-7a5022ba4115') AND obs_datetime &lt;= :endDate AND person_id = :patientId AND voided = 0 ORDER BY obs_datetime DESC LIMIT 1"
+        }
+      },
+      "repeatResolution" : {
+        "strategy" : "LATEST",
+        "restrictToPeriod" : false,
+        "ignoreVoided" : true,
+        "orderBy" : "obs_datetime"
+      },
+      "_metadata" : {
+        "id" : "col-15",
+        "position" : 15
+      }
+    }, {
+      "name" : "Start Regimen",
+      "key" : "start_regimen",
+      "dataDefinition" : {
+        "type" : "SQL",
+        "config" : {
+          "sql" : "SELECT baseline_regimen\nFROM (\n         SELECT\n             cn.name AS baseline_regimen,\n             o.obs_datetime\n         FROM obs o\n                  INNER JOIN concept c\n                             ON c.concept_id = o.concept_id\n                  INNER JOIN concept_name cn\n                             ON cn.concept_id = o.value_coded\n         WHERE c.uuid = 'c3332e8d-2548-4ad6-931d-6855692694a3'\n           AND o.person_id = :patientId\n           AND o.obs_datetime &lt;= :endDate\n           AND o.voided = 0\n           AND o.value_coded IS NOT NULL\n           AND cn.locale = 'en'\n           AND cn.locale_preferred = 1\n           AND cn.voided = 0\n\n         UNION ALL\n\n         SELECT\n             o.value_text AS baseline_regimen,\n             o.obs_datetime\n         FROM obs o\n                  INNER JOIN concept c\n                             ON c.concept_id = o.concept_id\n         WHERE c.uuid = 'cc3d64df-61a5-4c5a-a755-6e95d6ef3295'\n           AND o.person_id = :patientId\n           AND o.obs_datetime &lt;= :endDate\n           AND o.voided = 0\n           AND o.value_text IS NOT NULL\n           AND TRIM(o.value_text) &lt;&gt; ''\n     ) baseline_results\nWHERE baseline_regimen IS NOT NULL\n  AND TRIM(baseline_regimen) &lt;&gt; ''\nORDER BY obs_datetime ASC\nLIMIT 1;"
+        }
+      },
+      "repeatResolution" : {
+        "strategy" : "LATEST",
+        "restrictToPeriod" : false,
+        "ignoreVoided" : true,
+        "orderBy" : "obs_datetime"
+      },
+      "_metadata" : {
+        "id" : "col-16",
+        "position" : 16
+      }
+    }, {
+      "name" : "Start Regimen Date",
+      "key" : "start_regimen_date",
+      "dataDefinition" : {
+        "type" : "SQL",
+        "config" : {
+          "sql" : "SELECT obs_datetime FROM obs WHERE concept_id = (SELECT concept_id FROM concept WHERE uuid = 'c3332e8d-2548-4ad6-931d-6855692694a3') AND obs_datetime &lt;= :endDate AND person_id = :patientId AND voided = 0 ORDER BY obs_datetime ASC LIMIT 1"
+        }
+      },
+      "repeatResolution" : {
+        "strategy" : "LATEST",
+        "restrictToPeriod" : false,
+        "ignoreVoided" : true,
+        "orderBy" : "obs_datetime"
+      },
+      "_metadata" : {
+        "id" : "col-17",
+        "position" : 17
+      }
+    }, {
+      "name" : "CD4 at Enrollment",
+      "key" : "cd4_at_enrollment",
+      "dataDefinition" : {
+        "type" : "SQL",
+        "config" : {
+          "sql" : "SELECT value_numeric\nFROM obs\nWHERE concept_id = (SELECT concept_id FROM concept WHERE uuid = 'c17bd9df-23e6-4e65-ba42-eb6d9250ca3f')\n  AND person_id = :patientId\n  AND voided = 0\nORDER BY obs_datetime ASC\nLIMIT 1"
+        }
+      },
+      "repeatResolution" : {
+        "strategy" : "LATEST",
+        "restrictToPeriod" : false,
+        "ignoreVoided" : true,
+        "orderBy" : "obs_datetime"
+      },
+      "_metadata" : {
+        "id" : "col-18",
+        "position" : 18
+      }
+    }, {
+      "name" : "Baseline CD4",
+      "key" : "baseline_cd4",
+      "dataDefinition" : {
+        "type" : "SQL",
+        "config" : {
+          "sql" : "SELECT value_numeric FROM obs WHERE concept_id = (SELECT concept_id FROM concept WHERE uuid = 'c17bd9df-23e6-4e65-ba42-eb6d9250ca3f') AND person_id = :patientId AND voided = 0 ORDER BY obs_datetime ASC LIMIT 1"
+        }
+      },
+      "repeatResolution" : {
+        "strategy" : "LATEST",
+        "restrictToPeriod" : false,
+        "ignoreVoided" : true,
+        "orderBy" : "obs_datetime"
+      },
+      "_metadata" : {
+        "id" : "col-19",
+        "position" : 19
+      }
+    }, {
+      "name" : "CD4 at 6 months",
+      "key" : "cd4_at_6_months",
+      "dataDefinition" : {
+        "type" : "SQL",
+        "config" : {
+          "sql" : "SELECT o.value_numeric FROM obs o WHERE o.concept_id = (SELECT concept_id FROM concept WHERE uuid = 'dcbcba2c-30ab-102d-86b0-7a5022ba4115') AND o.person_id = :patientId AND o.obs_datetime BETWEEN DATE_SUB((SELECT value_datetime FROM obs WHERE concept_id = (SELECT concept_id FROM concept WHERE uuid = 'ab505422-26d9-41f1-a079-c3d222000440') AND o.person_id = :patientId AND voided = 0 ORDER BY obs_datetime ASC LIMIT 1), INTERVAL 6 MONTH) AND DATE_ADD((SELECT value_datetime FROM obs WHERE concept_id = (SELECT concept_id FROM concept WHERE uuid = 'ab505422-26d9-41f1-a079-c3d222000440') AND o.person_id = :patientId AND voided = 0 ORDER BY obs_datetime ASC LIMIT 1), INTERVAL 6 MONTH) AND o.voided = 0 ORDER BY o.obs_datetime ASC LIMIT 1"
+        }
+      },
+      "repeatResolution" : {
+        "strategy" : "LATEST",
+        "restrictToPeriod" : false,
+        "ignoreVoided" : true,
+        "orderBy" : "obs_datetime"
+      },
+      "_metadata" : {
+        "id" : "col-20",
+        "position" : 20
+      }
+    } ]
+  } ]
+}

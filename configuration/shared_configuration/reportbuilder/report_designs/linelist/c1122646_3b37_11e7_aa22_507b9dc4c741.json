@@ -1,0 +1,393 @@
+{
+  "name" : "Safe Male Circumcision Register",
+  "description" : "Safe Male Circumcision Register",
+  "category" : "FACILITY_REPORTS",
+  "reportType" : "LINELIST",
+  "limit" : 1000,
+  "parameters" : [ {
+    "name" : "startDate",
+    "label" : "Start Date",
+    "type" : "DATE",
+    "required" : true
+  }, {
+    "name" : "endDate",
+    "label" : "End Date",
+    "type" : "DATE",
+    "required" : true
+  } ],
+  "baseCohortDefinition" : {
+    "type" : "SQL",
+    "name" : "Patients with SMC encounters",
+    "config" : {
+      "sql" : "SELECT DISTINCT e.patient_id FROM encounter e WHERE e.encounter_type = (SELECT encounter_type_id FROM encounter_type WHERE uuid = '244da86d-f80e-48fe-aba9-067f241905ee') AND e.encounter_datetime BETWEEN :startDate AND :endDate AND e.voided = 0"
+    }
+  },
+  "dataSetDefinitions" : [ {
+    "name" : "SMC",
+    "type" : "PATIENT_DATA_SET",
+    "rowFilter" : {
+      "type" : "SQL",
+      "name" : "Patients with SMC encounters",
+      "config" : {
+        "sql" : "SELECT DISTINCT e.patient_id FROM encounter e WHERE e.encounter_type = (SELECT encounter_type_id FROM encounter_type WHERE uuid = '244da86d-f80e-48fe-aba9-067f241905ee') AND e.encounter_datetime BETWEEN :startDate AND :endDate AND e.voided = 0"
+      }
+    },
+    "columns" : [ {
+      "name" : "Date",
+      "key" : "date",
+      "dataDefinition" : {
+        "type" : "SQL",
+        "config" : {
+          "sql" : "SELECT MAX(DATE(e.encounter_datetime)) FROM encounter e WHERE e.patient_id = :patientId AND e.encounter_type = (SELECT encounter_type_id FROM encounter_type WHERE uuid = '244da86d-f80e-48fe-aba9-067f241905ee') AND e.encounter_datetime BETWEEN :startDate AND :endDate AND e.voided = 0"
+        }
+      },
+      "repeatResolution" : {
+        "strategy" : "LATEST",
+        "restrictToPeriod" : false,
+        "ignoreVoided" : true
+      }
+    }, {
+      "name" : "Serial No",
+      "key" : "serial_no",
+      "dataDefinition" : {
+        "type" : "IDENTIFIER",
+        "config" : {
+          "identifierTypeUuid" : "37601abe-2ee0-4493-8ac7-22b4972190cf",
+          "preferred" : true
+        }
+      }
+    }, {
+      "name" : "Names of Client",
+      "key" : "names_of_client",
+      "dataDefinition" : {
+        "type" : "PERSON_NAME",
+        "config" : {
+          "type" : "FULL_NAME",
+          "preferred" : true
+        }
+      }
+    }, {
+      "name" : "Age<2yrs",
+      "key" : "age2yrs",
+      "dataDefinition" : {
+        "type" : "SQL",
+        "config" : {
+          "sql" : "SELECT CASE WHEN TIMESTAMPDIFF(YEAR, p.birthdate, e.encounter_datetime) < 2 THEN 'Y' ELSE '' END FROM encounter e INNER JOIN person p ON e.patient_id = p.person_id WHERE e.patient_id = :patientId AND e.encounter_type = (SELECT encounter_type_id FROM encounter_type WHERE uuid = '244da86d-f80e-48fe-aba9-067f241905ee') AND e.encounter_datetime BETWEEN :startDate AND :endDate AND e.voided = 0 ORDER BY e.encounter_datetime DESC LIMIT 1"
+        }
+      },
+      "repeatResolution" : {
+        "strategy" : "LATEST",
+        "restrictToPeriod" : false,
+        "ignoreVoided" : true
+      }
+    }, {
+      "name" : "Age2<5yrs",
+      "key" : "age25yrs",
+      "dataDefinition" : {
+        "type" : "SQL",
+        "config" : {
+          "sql" : "SELECT CASE WHEN TIMESTAMPDIFF(YEAR, p.birthdate, e.encounter_datetime) >= 2 AND TIMESTAMPDIFF(YEAR, p.birthdate, e.encounter_datetime) < 5 THEN 'Y' ELSE '' END FROM encounter e INNER JOIN person p ON e.patient_id = p.person_id WHERE e.patient_id = :patientId AND e.encounter_type = (SELECT encounter_type_id FROM encounter_type WHERE uuid = '244da86d-f80e-48fe-aba9-067f241905ee') AND e.encounter_datetime BETWEEN :startDate AND :endDate AND e.voided = 0 ORDER BY e.encounter_datetime DESC LIMIT 1"
+        }
+      },
+      "repeatResolution" : {
+        "strategy" : "LATEST",
+        "restrictToPeriod" : false,
+        "ignoreVoided" : true
+      }
+    }, {
+      "name" : "Age5<15yrs",
+      "key" : "age515yrs",
+      "dataDefinition" : {
+        "type" : "SQL",
+        "config" : {
+          "sql" : "SELECT CASE WHEN TIMESTAMPDIFF(YEAR, p.birthdate, e.encounter_datetime) >= 5 AND TIMESTAMPDIFF(YEAR, p.birthdate, e.encounter_datetime) < 15 THEN 'Y' ELSE '' END FROM encounter e INNER JOIN person p ON e.patient_id = p.person_id WHERE e.patient_id = :patientId AND e.encounter_type = (SELECT encounter_type_id FROM encounter_type WHERE uuid = '244da86d-f80e-48fe-aba9-067f241905ee') AND e.encounter_datetime BETWEEN :startDate AND :endDate AND e.voided = 0 ORDER BY e.encounter_datetime DESC LIMIT 1"
+        }
+      },
+      "repeatResolution" : {
+        "strategy" : "LATEST",
+        "restrictToPeriod" : false,
+        "ignoreVoided" : true
+      }
+    }, {
+      "name" : "Age15<49yrs",
+      "key" : "age1549yrs",
+      "dataDefinition" : {
+        "type" : "SQL",
+        "config" : {
+          "sql" : "SELECT CASE WHEN TIMESTAMPDIFF(YEAR, p.birthdate, e.encounter_datetime) >= 15 AND TIMESTAMPDIFF(YEAR, p.birthdate, e.encounter_datetime) < 49 THEN 'Y' ELSE '' END FROM encounter e INNER JOIN person p ON e.patient_id = p.person_id WHERE e.patient_id = :patientId AND e.encounter_type = (SELECT encounter_type_id FROM encounter_type WHERE uuid = '244da86d-f80e-48fe-aba9-067f241905ee') AND e.encounter_datetime BETWEEN :startDate AND :endDate AND e.voided = 0 ORDER BY e.encounter_datetime DESC LIMIT 1"
+        }
+      },
+      "repeatResolution" : {
+        "strategy" : "LATEST",
+        "restrictToPeriod" : false,
+        "ignoreVoided" : true
+      }
+    }, {
+      "name" : "Age>49yrs",
+      "key" : "age49yrs",
+      "dataDefinition" : {
+        "type" : "SQL",
+        "config" : {
+          "sql" : "SELECT CASE WHEN TIMESTAMPDIFF(YEAR, p.birthdate, e.encounter_datetime) >= 49 THEN 'Y' ELSE '' END FROM encounter e INNER JOIN person p ON e.patient_id = p.person_id WHERE e.patient_id = :patientId AND e.encounter_type = (SELECT encounter_type_id FROM encounter_type WHERE uuid = '244da86d-f80e-48fe-aba9-067f241905ee') AND e.encounter_datetime BETWEEN :startDate AND :endDate AND e.voided = 0 ORDER BY e.encounter_datetime DESC LIMIT 1"
+        }
+      },
+      "repeatResolution" : {
+        "strategy" : "LATEST",
+        "restrictToPeriod" : false,
+        "ignoreVoided" : true
+      }
+    }, {
+      "name" : "District",
+      "key" : "district",
+      "dataDefinition" : {
+        "type" : "PERSON_ADDRESS",
+        "config" : {
+          "type" : "ADDRESS_FIELD",
+          "field" : "county_district"
+        }
+      }
+    }, {
+      "name" : "Sub-County",
+      "key" : "sub-county",
+      "dataDefinition" : {
+        "type" : "PERSON_ADDRESS",
+        "config" : {
+          "type" : "ADDRESS_FIELD",
+          "field" : "address3"
+        }
+      }
+    }, {
+      "name" : "Village",
+      "key" : "village",
+      "dataDefinition" : {
+        "type" : "PERSON_ADDRESS",
+        "config" : {
+          "type" : "ADDRESS_FIELD",
+          "field" : "address5"
+        }
+      }
+    }, {
+      "name" : "Facility/Outreach",
+      "key" : "facilityoutreach",
+      "dataDefinition" : {
+        "type" : "SQL",
+        "config" : {
+          "sql" : "SELECT (SELECT cn.name FROM concept_name cn WHERE cn.concept_id = o.value_coded AND cn.locale = 'en' AND cn.concept_name_type = 'FULLY_SPECIFIED' AND cn.voided = 0) FROM obs o WHERE o.concept_id = (SELECT concept_id FROM concept WHERE uuid = 'ac44b5f2-cf57-43ca-bea0-8b392fe21802') AND o.person_id = :patientId AND o.obs_datetime BETWEEN :startDate AND :endDate AND o.voided = 0 ORDER BY o.obs_datetime DESC LIMIT 1"
+        }
+      },
+      "repeatResolution" : {
+        "strategy" : "LATEST",
+        "restrictToPeriod" : false,
+        "ignoreVoided" : true,
+        "orderBy" : "obs_datetime"
+      }
+    }, {
+      "name" : "STI",
+      "key" : "sti",
+      "dataDefinition" : {
+        "type" : "SQL",
+        "config" : {
+          "sql" : "SELECT CASE WHEN EXISTS (SELECT 1 FROM obs WHERE concept_id = (SELECT concept_id FROM concept WHERE uuid = 'a8a9b78c-1350-11df-a1f1-0024e8c6b857') AND person_id = :patientId AND obs_datetime <= :endDate AND voided = 0) THEN 'Y' ELSE 'N' END"
+        }
+      },
+      "repeatResolution" : {
+        "strategy" : "LATEST",
+        "restrictToPeriod" : false,
+        "ignoreVoided" : true,
+        "orderBy" : "obs_datetime"
+      }
+    }, {
+      "name" : "HTC",
+      "key" : "htc",
+      "dataDefinition" : {
+        "type" : "SQL",
+        "config" : {
+          "sql" : "SELECT CASE WHEN EXISTS (SELECT 1 FROM obs o WHERE o.concept_id = (SELECT concept_id FROM concept WHERE uuid = '29c47b5c-b27d-499c-b52c-7be676a0a78f') AND o.person_id = :patientId AND o.obs_datetime BETWEEN :startDate AND :endDate AND o.voided = 0 AND o.value_coded = (SELECT concept_id FROM concept WHERE uuid = '703')) THEN 'Positive' WHEN EXISTS (SELECT 1 FROM obs o WHERE o.concept_id = (SELECT concept_id FROM concept WHERE uuid = '29c47b5c-b27d-499c-b52c-7be676a0a78f') AND o.person_id = :patientId AND o.obs_datetime BETWEEN :startDate AND :endDate AND o.voided = 0 AND o.value_coded = (SELECT concept_id FROM concept WHERE uuid = '664')) THEN 'Negative' ELSE '' END"
+        }
+      },
+      "repeatResolution" : {
+        "strategy" : "LATEST",
+        "restrictToPeriod" : false,
+        "ignoreVoided" : true,
+        "orderBy" : "obs_datetime"
+      }
+    }, {
+      "name" : "Date of TT1",
+      "key" : "date_of_tt1",
+      "dataDefinition" : {
+        "type" : "SQL",
+        "config" : {
+          "sql" : "SELECT DATE(o.value_datetime) FROM obs o WHERE o.concept_id = (SELECT concept_id FROM concept WHERE uuid = 'ed8eebcb-0d31-4c85-ab37-402ba2b9f78d') AND o.person_id = :patientId AND o.obs_datetime BETWEEN :startDate AND :endDate AND o.voided = 0 ORDER BY o.obs_datetime DESC LIMIT 1"
+        }
+      },
+      "repeatResolution" : {
+        "strategy" : "LATEST",
+        "restrictToPeriod" : false,
+        "ignoreVoided" : true,
+        "orderBy" : "obs_datetime"
+      }
+    }, {
+      "name" : "Date of TT2",
+      "key" : "date_of_tt2",
+      "dataDefinition" : {
+        "type" : "SQL",
+        "config" : {
+          "sql" : "SELECT DATE(o.value_datetime) FROM obs o WHERE o.concept_id = (SELECT concept_id FROM concept WHERE uuid = '5d50f724-6766-421b-bcb1-1133054b7621') AND o.person_id = :patientId AND o.obs_datetime BETWEEN :startDate AND :endDate AND o.voided = 0 ORDER BY o.obs_datetime DESC LIMIT 1"
+        }
+      },
+      "repeatResolution" : {
+        "strategy" : "LATEST",
+        "restrictToPeriod" : false,
+        "ignoreVoided" : true,
+        "orderBy" : "obs_datetime"
+      }
+    }, {
+      "name" : "Procedure",
+      "key" : "procedure",
+      "dataDefinition" : {
+        "type" : "SQL",
+        "config" : {
+          "sql" : "SELECT (SELECT cn.name FROM concept_name cn WHERE cn.concept_id = o.value_coded AND cn.locale = 'en' AND cn.concept_name_type = 'FULLY_SPECIFIED' AND cn.voided = 0) FROM obs o WHERE o.concept_id = (SELECT concept_id FROM concept WHERE uuid = 'bd66b11f-04d9-46ed-a367-2c27c15d5c71') AND o.person_id = :patientId AND o.obs_datetime BETWEEN :startDate AND :endDate AND o.voided = 0 ORDER BY o.obs_datetime DESC LIMIT 1"
+        }
+      },
+      "repeatResolution" : {
+        "strategy" : "LATEST",
+        "restrictToPeriod" : false,
+        "ignoreVoided" : true,
+        "orderBy" : "obs_datetime"
+      }
+    }, {
+      "name" : "Type anesthesia",
+      "key" : "type_anesthesia",
+      "dataDefinition" : {
+        "type" : "SQL",
+        "config" : {
+          "sql" : "SELECT (SELECT cn.name FROM concept_name cn WHERE cn.concept_id = o.value_coded AND cn.locale = 'en' AND cn.concept_name_type = 'FULLY_SPECIFIED' AND cn.voided = 0) FROM obs o WHERE o.concept_id = (SELECT concept_id FROM concept WHERE uuid = 'a89e32c0-1350-11df-a1f1-0024e8c6b857') AND o.person_id = :patientId AND o.obs_datetime <= :endDate AND o.voided = 0 ORDER BY o.obs_datetime DESC LIMIT 1"
+        }
+      },
+      "repeatResolution" : {
+        "strategy" : "LATEST",
+        "restrictToPeriod" : false,
+        "ignoreVoided" : true,
+        "orderBy" : "obs_datetime"
+      }
+    }, {
+      "name" : "Circumciser name",
+      "key" : "circumciser_name",
+      "dataDefinition" : {
+        "type" : "SQL",
+        "config" : {
+          "sql" : "SELECT o.value_text FROM obs o WHERE o.concept_id = (SELECT concept_id FROM concept WHERE uuid = 'c5c3b64f-277a-4bb1-8420-01881c3d0d1b') AND o.person_id = :patientId AND o.obs_datetime <= :endDate AND o.voided = 0 ORDER BY o.obs_datetime DESC LIMIT 1"
+        }
+      },
+      "repeatResolution" : {
+        "strategy" : "LATEST",
+        "restrictToPeriod" : false,
+        "ignoreVoided" : true,
+        "orderBy" : "obs_datetime"
+      }
+    }, {
+      "name" : "48hrs",
+      "key" : "48hrs",
+      "dataDefinition" : {
+        "type" : "SQL",
+        "config" : {
+          "sql" : "SELECT CASE WHEN EXISTS (SELECT 1 FROM encounter e WHERE e.patient_id = :patientId AND e.encounter_type = (SELECT encounter_type_id FROM encounter_type WHERE uuid = '244da86d-f80e-48fe-aba9-067f241905ee') AND TIMESTAMPDIFF(HOUR, (SELECT encounter_datetime FROM encounter e2 WHERE e2.patient_id = :patientId AND e2.encounter_type = (SELECT encounter_type_id FROM encounter_type WHERE uuid = '244da86d-f80e-48fe-aba9-067f241905ee') ORDER BY e2.encounter_datetime ASC LIMIT 1), e.encounter_datetime) <= 48 AND e.encounter_datetime <= :endDate AND e.voided = 0) THEN 'Y' ELSE 'N' END"
+        }
+      },
+      "repeatResolution" : {
+        "strategy" : "LATEST",
+        "restrictToPeriod" : false,
+        "ignoreVoided" : true
+      }
+    }, {
+      "name" : "7days",
+      "key" : "7days",
+      "dataDefinition" : {
+        "type" : "SQL",
+        "config" : {
+          "sql" : "SELECT CASE WHEN EXISTS (SELECT 1 FROM encounter e WHERE e.patient_id = :patientId AND e.encounter_type = (SELECT encounter_type_id FROM encounter_type WHERE uuid = '244da86d-f80e-48fe-aba9-067f241905ee') AND TIMESTAMPDIFF(DAY, (SELECT encounter_datetime FROM encounter e2 WHERE e2.patient_id = :patientId AND e2.encounter_type = (SELECT encounter_type_id FROM encounter_type WHERE uuid = '244da86d-f80e-48fe-aba9-067f241905ee') ORDER BY e2.encounter_datetime ASC LIMIT 1), e.encounter_datetime) BETWEEN 3 AND 7 AND e.encounter_datetime <= :endDate AND e.voided = 0) THEN 'Y' ELSE 'N' END"
+        }
+      },
+      "repeatResolution" : {
+        "strategy" : "LATEST",
+        "restrictToPeriod" : false,
+        "ignoreVoided" : true
+      }
+    }, {
+      "name" : ">7days",
+      "key" : "7days",
+      "dataDefinition" : {
+        "type" : "SQL",
+        "config" : {
+          "sql" : "SELECT CASE WHEN EXISTS (SELECT 1 FROM encounter e WHERE e.patient_id = :patientId AND e.encounter_type = (SELECT encounter_type_id FROM encounter_type WHERE uuid = '244da86d-f80e-48fe-aba9-067f241905ee') AND TIMESTAMPDIFF(DAY, (SELECT encounter_datetime FROM encounter e2 WHERE e2.patient_id = :patientId AND e2.encounter_type = (SELECT encounter_type_id FROM encounter_type WHERE uuid = '244da86d-f80e-48fe-aba9-067f241905ee') ORDER BY e2.encounter_datetime ASC LIMIT 1), e.encounter_datetime) > 7 AND e.encounter_datetime <= :endDate AND e.voided = 0) THEN 'Y' ELSE 'N' END"
+        }
+      },
+      "repeatResolution" : {
+        "strategy" : "LATEST",
+        "restrictToPeriod" : false,
+        "ignoreVoided" : true
+      }
+    }, {
+      "name" : "During surgery",
+      "key" : "during_surgery",
+      "dataDefinition" : {
+        "type" : "SQL",
+        "config" : {
+          "sql" : "SELECT o.value_text FROM obs o WHERE o.concept_id = (SELECT concept_id FROM concept WHERE uuid = '654e7039-4629-46bb-9fc9-0f6dd101ce6a') AND o.person_id = :patientId AND o.obs_datetime BETWEEN :startDate AND :endDate AND o.voided = 0 ORDER BY o.obs_datetime DESC LIMIT 1"
+        }
+      },
+      "repeatResolution" : {
+        "strategy" : "LATEST",
+        "restrictToPeriod" : false,
+        "ignoreVoided" : true,
+        "orderBy" : "obs_datetime"
+      }
+    }, {
+      "name" : "Date of AE",
+      "key" : "date_of_ae",
+      "dataDefinition" : {
+        "type" : "SQL",
+        "config" : {
+          "sql" : "SELECT DATE(o.value_datetime) FROM obs o WHERE o.concept_id = (SELECT concept_id FROM concept WHERE uuid = '654e7039-4629-46bb-9fc9-0f6dd101ce6a') AND o.person_id = :patientId AND o.obs_datetime BETWEEN :startDate AND :endDate AND o.voided = 0 ORDER BY o.obs_datetime DESC LIMIT 1"
+        }
+      },
+      "repeatResolution" : {
+        "strategy" : "LATEST",
+        "restrictToPeriod" : false,
+        "ignoreVoided" : true,
+        "orderBy" : "obs_datetime"
+      }
+    }, {
+      "name" : "Type of AE",
+      "key" : "type_of_ae",
+      "dataDefinition" : {
+        "type" : "SQL",
+        "config" : {
+          "sql" : "SELECT (SELECT cn.name FROM concept_name cn WHERE cn.concept_id = o.value_coded AND cn.locale = 'en' AND cn.concept_name_type = 'FULLY_SPECIFIED' AND cn.voided = 0) FROM obs o WHERE o.concept_id = (SELECT concept_id FROM concept WHERE uuid = '654e7039-4629-46bb-9fc9-0f6dd101ce6a') AND o.person_id = :patientId AND o.obs_datetime BETWEEN :startDate AND :endDate AND o.voided = 0 ORDER BY o.obs_datetime DESC LIMIT 1"
+        }
+      },
+      "repeatResolution" : {
+        "strategy" : "LATEST",
+        "restrictToPeriod" : false,
+        "ignoreVoided" : true,
+        "orderBy" : "obs_datetime"
+      }
+    }, {
+      "name" : "Grade of AE",
+      "key" : "grade_of_ae",
+      "dataDefinition" : {
+        "type" : "SQL",
+        "config" : {
+          "sql" : "SELECT (SELECT cn.name FROM concept_name cn WHERE cn.concept_id = o.value_coded AND cn.locale = 'en' AND cn.concept_name_type = 'FULLY_SPECIFIED' AND cn.voided = 0) FROM obs o WHERE o.concept_id = (SELECT concept_id FROM concept WHERE uuid = 'e34976b9-1aff-489d-b959-4da1f7272499') AND o.person_id = :patientId AND o.obs_datetime BETWEEN :startDate AND :endDate AND o.voided = 0 ORDER BY o.obs_datetime DESC LIMIT 1"
+        }
+      },
+      "repeatResolution" : {
+        "strategy" : "LATEST",
+        "restrictToPeriod" : false,
+        "ignoreVoided" : true,
+        "orderBy" : "obs_datetime"
+      }
+    } ]
+  } ]
+}

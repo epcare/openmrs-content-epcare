@@ -1,0 +1,344 @@
+{
+  "name" : "Viral Blood Collection Report",
+  "category" : "FACILITY REPORTS",
+  "reportType" : "LINE_LIST",
+  "limit" : 1000,
+  "parameters" : [ {
+    "name" : "startDate",
+    "label" : "Start Date",
+    "type" : "DATE",
+    "required" : true
+  }, {
+    "name" : "endDate",
+    "label" : "End Date",
+    "type" : "DATE",
+    "required" : true
+  } ],
+  "baseCohortDefinition" : {
+    "type" : "SQL",
+    "name" : "Patient Cohort",
+    "config" : {
+      "sql" : "SELECT DISTINCT vl.patient_id, episode_id,native_order_id\nFROM mamba_fact_viral_load_episode vl\nWHERE vl.accession_number IS NOT NULL AND vl.order_date BETWEEN :startDate AND :endDate",
+      "filterMap" : {
+        "patientId" : "vl.patient_id",
+        "episodeId" : "episode_id",
+        "nativeOrderId" : "native_order_id"
+      }
+    }
+  },
+  "dataSetDefinitions" : [ {
+    "name" : "PATIENT_LIST",
+    "type" : "PATIENT_DATA_SET",
+    "rowFilter" : {
+      "type" : "SQL",
+      "name" : "Patient Cohort",
+      "config" : {
+        "sql" : "SELECT DISTINCT vl.patient_id, episode_id,native_order_id\nFROM mamba_fact_viral_load_episode vl\nWHERE vl.accession_number IS NOT NULL AND vl.order_date BETWEEN :startDate AND :endDate",
+        "filterMap" : {
+          "patientId" : "vl.patient_id",
+          "episodeId" : "episode_id",
+          "nativeOrderId" : "native_order_id"
+        }
+      }
+    },
+    "columns" : [ {
+      "name" : "HIV Clinic No.",
+      "key" : "hiv_clinic_no",
+      "dataDefinition" : {
+        "type" : "IDENTIFIER",
+        "config" : {
+          "identifierTypeUuid" : "e1731641-30ab-102d-86b0-7a5022ba4115",
+          "preferred" : true
+        }
+      },
+      "repeatResolution" : {
+        "strategy" : "LATEST",
+        "restrictToPeriod" : false,
+        "ignoreVoided" : true
+      },
+      "_metadata" : {
+        "id" : "col-0",
+        "position" : 0
+      }
+    }, {
+      "name" : "Full Name",
+      "key" : "full_name",
+      "dataDefinition" : {
+        "type" : "PERSON_NAME",
+        "config" : {
+          "type" : "FULL_NAME",
+          "preferred" : true
+        }
+      },
+      "_metadata" : {
+        "id" : "col-1",
+        "position" : 1
+      }
+    }, {
+      "name" : "Gender",
+      "key" : "gender",
+      "dataDefinition" : {
+        "type" : "PERSON_ATTRIBUTE",
+        "config" : {
+          "type" : "GENDER"
+        }
+      },
+      "_metadata" : {
+        "id" : "col-2",
+        "position" : 2
+      }
+    }, {
+      "name" : "Age",
+      "key" : "age",
+      "dataDefinition" : {
+        "type" : "CALCULATION",
+        "config" : {
+          "calculation" : "AGE",
+          "onDate" : ":startDate"
+        }
+      },
+      "_metadata" : {
+        "id" : "col-3",
+        "position" : 3
+      }
+    }, {
+      "name" : "Order Date",
+      "key" : "order_date",
+      "dataDefinition" : {
+        "type" : "SQL",
+        "config" : {
+          "sql" : "SELECT vl.order_date FROM mamba_fact_viral_load_episode vl WHERE vl.patient_id = :patientId AND episode_id= :episodeId AND native_order_id = :nativeOrderId  ORDER BY vl.order_date DESC LIMIT 1"
+        }
+      },
+      "repeatResolution" : {
+        "strategy" : "LATEST",
+        "restrictToPeriod" : false,
+        "ignoreVoided" : false
+      },
+      "_metadata" : {
+        "id" : "col-4",
+        "position" : 4
+      }
+    }, {
+      "name" : "Collection Date",
+      "key" : "collection_date",
+      "dataDefinition" : {
+        "type" : "SQL",
+        "config" : {
+          "sql" : "SELECT vl.sample_collection_date FROM mamba_fact_viral_load_episode vl WHERE vl.patient_id = :patientId AND episode_id= :episodeId AND native_order_id = :nativeOrderId  ORDER BY vl.sample_collection_date DESC LIMIT 1"
+        }
+      },
+      "repeatResolution" : {
+        "strategy" : "LATEST",
+        "restrictToPeriod" : false,
+        "ignoreVoided" : false
+      },
+      "_metadata" : {
+        "id" : "col-5",
+        "position" : 5
+      }
+    }, {
+      "name" : "Barcode (Sample Id)",
+      "key" : "barcode_sample_id",
+      "dataDefinition" : {
+        "type" : "SQL",
+        "config" : {
+          "sql" : "SELECT vl.accession_number FROM mamba_fact_viral_load_episode vl WHERE vl.patient_id = :patientId AND episode_id= :episodeId AND native_order_id = :nativeOrderId  ORDER BY vl.sample_collection_date DESC LIMIT 1"
+        }
+      },
+      "repeatResolution" : {
+        "strategy" : "LATEST",
+        "restrictToPeriod" : false,
+        "ignoreVoided" : false
+      },
+      "_metadata" : {
+        "id" : "col-6",
+        "position" : 6
+      }
+    }, {
+      "name" : "Status",
+      "key" : "status",
+      "dataDefinition" : {
+        "type" : "SQL",
+        "config" : {
+          "sql" : "SELECT CASE WHEN vl.result_status IS NOT NULL AND vl.result_status != 'PENDING' THEN 'Result Received' ELSE 'Pending' END FROM mamba_fact_viral_load_episode vl WHERE vl.patient_id = :patientId AND episode_id = :episodeId AND native_order_id = :nativeOrderId ORDER BY vl.sample_collection_date DESC LIMIT 1"
+        }
+      },
+      "repeatResolution" : {
+        "strategy" : "LATEST",
+        "restrictToPeriod" : false,
+        "ignoreVoided" : false
+      },
+      "_metadata" : {
+        "id" : "col-7",
+        "position" : 7
+      }
+    }, {
+      "name" : "Pipeline Status",
+      "key" : "pipeline_status",
+      "dataDefinition" : {
+        "type" : "SQL",
+        "config" : {
+          "sql" : "SELECT vl.pipeline_status FROM mamba_fact_viral_load_episode vl WHERE vl.patient_id = :patientId AND episode_id = :episodeId AND native_order_id = :nativeOrderId  ORDER BY vl.sample_collection_date DESC LIMIT 1"
+        }
+      },
+      "repeatResolution" : {
+        "strategy" : "LATEST",
+        "restrictToPeriod" : false,
+        "ignoreVoided" : false
+      },
+      "_metadata" : {
+        "id" : "col-8",
+        "position" : 8
+      }
+    }, {
+      "name" : "Result Date",
+      "key" : "result_date",
+      "dataDefinition" : {
+        "type" : "SQL",
+        "config" : {
+          "sql" : "SELECT vl.viral_load_clinical_date FROM mamba_fact_viral_load_episode vl WHERE vl.patient_id = :patientId AND episode_id = :episodeId AND native_order_id = :nativeOrderId  ORDER BY vl.sample_collection_date DESC LIMIT 1"
+        }
+      },
+      "repeatResolution" : {
+        "strategy" : "LATEST",
+        "restrictToPeriod" : false,
+        "ignoreVoided" : false
+      },
+      "_metadata" : {
+        "id" : "col-9",
+        "position" : 9
+      }
+    }, {
+      "name" : "VL Value",
+      "key" : "vl_value",
+      "dataDefinition" : {
+        "type" : "SQL",
+        "config" : {
+          "sql" : "SELECT CONCAT(COALESCE(vl.result_modifier, ''), ' ', vl.result_numeric) FROM mamba_fact_viral_load_episode vl WHERE vl.patient_id = :patientId AND episode_id = :episodeId AND native_order_id = :nativeOrderId  ORDER BY vl.sample_collection_date DESC LIMIT 1"
+        }
+      },
+      "repeatResolution" : {
+        "strategy" : "LATEST",
+        "restrictToPeriod" : false,
+        "ignoreVoided" : false
+      },
+      "_metadata" : {
+        "id" : "col-10",
+        "position" : 10
+      }
+    }, {
+      "name" : "Result Qualitative",
+      "key" : "result_qualitative",
+      "dataDefinition" : {
+        "type" : "SQL",
+        "config" : {
+          "sql" : "SELECT vl.result_qualitative FROM mamba_fact_viral_load_episode vl WHERE vl.patient_id = :patientId ORDER BY vl.sample_collection_date DESC LIMIT 1"
+        }
+      },
+      "repeatResolution" : {
+        "strategy" : "LATEST",
+        "restrictToPeriod" : false,
+        "ignoreVoided" : false
+      },
+      "_metadata" : {
+        "id" : "col-11",
+        "position" : 11
+      }
+    }, {
+      "name" : "Suppression Status",
+      "key" : "suppression_status",
+      "dataDefinition" : {
+        "type" : "SQL",
+        "config" : {
+          "sql" : "SELECT vl.result_interpretation FROM mamba_fact_viral_load_episode vl WHERE vl.patient_id = :patientId AND episode_id = :episodeId AND native_order_id = :nativeOrderId ORDER BY vl.sample_collection_date DESC LIMIT 1"
+        }
+      },
+      "repeatResolution" : {
+        "strategy" : "LATEST",
+        "restrictToPeriod" : false,
+        "ignoreVoided" : false
+      },
+      "_metadata" : {
+        "id" : "col-12",
+        "position" : 12
+      }
+    }, {
+      "name" : "Current Regimen",
+      "key" : "current_regimen",
+      "dataDefinition" : {
+        "type" : "SQL",
+        "config" : {
+          "sql" : "SELECT vl.current_regimen_at_order FROM mamba_fact_viral_load_episode vl WHERE vl.patient_id = :patientId AND episode_id = :episodeId AND native_order_id = :nativeOrderId ORDER BY vl.sample_collection_date DESC LIMIT 1"
+        }
+      },
+      "repeatResolution" : {
+        "strategy" : "LATEST",
+        "restrictToPeriod" : false,
+        "ignoreVoided" : false
+      },
+      "_metadata" : {
+        "id" : "col-13",
+        "position" : 13
+      }
+    }, {
+      "name" : "Days on ART",
+      "key" : "days_on_art",
+      "dataDefinition" : {
+        "type" : "SQL",
+        "config" : {
+          "sql" : "SELECT vl.days_on_art_at_order FROM mamba_fact_viral_load_episode vl WHERE vl.patient_id = :patientId AND episode_id = :episodeId AND native_order_id = :nativeOrderId ORDER BY vl.sample_collection_date DESC LIMIT 1"
+        }
+      },
+      "repeatResolution" : {
+        "strategy" : "LATEST",
+        "restrictToPeriod" : false,
+        "ignoreVoided" : false
+      },
+      "_metadata" : {
+        "id" : "col-14",
+        "position" : 14
+      }
+    }, {
+      "name" : "VL Indication",
+      "key" : "vl_indication",
+      "dataDefinition" : {
+        "type" : "SQL",
+        "config" : {
+          "sql" : "SELECT vl.recorded_vl_indication FROM mamba_fact_viral_load_episode vl WHERE vl.patient_id = :patientId AND episode_id = :episodeId AND native_order_id = :nativeOrderId ORDER BY vl.sample_collection_date DESC LIMIT 1"
+        }
+      },
+      "repeatResolution" : {
+        "strategy" : "LATEST",
+        "restrictToPeriod" : false,
+        "ignoreVoided" : false
+      },
+      "_metadata" : {
+        "id" : "col-15",
+        "position" : 15
+      }
+    }, {
+      "name" : "Sample Rejection Reason",
+      "key" : "sample_rejection_reason",
+      "dataDefinition" : {
+        "type" : "SQL",
+        "config" : {
+          "sql" : "SELECT vl.rejection_reason FROM mamba_fact_viral_load_episode vl WHERE vl.patient_id = :patientId AND episode_id = :episodeId AND native_order_id = :nativeOrderId ORDER BY vl.sample_collection_date DESC LIMIT 1"
+        }
+      },
+      "repeatResolution" : {
+        "strategy" : "LATEST",
+        "restrictToPeriod" : false,
+        "ignoreVoided" : false
+      },
+      "_metadata" : {
+        "id" : "col-16",
+        "position" : 16
+      }
+    } ]
+  } ],
+  "categoryUuid" : "d947663c-24e8-11f1-b92d-f69d311cf98f",
+  "reportBuilderReportUuid" : "2ec7362c-97a4-11f1-9fe4-aae065588bae",
+  "reportDefinitionUuid" : "4cdbb9f0-ec9a-4413-8074-bc2474a8ac91",
+  "reportLibraryUuid" : "57c2e87b-0096-48f7-b116-98789174dd3b"
+}

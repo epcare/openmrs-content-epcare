@@ -1,0 +1,520 @@
+{
+  "name" : "Cervical Cancer Treatment Linelist",
+  "category" : "FACILITY_REPORTS",
+  "reportType" : "LINELIST",
+  "limit" : 1000,
+  "parameters" : [ {
+    "name" : "startDate",
+    "label" : "Start Date",
+    "type" : "DATE",
+    "required" : true
+  }, {
+    "name" : "endDate",
+    "label" : "End Date",
+    "type" : "DATE",
+    "required" : true
+  }, {
+    "name" : "startAge",
+    "label" : "Starting Age",
+    "type" : "NUMBER",
+    "required" : true
+  }, {
+    "name" : "endAge",
+    "label" : "Ending Age",
+    "type" : "NUMBER",
+    "required" : true
+  } ],
+  "baseCohortDefinition" : {
+    "type" : "SQL",
+    "name" : "Patient Cohort",
+    "config" : {
+      "sql" : "SELECT DISTINCT ct.client_id\nFROM mamba_fact_encounter_cacx_treatment ct\n         INNER JOIN mamba_fact_patients_latest_patient_demographics pd ON ct.client_id = pd.client_id\nWHERE pd.gender = 'F'\n  AND pd.dead = 0\n  AND pd.age BETWEEN :startAge AND :endAge\n  AND ct.encounter_date BETWEEN :startDate AND :endDate;"
+    }
+  },
+  "dataSetDefinitions" : [ {
+    "name" : "PATIENT_LIST",
+    "type" : "PATIENT_DATA_SET",
+    "rowFilter" : {
+      "type" : "SQL",
+      "name" : "Patient Cohort",
+      "config" : {
+        "sql" : "SELECT DISTINCT ct.client_id\nFROM mamba_fact_encounter_cacx_treatment ct\n         INNER JOIN mamba_fact_patients_latest_patient_demographics pd ON ct.client_id = pd.client_id\nWHERE pd.gender = 'F'\n  AND pd.dead = 0\n  AND pd.age BETWEEN :startAge AND :endAge\n  AND ct.encounter_date BETWEEN :startDate AND :endDate;"
+      }
+    },
+    "columns" : [ {
+      "name" : "HIV Clinic No.",
+      "key" : "hiv_clinic_no",
+      "dataDefinition" : {
+        "type" : "IDENTIFIER",
+        "config" : {
+          "identifierTypeUuid" : "e1731641-30ab-102d-86b0-7a5022ba4115",
+          "preferred" : true
+        }
+      },
+      "repeatResolution" : {
+        "strategy" : "LATEST",
+        "restrictToPeriod" : false,
+        "ignoreVoided" : true
+      },
+      "_metadata" : {
+        "id" : "col-0",
+        "position" : 0
+      }
+    }, {
+      "name" : "Full Name",
+      "key" : "full_name",
+      "dataDefinition" : {
+        "type" : "PERSON_NAME",
+        "config" : {
+          "type" : "FULL_NAME",
+          "preferred" : true
+        }
+      },
+      "_metadata" : {
+        "id" : "col-1",
+        "position" : 1
+      }
+    }, {
+      "name" : "Gender",
+      "key" : "gender",
+      "dataDefinition" : {
+        "type" : "PERSON_ATTRIBUTE",
+        "config" : {
+          "type" : "GENDER"
+        }
+      },
+      "_metadata" : {
+        "id" : "col-2",
+        "position" : 2
+      }
+    }, {
+      "name" : "Birth Date",
+      "key" : "birth_date",
+      "dataDefinition" : {
+        "type" : "PERSON_ATTRIBUTE",
+        "config" : {
+          "type" : "BIRTHDATE"
+        }
+      },
+      "_metadata" : {
+        "id" : "col-3",
+        "position" : 3
+      }
+    }, {
+      "name" : "Age",
+      "key" : "age",
+      "dataDefinition" : {
+        "type" : "CALCULATION",
+        "config" : {
+          "calculation" : "AGE",
+          "onDate" : ":startDate"
+        }
+      },
+      "_metadata" : {
+        "id" : "col-4",
+        "position" : 4
+      }
+    }, {
+      "name" : "Telephone Number",
+      "key" : "telephone_number",
+      "dataDefinition" : {
+        "type" : "PERSON_ATTRIBUTE",
+        "config" : {
+          "attributeTypeUuid" : "14d4f066-15f5-102d-96e4-000c29c2a5d7"
+        }
+      },
+      "_metadata" : {
+        "id" : "col-5",
+        "position" : 5
+      }
+    }, {
+      "name" : "District",
+      "key" : "district",
+      "dataDefinition" : {
+        "type" : "PERSON_ADDRESS",
+        "config" : {
+          "type" : "ADDRESS_FIELD",
+          "field" : "countyDistrict"
+        }
+      },
+      "_metadata" : {
+        "id" : "col-6",
+        "position" : 6
+      }
+    }, {
+      "name" : "Village",
+      "key" : "village",
+      "dataDefinition" : {
+        "type" : "PERSON_ADDRESS",
+        "config" : {
+          "type" : "ADDRESS_FIELD",
+          "field" : "address5"
+        }
+      },
+      "_metadata" : {
+        "id" : "col-7",
+        "position" : 7
+      }
+    }, {
+      "name" : "Treatment Date",
+      "key" : "treatment_date",
+      "dataDefinition" : {
+        "type" : "SQL",
+        "config" : {
+          "sql" : "SELECT DATE(ct.encounter_date) AS encounter_date\nFROM mamba_fact_encounter_cacx_treatment ct\nWHERE ct.client_id = :patientId\nORDER BY ct.encounter_date DESC\nLIMIT 1;"
+        }
+      },
+      "repeatResolution" : {
+        "strategy" : "LATEST",
+        "restrictToPeriod" : false,
+        "ignoreVoided" : false
+      },
+      "_metadata" : {
+        "id" : "col-8",
+        "position" : 8
+      }
+    }, {
+      "name" : "Visit Type",
+      "key" : "visit_type",
+      "dataDefinition" : {
+        "type" : "SQL",
+        "config" : {
+          "sql" : "SELECT ct.visit_type FROM mamba_fact_encounter_cacx_treatment ct WHERE ct.client_id = :patientId ORDER BY ct.encounter_date DESC LIMIT 1"
+        }
+      },
+      "repeatResolution" : {
+        "strategy" : "LATEST",
+        "restrictToPeriod" : false,
+        "ignoreVoided" : false
+      },
+      "_metadata" : {
+        "id" : "col-9",
+        "position" : 9
+      }
+    }, {
+      "name" : "HPV Test Done",
+      "key" : "hpv_test_done",
+      "dataDefinition" : {
+        "type" : "SQL",
+        "config" : {
+          "sql" : "SELECT ct.hpv_test_done FROM mamba_fact_encounter_cacx_treatment ct WHERE ct.client_id = :patientId ORDER BY ct.encounter_date DESC LIMIT 1"
+        }
+      },
+      "repeatResolution" : {
+        "strategy" : "LATEST",
+        "restrictToPeriod" : false,
+        "ignoreVoided" : false
+      },
+      "_metadata" : {
+        "id" : "col-10",
+        "position" : 10
+      }
+    }, {
+      "name" : "HPV Result",
+      "key" : "hpv_result",
+      "dataDefinition" : {
+        "type" : "SQL",
+        "config" : {
+          "sql" : "SELECT ct.hpv_result FROM mamba_fact_encounter_cacx_treatment ct WHERE ct.client_id = :patientId ORDER BY ct.encounter_date DESC LIMIT 1"
+        }
+      },
+      "repeatResolution" : {
+        "strategy" : "LATEST",
+        "restrictToPeriod" : false,
+        "ignoreVoided" : false
+      },
+      "_metadata" : {
+        "id" : "col-11",
+        "position" : 11
+      }
+    }, {
+      "name" : "VIA Done",
+      "key" : "via_done",
+      "dataDefinition" : {
+        "type" : "SQL",
+        "config" : {
+          "sql" : "SELECT ct.via_done FROM mamba_fact_encounter_cacx_treatment ct WHERE ct.client_id = :patientId ORDER BY ct.encounter_date DESC LIMIT 1"
+        }
+      },
+      "repeatResolution" : {
+        "strategy" : "LATEST",
+        "restrictToPeriod" : false,
+        "ignoreVoided" : false
+      },
+      "_metadata" : {
+        "id" : "col-12",
+        "position" : 12
+      }
+    }, {
+      "name" : "Why No VIA",
+      "key" : "why_no_via",
+      "dataDefinition" : {
+        "type" : "SQL",
+        "config" : {
+          "sql" : "SELECT ct.why_no_via FROM mamba_fact_encounter_cacx_treatment ct WHERE ct.client_id = :patientId ORDER BY ct.encounter_date DESC LIMIT 1"
+        }
+      },
+      "repeatResolution" : {
+        "strategy" : "LATEST",
+        "restrictToPeriod" : false,
+        "ignoreVoided" : false
+      },
+      "_metadata" : {
+        "id" : "col-13",
+        "position" : 13
+      }
+    }, {
+      "name" : "VIA Result",
+      "key" : "via_result",
+      "dataDefinition" : {
+        "type" : "SQL",
+        "config" : {
+          "sql" : "SELECT ct.via_procedure_screening_results FROM mamba_fact_encounter_cacx_treatment ct WHERE ct.client_id = :patientId ORDER BY ct.encounter_date DESC LIMIT 1"
+        }
+      },
+      "repeatResolution" : {
+        "strategy" : "LATEST",
+        "restrictToPeriod" : false,
+        "ignoreVoided" : false
+      },
+      "_metadata" : {
+        "id" : "col-14",
+        "position" : 14
+      }
+    }, {
+      "name" : "VAT Result",
+      "key" : "vat_result",
+      "dataDefinition" : {
+        "type" : "SQL",
+        "config" : {
+          "sql" : "SELECT ct.via_vat_procedure_results FROM mamba_fact_encounter_cacx_treatment ct WHERE ct.client_id = :patientId ORDER BY ct.encounter_date DESC LIMIT 1"
+        }
+      },
+      "repeatResolution" : {
+        "strategy" : "LATEST",
+        "restrictToPeriod" : false,
+        "ignoreVoided" : false
+      },
+      "_metadata" : {
+        "id" : "col-15",
+        "position" : 15
+      }
+    }, {
+      "name" : "Colposcopy Results",
+      "key" : "colposcopy_results",
+      "dataDefinition" : {
+        "type" : "SQL",
+        "config" : {
+          "sql" : "SELECT ct.colposcopy_results FROM mamba_fact_encounter_cacx_treatment ct WHERE ct.client_id = :patientId ORDER BY ct.encounter_date DESC LIMIT 1"
+        }
+      },
+      "repeatResolution" : {
+        "strategy" : "LATEST",
+        "restrictToPeriod" : false,
+        "ignoreVoided" : false
+      },
+      "_metadata" : {
+        "id" : "col-16",
+        "position" : 16
+      }
+    }, {
+      "name" : "Pap Smear Results",
+      "key" : "pap_smear_results",
+      "dataDefinition" : {
+        "type" : "SQL",
+        "config" : {
+          "sql" : "SELECT ct.pap_smear_results FROM mamba_fact_encounter_cacx_treatment ct WHERE ct.client_id = :patientId ORDER BY ct.encounter_date DESC LIMIT 1"
+        }
+      },
+      "repeatResolution" : {
+        "strategy" : "LATEST",
+        "restrictToPeriod" : false,
+        "ignoreVoided" : false
+      },
+      "_metadata" : {
+        "id" : "col-17",
+        "position" : 17
+      }
+    }, {
+      "name" : "Histology Results",
+      "key" : "histology_results",
+      "dataDefinition" : {
+        "type" : "SQL",
+        "config" : {
+          "sql" : "SELECT ct.histology_results FROM mamba_fact_encounter_cacx_treatment ct WHERE ct.client_id = :patientId ORDER BY ct.encounter_date DESC LIMIT 1"
+        }
+      },
+      "repeatResolution" : {
+        "strategy" : "LATEST",
+        "restrictToPeriod" : false,
+        "ignoreVoided" : false
+      },
+      "_metadata" : {
+        "id" : "col-18",
+        "position" : 18
+      }
+    }, {
+      "name" : "Treatment Provided",
+      "key" : "treatment_provided",
+      "dataDefinition" : {
+        "type" : "SQL",
+        "config" : {
+          "sql" : "SELECT ct.treatment_provided FROM mamba_fact_encounter_cacx_treatment ct WHERE ct.client_id = :patientId ORDER BY ct.encounter_date DESC LIMIT 1"
+        }
+      },
+      "repeatResolution" : {
+        "strategy" : "LATEST",
+        "restrictToPeriod" : false,
+        "ignoreVoided" : false
+      },
+      "_metadata" : {
+        "id" : "col-19",
+        "position" : 19
+      }
+    }, {
+      "name" : "Other Treatment",
+      "key" : "other_treatment",
+      "dataDefinition" : {
+        "type" : "SQL",
+        "config" : {
+          "sql" : "SELECT ct.other_treatment_provided FROM mamba_fact_encounter_cacx_treatment ct WHERE ct.client_id = :patientId ORDER BY ct.encounter_date DESC LIMIT 1"
+        }
+      },
+      "repeatResolution" : {
+        "strategy" : "LATEST",
+        "restrictToPeriod" : false,
+        "ignoreVoided" : false
+      },
+      "_metadata" : {
+        "id" : "col-20",
+        "position" : 20
+      }
+    }, {
+      "name" : "Timelines",
+      "key" : "timelines",
+      "dataDefinition" : {
+        "type" : "SQL",
+        "config" : {
+          "sql" : "SELECT ct.timelines FROM mamba_fact_encounter_cacx_treatment ct WHERE ct.client_id = :patientId ORDER BY ct.encounter_date DESC LIMIT 1"
+        }
+      },
+      "repeatResolution" : {
+        "strategy" : "LATEST",
+        "restrictToPeriod" : false,
+        "ignoreVoided" : false
+      },
+      "_metadata" : {
+        "id" : "col-21",
+        "position" : 21
+      }
+    }, {
+      "name" : "Reasons for Postponing",
+      "key" : "reasons_for_postponing",
+      "dataDefinition" : {
+        "type" : "SQL",
+        "config" : {
+          "sql" : "SELECT ct.reasons_for_postponing FROM mamba_fact_encounter_cacx_treatment ct WHERE ct.client_id = :patientId ORDER BY ct.encounter_date DESC LIMIT 1"
+        }
+      },
+      "repeatResolution" : {
+        "strategy" : "LATEST",
+        "restrictToPeriod" : false,
+        "ignoreVoided" : false
+      },
+      "_metadata" : {
+        "id" : "col-22",
+        "position" : 22
+      }
+    }, {
+      "name" : "Referred Out",
+      "key" : "referred_out",
+      "dataDefinition" : {
+        "type" : "SQL",
+        "config" : {
+          "sql" : "SELECT ct.referred_out FROM mamba_fact_encounter_cacx_treatment ct WHERE ct.client_id = :patientId ORDER BY ct.encounter_date DESC LIMIT 1"
+        }
+      },
+      "repeatResolution" : {
+        "strategy" : "LATEST",
+        "restrictToPeriod" : false,
+        "ignoreVoided" : false
+      },
+      "_metadata" : {
+        "id" : "col-23",
+        "position" : 23
+      }
+    }, {
+      "name" : "Reasons for Referral",
+      "key" : "reasons_for_referral",
+      "dataDefinition" : {
+        "type" : "SQL",
+        "config" : {
+          "sql" : "SELECT ct.reasons_for_referral FROM mamba_fact_encounter_cacx_treatment ct WHERE ct.client_id = :patientId ORDER BY ct.encounter_date DESC LIMIT 1"
+        }
+      },
+      "repeatResolution" : {
+        "strategy" : "LATEST",
+        "restrictToPeriod" : false,
+        "ignoreVoided" : false
+      },
+      "_metadata" : {
+        "id" : "col-24",
+        "position" : 24
+      }
+    }, {
+      "name" : "Facility Referred To",
+      "key" : "facility_referred_to",
+      "dataDefinition" : {
+        "type" : "SQL",
+        "config" : {
+          "sql" : "SELECT ct.health_facility_referred_to FROM mamba_fact_encounter_cacx_treatment ct WHERE ct.client_id = :patientId ORDER BY ct.encounter_date DESC LIMIT 1"
+        }
+      },
+      "repeatResolution" : {
+        "strategy" : "LATEST",
+        "restrictToPeriod" : false,
+        "ignoreVoided" : false
+      },
+      "_metadata" : {
+        "id" : "col-25",
+        "position" : 25
+      }
+    }, {
+      "name" : "Service Offered",
+      "key" : "service_offered",
+      "dataDefinition" : {
+        "type" : "SQL",
+        "config" : {
+          "sql" : "SELECT ct.service_offered FROM mamba_fact_encounter_cacx_treatment ct WHERE ct.client_id = :patientId ORDER BY ct.encounter_date DESC LIMIT 1"
+        }
+      },
+      "repeatResolution" : {
+        "strategy" : "LATEST",
+        "restrictToPeriod" : false,
+        "ignoreVoided" : false
+      },
+      "_metadata" : {
+        "id" : "col-26",
+        "position" : 26
+      }
+    }, {
+      "name" : "Date Service Offered",
+      "key" : "date_service_offered",
+      "dataDefinition" : {
+        "type" : "SQL",
+        "config" : {
+          "sql" : "SELECT ct.date_service_offered FROM mamba_fact_encounter_cacx_treatment ct WHERE ct.client_id = :patientId ORDER BY ct.encounter_date DESC LIMIT 1"
+        }
+      },
+      "repeatResolution" : {
+        "strategy" : "LATEST",
+        "restrictToPeriod" : false,
+        "ignoreVoided" : false
+      },
+      "_metadata" : {
+        "id" : "col-27",
+        "position" : 27
+      }
+    } ]
+  } ]
+}

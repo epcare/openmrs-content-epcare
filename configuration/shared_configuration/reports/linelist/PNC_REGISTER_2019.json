@@ -1,0 +1,422 @@
+{
+  "name" : "PNC Register 2019",
+  "description" : "PNC Register 2019 - Postnatal care register with comprehensive mother and baby health tracking",
+  "category" : "FACILITY REPORTS",
+  "reportType" : "LINE_LIST",
+  "limit" : 1000,
+  "parameters" : [ {
+    "name" : "startDate",
+    "label" : "Start Date",
+    "type" : "DATE",
+    "required" : true
+  }, {
+    "name" : "endDate",
+    "label" : "End Date",
+    "type" : "DATE",
+    "required" : true
+  }, {
+    "name" : "location",
+    "label" : "Location",
+    "type" : "LOCATION",
+    "required" : true
+  } ],
+  "baseCohortDefinition" : {
+    "type" : "SQL",
+    "name" : "Female patients with Maternity/PNC encounters between dates",
+    "config" : {
+      "sql" : "SELECT DISTINCT e.patient_id\nFROM encounter e\nINNER JOIN person p ON e.patient_id = p.person_id\nWHERE p.gender = 'F'\nAND e.encounter_type = (SELECT encounter_type_id FROM encounter_type WHERE uuid = '8d5b27bc-c2cc-11de-8d13-0010c6dffd0f')\nAND e.encounter_datetime BETWEEN :startDate AND :endDate\nAND e.voided = 0"
+    }
+  },
+  "dataSetDefinitions" : [ {
+    "name" : "PNC_REGISTER_2019",
+    "type" : "PATIENT_DATA_SET",
+    "rowFilter" : {
+      "type" : "SQL",
+      "name" : "Female patients with Maternity/PNC encounters between dates",
+      "config" : {
+        "sql" : "SELECT DISTINCT e.patient_id\nFROM encounter e\nINNER JOIN person p ON e.patient_id = p.person_id\nWHERE p.gender = 'F'\nAND e.encounter_type = (SELECT encounter_type_id FROM encounter_type WHERE uuid = '8d5b27bc-c2cc-11de-8d13-0010c6dffd0f')\nAND e.encounter_datetime BETWEEN :startDate AND :endDate\nAND e.voided = 0"
+      }
+    },
+    "columns" : [ {
+      "name" : "Clinic Number",
+      "key" : "clinic_number",
+      "dataDefinition" : {
+        "type" : "IDENTIFIER",
+        "config" : {
+          "identifierTypeUuid" : "e1731641-30ab-102d-86b0-7a5022ba4115",
+          "preferred" : true
+        }
+      },
+      "repeatResolution" : {
+        "strategy" : "LATEST",
+        "restrictToPeriod" : false,
+        "ignoreVoided" : true
+      }
+    }, {
+      "name" : "Mother Name",
+      "key" : "mother_name",
+      "dataDefinition" : {
+        "type" : "PERSON_NAME",
+        "config" : {
+          "type" : "FULL_NAME",
+          "preferred" : true
+        }
+      }
+    }, {
+      "name" : "Age",
+      "key" : "age",
+      "dataDefinition" : {
+        "type" : "CALCULATION",
+        "config" : {
+          "calculation" : "AGE",
+          "onDate" : ":endDate"
+        }
+      }
+    }, {
+      "name" : "Delivery Date",
+      "key" : "delivery_date",
+      "dataDefinition" : {
+        "type" : "OBSERVATION",
+        "config" : {
+          "conceptUuid" : "5553AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+          "conceptName" : "DATE OF DELIVERY",
+          "strategy" : "LATEST"
+        }
+      },
+      "repeatResolution" : {
+        "strategy" : "LATEST",
+        "restrictToPeriod" : true,
+        "ignoreVoided" : true
+      }
+    }, {
+      "name" : "Delivery Mode",
+      "key" : "delivery_mode",
+      "dataDefinition" : {
+        "type" : "OBSERVATION",
+        "config" : {
+          "conceptUuid" : "5554AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+          "conceptName" : "MODE OF DELIVERY",
+          "strategy" : "LATEST",
+          "returnDisplay" : true
+        }
+      },
+      "repeatResolution" : {
+        "strategy" : "LATEST",
+        "restrictToPeriod" : true,
+        "ignoreVoided" : true
+      }
+    }, {
+      "name" : "Baby Sex",
+      "key" : "baby_sex",
+      "dataDefinition" : {
+        "type" : "OBSERVATION",
+        "config" : {
+          "conceptUuid" : "5555AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+          "conceptName" : "BABY SEX",
+          "strategy" : "LATEST",
+          "returnDisplay" : true
+        }
+      },
+      "repeatResolution" : {
+        "strategy" : "LATEST",
+        "restrictToPeriod" : true,
+        "ignoreVoided" : true
+      }
+    }, {
+      "name" : "Baby Weight (kg)",
+      "key" : "baby_weight",
+      "dataDefinition" : {
+        "type" : "OBSERVATION",
+        "config" : {
+          "conceptUuid" : "5556AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+          "conceptName" : "BIRTH WEIGHT",
+          "strategy" : "LATEST"
+        }
+      },
+      "repeatResolution" : {
+        "strategy" : "LATEST",
+        "restrictToPeriod" : true,
+        "ignoreVoided" : true
+      }
+    }, {
+      "name" : "PNC 1 (48hrs)",
+      "key" : "pnc_1_done",
+      "dataDefinition" : {
+        "type" : "SQL",
+        "config" : {
+          "sql" : "SELECT CASE WHEN COUNT(*) > 0 THEN 'Yes' ELSE 'No' END FROM obs o INNER JOIN encounter e ON o.encounter_id = e.encounter_id INNER JOIN encounter_type et ON e.encounter_type = et.encounter_type_id WHERE o.person_id = :patientId AND et.uuid IN ('8d5b27bc-c2cc-11de-8d13-0010c6dffd0f', '8d5b2be0-c2cc-11de-8d13-0010c6dffd0f') AND o.concept_id IN (SELECT concept_id FROM concept_name WHERE name LIKE '%PNC%' AND locale = 'en') AND TIMESTAMPDIFF(HOUR, (SELECT value_datetime FROM obs WHERE person_id = :patientId AND concept_id = (SELECT concept_id FROM concept WHERE uuid = '5553AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA') ORDER BY obs_datetime DESC LIMIT 1), e.encounter_datetime) <= 48 AND e.voided = 0"
+        }
+      },
+      "repeatResolution" : {
+        "strategy" : "LATEST",
+        "restrictToPeriod" : true,
+        "ignoreVoided" : true
+      }
+    }, {
+      "name" : "PNC 2 (6 days)",
+      "key" : "pnc_2_done",
+      "dataDefinition" : {
+        "type" : "SQL",
+        "config" : {
+          "sql" : "SELECT CASE WHEN COUNT(*) > 0 THEN 'Yes' ELSE 'No' END FROM obs o INNER JOIN encounter e ON o.encounter_id = e.encounter_id INNER JOIN encounter_type et ON e.encounter_type = et.encounter_type_id WHERE o.person_id = :patientId AND et.uuid IN ('8d5b27bc-c2cc-11de-8d13-0010c6dffd0f', '8d5b2be0-c2cc-11de-8d13-0010c6dffd0f') AND o.concept_id IN (SELECT concept_id FROM concept_name WHERE name LIKE '%PNC%' AND locale = 'en') AND TIMESTAMPDIFF(DAY, (SELECT value_datetime FROM obs WHERE person_id = :patientId AND concept_id = (SELECT concept_id FROM concept WHERE uuid = '5553AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA') ORDER BY obs_datetime DESC LIMIT 1), e.encounter_datetime) BETWEEN 2 AND 6 AND e.voided = 0"
+        }
+      },
+      "repeatResolution" : {
+        "strategy" : "LATEST",
+        "restrictToPeriod" : true,
+        "ignoreVoided" : true
+      }
+    }, {
+      "name" : "PNC 3 (6 weeks)",
+      "key" : "pnc_3_done",
+      "dataDefinition" : {
+        "type" : "SQL",
+        "config" : {
+          "sql" : "SELECT CASE WHEN COUNT(*) > 0 THEN 'Yes' ELSE 'No' END FROM obs o INNER JOIN encounter e ON o.encounter_id = e.encounter_id INNER JOIN encounter_type et ON e.encounter_type = et.encounter_type_id WHERE o.person_id = :patientId AND et.uuid IN ('8d5b27bc-c2cc-11de-8d13-0010c6dffd0f', '8d5b2be0-c2cc-11de-8d13-0010c6dffd0f') AND o.concept_id IN (SELECT concept_id FROM concept_name WHERE name LIKE '%PNC%' AND locale = 'en') AND TIMESTAMPDIFF(DAY, (SELECT value_datetime FROM obs WHERE person_id = :patientId AND concept_id = (SELECT concept_id FROM concept WHERE uuid = '5553AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA') ORDER BY obs_datetime DESC LIMIT 1), e.encounter_datetime) BETWEEN 7 AND 42 AND e.voided = 0"
+        }
+      },
+      "repeatResolution" : {
+        "strategy" : "LATEST",
+        "restrictToPeriod" : true,
+        "ignoreVoided" : true
+      }
+    }, {
+      "name" : "PNC 4 (6 months)",
+      "key" : "pnc_4_done",
+      "dataDefinition" : {
+        "type" : "SQL",
+        "config" : {
+          "sql" : "SELECT CASE WHEN COUNT(*) > 0 THEN 'Yes' ELSE 'No' END FROM obs o INNER JOIN encounter e ON o.encounter_id = e.encounter_id INNER JOIN encounter_type et ON e.encounter_type = et.encounter_type_id WHERE o.person_id = :patientId AND et.uuid IN ('8d5b27bc-c2cc-11de-8d13-0010c6dffd0f', '8d5b2be0-c2cc-11de-8d13-0010c6dffd0f') AND o.concept_id IN (SELECT concept_id FROM concept_name WHERE name LIKE '%PNC%' AND locale = 'en') AND TIMESTAMPDIFF(DAY, (SELECT value_datetime FROM obs WHERE person_id = :patientId AND concept_id = (SELECT concept_id FROM concept WHERE uuid = '5553AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA') ORDER BY obs_datetime DESC LIMIT 1), e.encounter_datetime) BETWEEN 43 AND 180 AND e.voided = 0"
+        }
+      },
+      "repeatResolution" : {
+        "strategy" : "LATEST",
+        "restrictToPeriod" : true,
+        "ignoreVoided" : true
+      }
+    }, {
+      "name" : "Mother HIV Status",
+      "key" : "mother_hiv_status",
+      "dataDefinition" : {
+        "type" : "OBSERVATION",
+        "config" : {
+          "conceptUuid" : "f2ba3c44-e3e6-49d9-a1b5-26b8d0db75fe",
+          "conceptName" : "MOTHER HIV STATUS",
+          "strategy" : "LATEST",
+          "returnDisplay" : true
+        }
+      },
+      "repeatResolution" : {
+        "strategy" : "LATEST",
+        "restrictToPeriod" : true,
+        "ignoreVoided" : true
+      }
+    }, {
+      "name" : "Mother on ART",
+      "key" : "mother_on_art",
+      "dataDefinition" : {
+        "type" : "OBSERVATION",
+        "config" : {
+          "conceptUuid" : "5538AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+          "conceptName" : "MOTHER ON ART",
+          "strategy" : "LATEST",
+          "returnDisplay" : true
+        }
+      },
+      "repeatResolution" : {
+        "strategy" : "LATEST",
+        "restrictToPeriod" : true,
+        "ignoreVoided" : true
+      }
+    }, {
+      "name" : "Baby HIV Test",
+      "key" : "baby_hiv_test",
+      "dataDefinition" : {
+        "type" : "OBSERVATION",
+        "config" : {
+          "conceptUuid" : "5557AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+          "conceptName" : "HIV TEST DONE",
+          "strategy" : "LATEST",
+          "returnDisplay" : true
+        }
+      },
+      "repeatResolution" : {
+        "strategy" : "LATEST",
+        "restrictToPeriod" : true,
+        "ignoreVoided" : true
+      }
+    }, {
+      "name" : "Baby HIV Result",
+      "key" : "baby_hiv_result",
+      "dataDefinition" : {
+        "type" : "OBSERVATION",
+        "config" : {
+          "conceptUuid" : "5558AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+          "conceptName" : "HIV TEST RESULT",
+          "strategy" : "LATEST",
+          "returnDisplay" : true
+        }
+      },
+      "repeatResolution" : {
+        "strategy" : "LATEST",
+        "restrictToPeriod" : true,
+        "ignoreVoided" : true
+      }
+    }, {
+      "name" : "Baby NVP Given",
+      "key" : "baby_nvp",
+      "dataDefinition" : {
+        "type" : "OBSERVATION",
+        "config" : {
+          "conceptUuid" : "5559AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+          "conceptName" : "NEVIRAPINE GIVEN TO BABY",
+          "strategy" : "LATEST",
+          "returnDisplay" : true
+        }
+      },
+      "repeatResolution" : {
+        "strategy" : "LATEST",
+        "restrictToPeriod" : true,
+        "ignoreVoided" : true
+      }
+    }, {
+      "name" : "Baby Cotrimoxazole",
+      "key" : "baby_cotrimoxazole",
+      "dataDefinition" : {
+        "type" : "OBSERVATION",
+        "config" : {
+          "conceptUuid" : "1653AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+          "conceptName" : "COTRIMOXAZOLE PROPHYLAXIS",
+          "strategy" : "LATEST",
+          "returnDisplay" : true
+        }
+      },
+      "repeatResolution" : {
+        "strategy" : "LATEST",
+        "restrictToPeriod" : true,
+        "ignoreVoided" : true
+      }
+    }, {
+      "name" : "Baby BCG",
+      "key" : "baby_bcg",
+      "dataDefinition" : {
+        "type" : "OBSERVATION",
+        "config" : {
+          "conceptUuid" : "5560AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+          "conceptName" : "BCG GIVEN",
+          "strategy" : "LATEST",
+          "returnDisplay" : true
+        }
+      },
+      "repeatResolution" : {
+        "strategy" : "LATEST",
+        "restrictToPeriod" : true,
+        "ignoreVoided" : true
+      }
+    }, {
+      "name" : "Baby OPV 0",
+      "key" : "baby_opv0",
+      "dataDefinition" : {
+        "type" : "OBSERVATION",
+        "config" : {
+          "conceptUuid" : "5561AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+          "conceptName" : "OPV DOSE 0 GIVEN",
+          "strategy" : "LATEST",
+          "returnDisplay" : true
+        }
+      },
+      "repeatResolution" : {
+        "strategy" : "LATEST",
+        "restrictToPeriod" : true,
+        "ignoreVoided" : true
+      }
+    }, {
+      "name" : "Exclusive Breastfeeding",
+      "key" : "breastfeeding",
+      "dataDefinition" : {
+        "type" : "OBSERVATION",
+        "config" : {
+          "conceptUuid" : "5562AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+          "conceptName" : "EXCLUSIVE BREASTFEEDING",
+          "strategy" : "LATEST",
+          "returnDisplay" : true
+        }
+      },
+      "repeatResolution" : {
+        "strategy" : "LATEST",
+        "restrictToPeriod" : true,
+        "ignoreVoided" : true
+      }
+    }, {
+      "name" : "Mother VL",
+      "key" : "mother_vl",
+      "dataDefinition" : {
+        "type" : "OBSERVATION",
+        "config" : {
+          "conceptUuid" : "856AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+          "conceptName" : "VIRAL LOAD",
+          "strategy" : "LATEST"
+        }
+      },
+      "repeatResolution" : {
+        "strategy" : "LATEST",
+        "restrictToPeriod" : true,
+        "ignoreVoided" : true
+      }
+    }, {
+      "name" : "Mother CD4",
+      "key" : "mother_cd4",
+      "dataDefinition" : {
+        "type" : "OBSERVATION",
+        "config" : {
+          "conceptUuid" : "5563AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+          "conceptName" : "CD4 COUNT",
+          "strategy" : "LATEST"
+        }
+      },
+      "repeatResolution" : {
+        "strategy" : "LATEST",
+        "restrictToPeriod" : true,
+        "ignoreVoided" : true
+      }
+    }, {
+      "name" : "Family Planning Method",
+      "key" : "family_planning",
+      "dataDefinition" : {
+        "type" : "OBSERVATION",
+        "config" : {
+          "conceptUuid" : "5564AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+          "conceptName" : "FAMILY PLANNING METHOD",
+          "strategy" : "LATEST",
+          "returnDisplay" : true
+        }
+      },
+      "repeatResolution" : {
+        "strategy" : "LATEST",
+        "restrictToPeriod" : true,
+        "ignoreVoided" : true
+      }
+    }, {
+      "name" : "Cancer Screening",
+      "key" : "cervical_cancer_screening",
+      "dataDefinition" : {
+        "type" : "OBSERVATION",
+        "config" : {
+          "conceptUuid" : "5565AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+          "conceptName" : "CERVICAL CANCER SCREENING",
+          "strategy" : "LATEST",
+          "returnDisplay" : true
+        }
+      },
+      "repeatResolution" : {
+        "strategy" : "LATEST",
+        "restrictToPeriod" : true,
+        "ignoreVoided" : true
+      }
+    } ]
+  } ],
+  "categoryUuid" : "d947663c-24e8-11f1-b92d-f69d311cf98f",
+  "reportBuilderReportUuid" : "2220a42b-894f-4cf5-8259-caac3003e068",
+  "reportDefinitionUuid" : "f187d691-60c7-48a5-ae0f-d5c60c4aca55",
+  "reportLibraryUuid" : "f7fa26fa-d5ef-447d-a164-369fedcba9db"
+}

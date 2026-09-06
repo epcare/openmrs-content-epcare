@@ -1,0 +1,348 @@
+{
+  "name" : "Stability Assessment Report",
+  "description" : "This report shows Stability Assessment for patients having drugs",
+  "category" : "FACILITY_REPORTS",
+  "reportType" : "LINELIST",
+  "limit" : 1000,
+  "parameters" : [ {
+    "name" : "startDate",
+    "label" : "Start Date",
+    "type" : "DATE",
+    "required" : true
+  }, {
+    "name" : "endDate",
+    "label" : "End Date",
+    "type" : "DATE",
+    "required" : true
+  } ],
+  "baseCohortDefinition" : {
+    "type" : "SQL",
+    "name" : "Patients having regimen during period",
+    "config" : {
+      "sql" : "SELECT DISTINCT o.person_id FROM obs o INNER JOIN encounter e ON o.encounter_id = e.encounter_id WHERE o.concept_id IN (SELECT concept_id FROM concept WHERE uuid IN ('e5aaaa9a-2224-42c7-b6d3-efd6a56064da', '162942AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA')) AND o.value_coded IS NOT NULL AND e.encounter_type IN (SELECT encounter_type_id FROM encounter_type WHERE uuid = '8d5b27bc-c2cc-11de-8d13-0010c6dffd0f') AND e.encounter_datetime >= :startDate AND e.encounter_datetime <= :endDate AND o.voided = 0 AND e.voided = 0"
+    }
+  },
+  "dataSetDefinitions" : [ {
+    "name" : "STABILITYASSESSMENT",
+    "type" : "PATIENT_DATA_SET",
+    "rowFilter" : {
+      "type" : "SQL",
+      "name" : "Patients having regimen during period",
+      "config" : {
+        "sql" : "SELECT DISTINCT o.person_id FROM obs o INNER JOIN encounter e ON o.encounter_id = e.encounter_id WHERE o.concept_id IN (SELECT concept_id FROM concept WHERE uuid IN ('e5aaaa9a-2224-42c7-b6d3-efd6a56064da', '162942AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA')) AND o.value_coded IS NOT NULL AND e.encounter_type IN (SELECT encounter_type_id FROM encounter_type WHERE uuid = '8d5b27bc-c2cc-11de-8d13-0010c6dffd0f') AND e.encounter_datetime >= :startDate AND e.encounter_datetime <= :endDate AND o.voided = 0 AND e.voided = 0"
+      }
+    },
+    "columns" : [ {
+      "name" : "Clinic number",
+      "key" : "clinic_number",
+      "dataDefinition" : {
+        "type" : "IDENTIFIER",
+        "config" : {
+          "identifierTypeUuid" : "e1731641-30ab-102d-86b0-7a5022ba4115",
+          "preferred" : true
+        }
+      }
+    }, {
+      "name" : "Middle Name",
+      "key" : "middle_name",
+      "dataDefinition" : {
+        "type" : "PERSON_NAME",
+        "config" : {
+          "type" : "MIDDLE_NAME",
+          "preferred" : true
+        }
+      }
+    }, {
+      "name" : "Surname",
+      "key" : "surname",
+      "dataDefinition" : {
+        "type" : "PERSON_NAME",
+        "config" : {
+          "type" : "FAMILY_NAME",
+          "preferred" : true
+        }
+      }
+    }, {
+      "name" : "Given Name",
+      "key" : "given_name",
+      "dataDefinition" : {
+        "type" : "PERSON_NAME",
+        "config" : {
+          "type" : "GIVEN_NAME",
+          "preferred" : true
+        }
+      }
+    }, {
+      "name" : "Sex",
+      "key" : "sex",
+      "dataDefinition" : {
+        "type" : "PERSON_ATTRIBUTE",
+        "config" : {
+          "type" : "GENDER"
+        }
+      }
+    }, {
+      "name" : "Birth Date",
+      "key" : "birth_date",
+      "dataDefinition" : {
+        "type" : "PERSON_ATTRIBUTE",
+        "config" : {
+          "type" : "BIRTHDATE"
+        }
+      },
+      "repeatResolution" : {
+        "strategy" : "LATEST",
+        "restrictToPeriod" : false,
+        "ignoreVoided" : true
+      }
+    }, {
+      "name" : "Parish",
+      "key" : "parish",
+      "dataDefinition" : {
+        "type" : "PERSON_ADDRESS",
+        "config" : {
+          "type" : "ADDRESS_FIELD",
+          "field" : "address4"
+        }
+      }
+    }, {
+      "name" : "Village",
+      "key" : "village",
+      "dataDefinition" : {
+        "type" : "PERSON_ADDRESS",
+        "config" : {
+          "type" : "ADDRESS_FIELD",
+          "field" : "address5"
+        }
+      }
+    }, {
+      "name" : "Art Start Date",
+      "key" : "art_start_date",
+      "dataDefinition" : {
+        "type" : "SQL",
+        "config" : {
+          "sql" : "SELECT DATE(value_datetime) FROM obs WHERE concept_id = 99161 AND person_id = :patientId AND voided = 0 ORDER BY obs_datetime ASC LIMIT 1"
+        }
+      },
+      "repeatResolution" : {
+        "strategy" : "LATEST",
+        "restrictToPeriod" : false,
+        "ignoreVoided" : true,
+        "orderBy" : "obs_datetime"
+      }
+    }, {
+      "name" : "Regimen Start Date",
+      "key" : "regimen_start_date",
+      "dataDefinition" : {
+        "type" : "SQL",
+        "config" : {
+          "sql" : "SELECT MIN(DATE(o.obs_datetime)) FROM obs o WHERE o.concept_id IN (SELECT concept_id FROM concept WHERE uuid IN ('e5aaaa9a-2224-42c7-b6d3-efd6a56064da', '162942AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA')) AND o.person_id = :patientId AND o.voided = 0"
+        }
+      },
+      "repeatResolution" : {
+        "strategy" : "LATEST",
+        "restrictToPeriod" : false,
+        "ignoreVoided" : true,
+        "orderBy" : "obs_datetime"
+      }
+    }, {
+      "name" : "VL Date",
+      "key" : "vl_date",
+      "dataDefinition" : {
+        "type" : "SQL",
+        "config" : {
+          "sql" : "SELECT DATE(obs_datetime) FROM obs WHERE concept_id = 856 AND person_id = :patientId AND obs_datetime <= :endDate AND voided = 0 ORDER BY obs_datetime DESC LIMIT 1"
+        }
+      },
+      "repeatResolution" : {
+        "strategy" : "LATEST",
+        "restrictToPeriod" : false,
+        "ignoreVoided" : true,
+        "orderBy" : "obs_datetime"
+      }
+    }, {
+      "name" : "Clinic Stage",
+      "key" : "clinic_stage",
+      "dataDefinition" : {
+        "type" : "SQL",
+        "config" : {
+          "sql" : "SELECT (SELECT cn.name FROM concept_name cn WHERE cn.concept_id = o.value_coded AND cn.locale = 'en' AND cn.concept_name_type = 'FULLY_SPECIFIED' AND cn.voided = 0) FROM obs o WHERE o.concept_id = (SELECT concept_id FROM concept WHERE uuid = 'e5d967a6-1d5f-11e0-b929-000c29ad1d07') AND o.person_id = :patientId AND o.voided = 0 ORDER BY o.obs_datetime DESC LIMIT 1"
+        }
+      },
+      "repeatResolution" : {
+        "strategy" : "LATEST",
+        "restrictToPeriod" : false,
+        "ignoreVoided" : true,
+        "orderBy" : "obs_datetime"
+      }
+    }, {
+      "name" : "VL Quantitative",
+      "key" : "vl_quantitative",
+      "dataDefinition" : {
+        "type" : "SQL",
+        "config" : {
+          "sql" : "SELECT value_numeric FROM obs WHERE concept_id = 856 AND person_id = :patientId AND obs_datetime <= :endDate AND voided = 0 ORDER BY obs_datetime DESC LIMIT 1"
+        }
+      },
+      "repeatResolution" : {
+        "strategy" : "LATEST",
+        "restrictToPeriod" : false,
+        "ignoreVoided" : true,
+        "orderBy" : "obs_datetime"
+      }
+    }, {
+      "name" : "Current Regimen",
+      "key" : "current_regimen",
+      "dataDefinition" : {
+        "type" : "SQL",
+        "config" : {
+          "sql" : "SELECT (SELECT cn.name FROM concept_name cn WHERE cn.concept_id = o.value_coded AND cn.locale = 'en' AND cn.concept_name_type = 'FULLY_SPECIFIED' AND cn.voided = 0) FROM obs o WHERE o.concept_id = (SELECT concept_id FROM concept WHERE uuid IN ('e5aaaa9a-2224-42c7-b6d3-efd6a56064da', '162942AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA')) AND o.person_id = :patientId AND o.obs_datetime <= :endDate AND o.voided = 0 ORDER BY o.obs_datetime DESC LIMIT 1"
+        }
+      },
+      "repeatResolution" : {
+        "strategy" : "LATEST",
+        "restrictToPeriod" : false,
+        "ignoreVoided" : true,
+        "orderBy" : "obs_datetime"
+      }
+    }, {
+      "name" : "Model",
+      "key" : "model",
+      "dataDefinition" : {
+        "type" : "SQL",
+        "config" : {
+          "sql" : "SELECT (SELECT cn.name FROM concept_name cn WHERE cn.concept_id = o.value_coded AND cn.locale = 'en' AND cn.concept_name_type = 'FULLY_SPECIFIED' AND cn.voided = 0) FROM obs o WHERE o.concept_id = (SELECT concept_id FROM concept WHERE uuid = '164960AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA') AND o.person_id = :patientId AND o.voided = 0 ORDER BY o.obs_datetime DESC LIMIT 1"
+        }
+      },
+      "repeatResolution" : {
+        "strategy" : "LATEST",
+        "restrictToPeriod" : false,
+        "ignoreVoided" : true,
+        "orderBy" : "obs_datetime"
+      }
+    }, {
+      "name" : "Date Enrolled",
+      "key" : "date_enrolled",
+      "dataDefinition" : {
+        "type" : "SQL",
+        "config" : {
+          "sql" : "SELECT DATE(o.value_datetime) FROM obs o WHERE o.concept_id = (SELECT concept_id FROM concept WHERE uuid = '164960AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA') AND o.person_id = :patientId AND o.voided = 0 ORDER BY o.obs_datetime DESC LIMIT 1"
+        }
+      },
+      "repeatResolution" : {
+        "strategy" : "LATEST",
+        "restrictToPeriod" : false,
+        "ignoreVoided" : true,
+        "orderBy" : "obs_datetime"
+      }
+    }, {
+      "name" : "Age",
+      "key" : "age",
+      "dataDefinition" : {
+        "type" : "CALCULATION",
+        "config" : {
+          "calculation" : "AGE",
+          "onDate" : "${endDate}"
+        }
+      }
+    }, {
+      "name" : "1",
+      "key" : "1",
+      "dataDefinition" : {
+        "type" : "SQL",
+        "config" : {
+          "sql" : "SELECT CASE WHEN COUNT(DISTINCT DATE(e.encounter_datetime)) >= 1 THEN 'Y' ELSE 'N' END FROM encounter e WHERE e.patient_id = :patientId AND e.encounter_type IN (SELECT encounter_type_id FROM encounter_type WHERE uuid IN ('8d5b27bc-c2cc-11de-8d13-0010c6dffd0f', '8d5b2be0-c2cc-11de-8d13-0010c6dffd0f')) AND e.encounter_datetime >= DATE_SUB(:endDate, INTERVAL 1 MONTH) AND e.encounter_datetime <= :endDate AND e.voided = 0"
+        }
+      },
+      "repeatResolution" : {
+        "strategy" : "LATEST",
+        "restrictToPeriod" : false,
+        "ignoreVoided" : true
+      }
+    }, {
+      "name" : "2",
+      "key" : "2",
+      "dataDefinition" : {
+        "type" : "SQL",
+        "config" : {
+          "sql" : "SELECT CASE WHEN COUNT(DISTINCT DATE(e.encounter_datetime)) >= 1 THEN 'Y' ELSE 'N' END FROM encounter e WHERE e.patient_id = :patientId AND e.encounter_type IN (SELECT encounter_type_id FROM encounter_type WHERE uuid IN ('8d5b27bc-c2cc-11de-8d13-0010c6dffd0f', '8d5b2be0-c2cc-11de-8d13-0010c6dffd0f')) AND e.encounter_datetime >= DATE_SUB(:endDate, INTERVAL 2 MONTH) AND e.encounter_datetime < DATE_SUB(:endDate, INTERVAL 1 MONTH) AND e.voided = 0"
+        }
+      },
+      "repeatResolution" : {
+        "strategy" : "LATEST",
+        "restrictToPeriod" : false,
+        "ignoreVoided" : true
+      }
+    }, {
+      "name" : "3",
+      "key" : "3",
+      "dataDefinition" : {
+        "type" : "SQL",
+        "config" : {
+          "sql" : "SELECT CASE WHEN COUNT(DISTINCT DATE(e.encounter_datetime)) >= 1 THEN 'Y' ELSE 'N' END FROM encounter e WHERE e.patient_id = :patientId AND e.encounter_type IN (SELECT encounter_type_id FROM encounter_type WHERE uuid IN ('8d5b27bc-c2cc-11de-8d13-0010c6dffd0f', '8d5b2be0-c2cc-11de-8d13-0010c6dffd0f')) AND e.encounter_datetime >= DATE_SUB(:endDate, INTERVAL 3 MONTH) AND e.encounter_datetime < DATE_SUB(:endDate, INTERVAL 2 MONTH) AND e.voided = 0"
+        }
+      },
+      "repeatResolution" : {
+        "strategy" : "LATEST",
+        "restrictToPeriod" : false,
+        "ignoreVoided" : true
+      }
+    }, {
+      "name" : "4",
+      "key" : "4",
+      "dataDefinition" : {
+        "type" : "SQL",
+        "config" : {
+          "sql" : "SELECT CASE WHEN COUNT(DISTINCT DATE(e.encounter_datetime)) >= 1 THEN 'Y' ELSE 'N' END FROM encounter e WHERE e.patient_id = :patientId AND e.encounter_type IN (SELECT encounter_type_id FROM encounter_type WHERE uuid IN ('8d5b27bc-c2cc-11de-8d13-0010c6dffd0f', '8d5b2be0-c2cc-11de-8d13-0010c6dffd0f')) AND e.encounter_datetime >= DATE_SUB(:endDate, INTERVAL 4 MONTH) AND e.encounter_datetime < DATE_SUB(:endDate, INTERVAL 3 MONTH) AND e.voided = 0"
+        }
+      },
+      "repeatResolution" : {
+        "strategy" : "LATEST",
+        "restrictToPeriod" : false,
+        "ignoreVoided" : true
+      }
+    }, {
+      "name" : "5",
+      "key" : "5",
+      "dataDefinition" : {
+        "type" : "SQL",
+        "config" : {
+          "sql" : "SELECT CASE WHEN COUNT(DISTINCT DATE(e.encounter_datetime)) >= 1 THEN 'Y' ELSE 'N' END FROM encounter e WHERE e.patient_id = :patientId AND e.encounter_type IN (SELECT encounter_type_id FROM encounter_type WHERE uuid IN ('8d5b27bc-c2cc-11de-8d13-0010c6dffd0f', '8d5b2be0-c2cc-11de-8d13-0010c6dffd0f')) AND e.encounter_datetime >= DATE_SUB(:endDate, INTERVAL 5 MONTH) AND e.encounter_datetime < DATE_SUB(:endDate, INTERVAL 4 MONTH) AND e.voided = 0"
+        }
+      },
+      "repeatResolution" : {
+        "strategy" : "LATEST",
+        "restrictToPeriod" : false,
+        "ignoreVoided" : true
+      }
+    }, {
+      "name" : "6",
+      "key" : "6",
+      "dataDefinition" : {
+        "type" : "SQL",
+        "config" : {
+          "sql" : "SELECT CASE WHEN COUNT(DISTINCT DATE(e.encounter_datetime)) >= 1 THEN 'Y' ELSE 'N' END FROM encounter e WHERE e.patient_id = :patientId AND e.encounter_type IN (SELECT encounter_type_id FROM encounter_type WHERE uuid IN ('8d5b27bc-c2cc-11de-8d13-0010c6dffd0f', '8d5b2be0-c2cc-11de-8d13-0010c6dffd0f')) AND e.encounter_datetime >= DATE_SUB(:endDate, INTERVAL 6 MONTH) AND e.encounter_datetime < DATE_SUB(:endDate, INTERVAL 5 MONTH) AND e.voided = 0"
+        }
+      },
+      "repeatResolution" : {
+        "strategy" : "LATEST",
+        "restrictToPeriod" : false,
+        "ignoreVoided" : true
+      }
+    }, {
+      "name" : "Stable",
+      "key" : "stable",
+      "dataDefinition" : {
+        "type" : "SQL",
+        "config" : {
+          "sql" : "SELECT CASE WHEN (SELECT COUNT(DISTINCT DATE(e.encounter_datetime)) FROM encounter e WHERE e.patient_id = :patientId AND e.encounter_type IN (SELECT encounter_type_id FROM encounter_type WHERE uuid IN ('8d5b27bc-c2cc-11de-8d13-0010c6dffd0f', '8d5b2be0-c2cc-11de-8d13-0010c6dffd0f')) AND e.encounter_datetime >= DATE_SUB(:endDate, INTERVAL 6 MONTH) AND e.encounter_datetime <= :endDate AND e.voided = 0) >= 6 THEN 'Stable' ELSE 'Not Stable' END"
+        }
+      },
+      "repeatResolution" : {
+        "strategy" : "LATEST",
+        "restrictToPeriod" : false,
+        "ignoreVoided" : true
+      }
+    } ]
+  } ]
+}

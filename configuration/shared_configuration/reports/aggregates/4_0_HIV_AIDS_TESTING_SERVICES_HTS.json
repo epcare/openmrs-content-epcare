@@ -1,0 +1,2509 @@
+{
+  "version" : 1,
+  "name" : "4.0 HIV AIDS TESTING SERVICES (HTS)",
+  "code" : "4_0_HIV_AIDS_TESTING_SERVICES_HTS",
+  "report_fields" : [ {
+    "indicator_name" : "HT01a",
+    "indicator_label" : "HT01a Tested for HIV",
+    "subsection" : "HTS Register",
+    "sqlQuery" : "WITH base_pop AS (\n    SELECT DISTINCT a.client_id AS client_id\n  FROM mamba_fact_encounter_hts_card_v2 a\n  JOIN mamba_fact_patients_latest_patient_demographics mdp\n    ON mdp.client_id = a.client_id\n  WHERE\n    a.encounter_date >= :startDate\n    AND a.encounter_date <  :endDate\n    AND mdp.birthdate IS NOT NULL\n    AND mdp.gender IS NOT NULL\n    AND a.hts_delivery_model LIKE '%Facility%'\n),\nag AS (\n  SELECT\n    ag.age_group_id,\n    ag.label,\n    ag.min_age_days,\n    ag.max_age_days,\n    ag.sort_order\n  FROM report_builder_dim_age_group ag\n  JOIN report_builder_dim_age_category ac\n    ON ac.age_category_id = ag.age_category_id\n  WHERE ac.code = 'MOH_105_OPD_DIAG'\n    AND ag.is_active = 1\n),\ngenders AS (\n  SELECT 'F' AS gender\n  UNION ALL\n  SELECT 'M' AS gender\n),\ncnt AS (\n  SELECT\n    ag.age_group_id AS age_group_id,\n    mdp.gender AS gender,\n    COUNT(DISTINCT base_pop.client_id) AS value\n  FROM base_pop\n  JOIN mamba_fact_patients_latest_patient_demographics mdp\n    ON mdp.client_id = base_pop.client_id\n  JOIN ag\n    ON TIMESTAMPDIFF(DAY, mdp.birthdate, :endDate)\n       BETWEEN ag.min_age_days AND ag.max_age_days\n  WHERE mdp.birthdate IS NOT NULL\n    AND mdp.gender IS NOT NULL\n    AND mdp.gender IN ('F','M')\n  GROUP BY ag.age_group_id, mdp.gender\n)\nSELECT\n  ag.label AS age_group,\n  g.gender AS gender,\n  COALESCE(cnt.value, 0) AS value\nFROM ag\nCROSS JOIN genders g\nLEFT JOIN cnt\n    ON cnt.age_group_id = ag.age_group_id\n   AND cnt.gender = g.gender\nORDER BY ag.sort_order, g.gender;",
+    "dissaggregations" : [ "age_group", "gender" ],
+    "values" : [ {
+      "dissaggregations1" : "0-28d",
+      "disaggregation_code" : "D0_28",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "HT01a_D0_28_F"
+    }, {
+      "dissaggregations1" : "0-28d",
+      "disaggregation_code" : "D0_28",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "HT01a_D0_28_M"
+    }, {
+      "dissaggregations1" : "29d-4yrs",
+      "disaggregation_code" : "D29_4Y",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "HT01a_D29_4Y_F"
+    }, {
+      "dissaggregations1" : "29d-4yrs",
+      "disaggregation_code" : "D29_4Y",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "HT01a_D29_4Y_M"
+    }, {
+      "dissaggregations1" : "5-9yrs",
+      "disaggregation_code" : "Y5_9",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "HT01a_Y5_9_F"
+    }, {
+      "dissaggregations1" : "5-9yrs",
+      "disaggregation_code" : "Y5_9",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "HT01a_Y5_9_M"
+    }, {
+      "dissaggregations1" : "10-19yrs",
+      "disaggregation_code" : "Y10_19",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "HT01a_Y10_19_F"
+    }, {
+      "dissaggregations1" : "10-19yrs",
+      "disaggregation_code" : "Y10_19",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "HT01a_Y10_19_M"
+    }, {
+      "dissaggregations1" : "20+ yrs",
+      "disaggregation_code" : "Y20P",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "HT01a_Y20P_F"
+    }, {
+      "dissaggregations1" : "20+ yrs",
+      "disaggregation_code" : "Y20P",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "HT01a_Y20P_M"
+    } ]
+  }, {
+    "indicator_name" : "HT01b",
+    "indicator_label" : "HT01b New HIV Positive",
+    "subsection" : "HTS Register",
+    "sqlQuery" : "WITH base_pop AS (\n    SELECT DISTINCT a.client_id AS client_id\n  FROM mamba_fact_encounter_hts_card_v2 a\n  JOIN mamba_fact_patients_latest_patient_demographics mdp\n    ON mdp.client_id = a.client_id\n  WHERE\n    a.encounter_date >= :startDate\n    AND a.encounter_date <  :endDate\n    AND mdp.birthdate IS NOT NULL\n    AND mdp.gender IS NOT NULL\n    AND a.final_result = 'POSITIVE'\n    AND a.hts_delivery_model LIKE '%Facility%'\n),\nag AS (\n  SELECT\n    ag.age_group_id,\n    ag.label,\n    ag.min_age_days,\n    ag.max_age_days,\n    ag.sort_order\n  FROM report_builder_dim_age_group ag\n  JOIN report_builder_dim_age_category ac\n    ON ac.age_category_id = ag.age_category_id\n  WHERE ac.code = 'MOH_105_OPD_DIAG'\n    AND ag.is_active = 1\n),\ngenders AS (\n  SELECT 'F' AS gender\n  UNION ALL\n  SELECT 'M' AS gender\n),\ncnt AS (\n  SELECT\n    ag.age_group_id AS age_group_id,\n    mdp.gender AS gender,\n    COUNT(DISTINCT base_pop.client_id) AS value\n  FROM base_pop\n  JOIN mamba_fact_patients_latest_patient_demographics mdp\n    ON mdp.client_id = base_pop.client_id\n  JOIN ag\n    ON TIMESTAMPDIFF(DAY, mdp.birthdate, :endDate)\n       BETWEEN ag.min_age_days AND ag.max_age_days\n  WHERE mdp.birthdate IS NOT NULL\n    AND mdp.gender IS NOT NULL\n    AND mdp.gender IN ('F','M')\n  GROUP BY ag.age_group_id, mdp.gender\n)\nSELECT\n  ag.label AS age_group,\n  g.gender AS gender,\n  COALESCE(cnt.value, 0) AS value\nFROM ag\nCROSS JOIN genders g\nLEFT JOIN cnt\n    ON cnt.age_group_id = ag.age_group_id\n   AND cnt.gender = g.gender\nORDER BY ag.sort_order, g.gender;",
+    "dissaggregations" : [ "age_group", "gender" ],
+    "values" : [ {
+      "dissaggregations1" : "0-28d",
+      "disaggregation_code" : "D0_28",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "HT01b_D0_28_F"
+    }, {
+      "dissaggregations1" : "0-28d",
+      "disaggregation_code" : "D0_28",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "HT01b_D0_28_M"
+    }, {
+      "dissaggregations1" : "29d-4yrs",
+      "disaggregation_code" : "D29_4Y",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "HT01b_D29_4Y_F"
+    }, {
+      "dissaggregations1" : "29d-4yrs",
+      "disaggregation_code" : "D29_4Y",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "HT01b_D29_4Y_M"
+    }, {
+      "dissaggregations1" : "5-9yrs",
+      "disaggregation_code" : "Y5_9",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "HT01b_Y5_9_F"
+    }, {
+      "dissaggregations1" : "5-9yrs",
+      "disaggregation_code" : "Y5_9",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "HT01b_Y5_9_M"
+    }, {
+      "dissaggregations1" : "10-19yrs",
+      "disaggregation_code" : "Y10_19",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "HT01b_Y10_19_F"
+    }, {
+      "dissaggregations1" : "10-19yrs",
+      "disaggregation_code" : "Y10_19",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "HT01b_Y10_19_M"
+    }, {
+      "dissaggregations1" : "20+ yrs",
+      "disaggregation_code" : "Y20P",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "HT01b_Y20P_F"
+    }, {
+      "dissaggregations1" : "20+ yrs",
+      "disaggregation_code" : "Y20P",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "HT01b_Y20P_M"
+    } ]
+  }, {
+    "indicator_name" : "HT01c",
+    "indicator_label" : "HT01c New HIV Positive Linked to HIV Care",
+    "subsection" : "HTS Register",
+    "sqlQuery" : "WITH base_pop AS (\n    SELECT DISTINCT a.client_id AS client_id\n  FROM mamba_fact_encounter_hts_card_v2 a\n  JOIN mamba_fact_patients_latest_patient_demographics mdp\n    ON mdp.client_id = a.client_id\n  WHERE\n    a.encounter_date >= :startDate\n    AND a.encounter_date <  :endDate\n    AND mdp.birthdate IS NOT NULL\n    AND mdp.gender IS NOT NULL\n    AND a.linked_for_hiv_care = 'YES'\n    AND a.hts_delivery_model LIKE '%Facility%'\n),\nag AS (\n  SELECT\n    ag.age_group_id,\n    ag.label,\n    ag.min_age_days,\n    ag.max_age_days,\n    ag.sort_order\n  FROM report_builder_dim_age_group ag\n  JOIN report_builder_dim_age_category ac\n    ON ac.age_category_id = ag.age_category_id\n  WHERE ac.code = 'MOH_105_OPD_DIAG'\n    AND ag.is_active = 1\n),\ngenders AS (\n  SELECT 'F' AS gender\n  UNION ALL\n  SELECT 'M' AS gender\n),\ncnt AS (\n  SELECT\n    ag.age_group_id AS age_group_id,\n    mdp.gender AS gender,\n    COUNT(DISTINCT base_pop.client_id) AS value\n  FROM base_pop\n  JOIN mamba_fact_patients_latest_patient_demographics mdp\n    ON mdp.client_id = base_pop.client_id\n  JOIN ag\n    ON TIMESTAMPDIFF(DAY, mdp.birthdate, :endDate)\n       BETWEEN ag.min_age_days AND ag.max_age_days\n  WHERE mdp.birthdate IS NOT NULL\n    AND mdp.gender IS NOT NULL\n    AND mdp.gender IN ('F','M')\n  GROUP BY ag.age_group_id, mdp.gender\n)\nSELECT\n  ag.label AS age_group,\n  g.gender AS gender,\n  COALESCE(cnt.value, 0) AS value\nFROM ag\nCROSS JOIN genders g\nLEFT JOIN cnt\n    ON cnt.age_group_id = ag.age_group_id\n   AND cnt.gender = g.gender\nORDER BY ag.sort_order, g.gender;",
+    "dissaggregations" : [ "age_group", "gender" ],
+    "values" : [ {
+      "dissaggregations1" : "0-28d",
+      "disaggregation_code" : "D0_28",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "HT01c_D0_28_F"
+    }, {
+      "dissaggregations1" : "0-28d",
+      "disaggregation_code" : "D0_28",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "HT01c_D0_28_M"
+    }, {
+      "dissaggregations1" : "29d-4yrs",
+      "disaggregation_code" : "D29_4Y",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "HT01c_D29_4Y_F"
+    }, {
+      "dissaggregations1" : "29d-4yrs",
+      "disaggregation_code" : "D29_4Y",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "HT01c_D29_4Y_M"
+    }, {
+      "dissaggregations1" : "5-9yrs",
+      "disaggregation_code" : "Y5_9",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "HT01c_Y5_9_F"
+    }, {
+      "dissaggregations1" : "5-9yrs",
+      "disaggregation_code" : "Y5_9",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "HT01c_Y5_9_M"
+    }, {
+      "dissaggregations1" : "10-19yrs",
+      "disaggregation_code" : "Y10_19",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "HT01c_Y10_19_F"
+    }, {
+      "dissaggregations1" : "10-19yrs",
+      "disaggregation_code" : "Y10_19",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "HT01c_Y10_19_M"
+    }, {
+      "dissaggregations1" : "20+ yrs",
+      "disaggregation_code" : "Y20P",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "HT01c_Y20P_F"
+    }, {
+      "dissaggregations1" : "20+ yrs",
+      "disaggregation_code" : "Y20P",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "HT01c_Y20P_M"
+    } ]
+  }, {
+    "indicator_name" : "HT01d",
+    "indicator_label" : "HT01d Tested HIV Negative Referred for HIV Prevention Services",
+    "subsection" : "HTS Register",
+    "sqlQuery" : "WITH base_pop AS (\n    SELECT DISTINCT a.client_id AS client_id\n  FROM mamba_fact_encounter_hts_card_v2 a\n  JOIN mamba_fact_patients_latest_patient_demographics mdp\n    ON mdp.client_id = a.client_id\n  WHERE\n    a.encounter_date >= :startDate\n    AND a.encounter_date <  :endDate\n    AND mdp.birthdate IS NOT NULL\n    AND mdp.gender IS NOT NULL\n    AND a.linked_prevention_services = 'YES'\n    AND (a.final_result IS NULL OR a.final_result='NEGATIVE')\n    AND a.hts_delivery_model LIKE '%Facility%'\n),\nag AS (\n  SELECT\n    ag.age_group_id,\n    ag.label,\n    ag.min_age_days,\n    ag.max_age_days,\n    ag.sort_order\n  FROM report_builder_dim_age_group ag\n  JOIN report_builder_dim_age_category ac\n    ON ac.age_category_id = ag.age_category_id\n  WHERE ac.code = 'MOH_105_OPD_DIAG'\n    AND ag.is_active = 1\n),\ngenders AS (\n  SELECT 'F' AS gender\n  UNION ALL\n  SELECT 'M' AS gender\n),\ncnt AS (\n  SELECT\n    ag.age_group_id AS age_group_id,\n    mdp.gender AS gender,\n    COUNT(DISTINCT base_pop.client_id) AS value\n  FROM base_pop\n  JOIN mamba_fact_patients_latest_patient_demographics mdp\n    ON mdp.client_id = base_pop.client_id\n  JOIN ag\n    ON TIMESTAMPDIFF(DAY, mdp.birthdate, :endDate)\n       BETWEEN ag.min_age_days AND ag.max_age_days\n  WHERE mdp.birthdate IS NOT NULL\n    AND mdp.gender IS NOT NULL\n    AND mdp.gender IN ('F','M')\n  GROUP BY ag.age_group_id, mdp.gender\n)\nSELECT\n  ag.label AS age_group,\n  g.gender AS gender,\n  COALESCE(cnt.value, 0) AS value\nFROM ag\nCROSS JOIN genders g\nLEFT JOIN cnt\n    ON cnt.age_group_id = ag.age_group_id\n   AND cnt.gender = g.gender\nORDER BY ag.sort_order, g.gender;",
+    "dissaggregations" : [ "age_group", "gender" ],
+    "values" : [ {
+      "dissaggregations1" : "0-28d",
+      "disaggregation_code" : "D0_28",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "HT01d_D0_28_F"
+    }, {
+      "dissaggregations1" : "0-28d",
+      "disaggregation_code" : "D0_28",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "HT01d_D0_28_M"
+    }, {
+      "dissaggregations1" : "29d-4yrs",
+      "disaggregation_code" : "D29_4Y",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "HT01d_D29_4Y_F"
+    }, {
+      "dissaggregations1" : "29d-4yrs",
+      "disaggregation_code" : "D29_4Y",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "HT01d_D29_4Y_M"
+    }, {
+      "dissaggregations1" : "5-9yrs",
+      "disaggregation_code" : "Y5_9",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "HT01d_Y5_9_F"
+    }, {
+      "dissaggregations1" : "5-9yrs",
+      "disaggregation_code" : "Y5_9",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "HT01d_Y5_9_M"
+    }, {
+      "dissaggregations1" : "10-19yrs",
+      "disaggregation_code" : "Y10_19",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "HT01d_Y10_19_F"
+    }, {
+      "dissaggregations1" : "10-19yrs",
+      "disaggregation_code" : "Y10_19",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "HT01d_Y10_19_M"
+    }, {
+      "dissaggregations1" : "20+ yrs",
+      "disaggregation_code" : "Y20P",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "HT01d_Y20P_F"
+    }, {
+      "dissaggregations1" : "20+ yrs",
+      "disaggregation_code" : "Y20P",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "HT01d_Y20P_M"
+    } ]
+  }, {
+    "indicator_name" : "HT02a",
+    "indicator_label" : "HT02a. Tested for HIV",
+    "subsection" : "HTS Register",
+    "sqlQuery" : "WITH base_pop AS (\n    SELECT DISTINCT a.client_id AS client_id\n  FROM mamba_fact_encounter_hts_card_v2 a\n  JOIN mamba_fact_patients_latest_patient_demographics mdp\n    ON mdp.client_id = a.client_id\n  WHERE\n    a.encounter_date >= :startDate\n    AND a.encounter_date <  :endDate\n    AND mdp.birthdate IS NOT NULL\n    AND mdp.gender IS NOT NULL\n    AND a.final_result IS NOT NULL\n    AND a.hts_delivery_model LIKE 'Community'\n),\nag AS (\n  SELECT\n    ag.age_group_id,\n    ag.label,\n    ag.min_age_days,\n    ag.max_age_days,\n    ag.sort_order\n  FROM report_builder_dim_age_group ag\n  JOIN report_builder_dim_age_category ac\n    ON ac.age_category_id = ag.age_category_id\n  WHERE ac.code = 'MOH_105_OPD_DIAG'\n    AND ag.is_active = 1\n),\ngenders AS (\n  SELECT 'F' AS gender\n  UNION ALL\n  SELECT 'M' AS gender\n),\ncnt AS (\n  SELECT\n    ag.age_group_id AS age_group_id,\n    mdp.gender AS gender,\n    COUNT(DISTINCT base_pop.client_id) AS value\n  FROM base_pop\n  JOIN mamba_fact_patients_latest_patient_demographics mdp\n    ON mdp.client_id = base_pop.client_id\n  JOIN ag\n    ON TIMESTAMPDIFF(DAY, mdp.birthdate, :endDate)\n       BETWEEN ag.min_age_days AND ag.max_age_days\n  WHERE mdp.birthdate IS NOT NULL\n    AND mdp.gender IS NOT NULL\n    AND mdp.gender IN ('F','M')\n  GROUP BY ag.age_group_id, mdp.gender\n)\nSELECT\n  ag.label AS age_group,\n  g.gender AS gender,\n  COALESCE(cnt.value, 0) AS value\nFROM ag\nCROSS JOIN genders g\nLEFT JOIN cnt\n    ON cnt.age_group_id = ag.age_group_id\n   AND cnt.gender = g.gender\nORDER BY ag.sort_order, g.gender;",
+    "dissaggregations" : [ "age_group", "gender" ],
+    "values" : [ {
+      "dissaggregations1" : "0-28d",
+      "disaggregation_code" : "D0_28",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "HT02a_D0_28_F"
+    }, {
+      "dissaggregations1" : "0-28d",
+      "disaggregation_code" : "D0_28",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "HT02a_D0_28_M"
+    }, {
+      "dissaggregations1" : "29d-4yrs",
+      "disaggregation_code" : "D29_4Y",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "HT02a_D29_4Y_F"
+    }, {
+      "dissaggregations1" : "29d-4yrs",
+      "disaggregation_code" : "D29_4Y",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "HT02a_D29_4Y_M"
+    }, {
+      "dissaggregations1" : "5-9yrs",
+      "disaggregation_code" : "Y5_9",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "HT02a_Y5_9_F"
+    }, {
+      "dissaggregations1" : "5-9yrs",
+      "disaggregation_code" : "Y5_9",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "HT02a_Y5_9_M"
+    }, {
+      "dissaggregations1" : "10-19yrs",
+      "disaggregation_code" : "Y10_19",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "HT02a_Y10_19_F"
+    }, {
+      "dissaggregations1" : "10-19yrs",
+      "disaggregation_code" : "Y10_19",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "HT02a_Y10_19_M"
+    }, {
+      "dissaggregations1" : "20+ yrs",
+      "disaggregation_code" : "Y20P",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "HT02a_Y20P_F"
+    }, {
+      "dissaggregations1" : "20+ yrs",
+      "disaggregation_code" : "Y20P",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "HT02a_Y20P_M"
+    } ]
+  }, {
+    "indicator_name" : "HT02b",
+    "indicator_label" : "HT02b. New HIV Positive",
+    "subsection" : "HTS Register",
+    "sqlQuery" : "WITH base_pop AS (\n    SELECT DISTINCT a.client_id AS client_id\n  FROM mamba_fact_encounter_hts_card_v2 a\n  JOIN mamba_fact_patients_latest_patient_demographics mdp\n    ON mdp.client_id = a.client_id\n  WHERE\n    a.encounter_date >= :startDate\n    AND a.encounter_date <  :endDate\n    AND mdp.birthdate IS NOT NULL\n    AND mdp.gender IS NOT NULL\n    AND a.hts_delivery_model LIKE 'Community'\n    AND a.final_result = 'Positive'\n    AND a.first_hiv_test = 'YES'\n),\nag AS (\n  SELECT\n    ag.age_group_id,\n    ag.label,\n    ag.min_age_days,\n    ag.max_age_days,\n    ag.sort_order\n  FROM report_builder_dim_age_group ag\n  JOIN report_builder_dim_age_category ac\n    ON ac.age_category_id = ag.age_category_id\n  WHERE ac.code = 'MOH_105_OPD_DIAG'\n    AND ag.is_active = 1\n),\ngenders AS (\n  SELECT 'F' AS gender\n  UNION ALL\n  SELECT 'M' AS gender\n),\ncnt AS (\n  SELECT\n    ag.age_group_id AS age_group_id,\n    mdp.gender AS gender,\n    COUNT(DISTINCT base_pop.client_id) AS value\n  FROM base_pop\n  JOIN mamba_fact_patients_latest_patient_demographics mdp\n    ON mdp.client_id = base_pop.client_id\n  JOIN ag\n    ON TIMESTAMPDIFF(DAY, mdp.birthdate, :endDate)\n       BETWEEN ag.min_age_days AND ag.max_age_days\n  WHERE mdp.birthdate IS NOT NULL\n    AND mdp.gender IS NOT NULL\n    AND mdp.gender IN ('F','M')\n  GROUP BY ag.age_group_id, mdp.gender\n)\nSELECT\n  ag.label AS age_group,\n  g.gender AS gender,\n  COALESCE(cnt.value, 0) AS value\nFROM ag\nCROSS JOIN genders g\nLEFT JOIN cnt\n    ON cnt.age_group_id = ag.age_group_id\n   AND cnt.gender = g.gender\nORDER BY ag.sort_order, g.gender;",
+    "dissaggregations" : [ "age_group", "gender" ],
+    "values" : [ {
+      "dissaggregations1" : "0-28d",
+      "disaggregation_code" : "D0_28",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "HT02b_D0_28_F"
+    }, {
+      "dissaggregations1" : "0-28d",
+      "disaggregation_code" : "D0_28",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "HT02b_D0_28_M"
+    }, {
+      "dissaggregations1" : "29d-4yrs",
+      "disaggregation_code" : "D29_4Y",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "HT02b_D29_4Y_F"
+    }, {
+      "dissaggregations1" : "29d-4yrs",
+      "disaggregation_code" : "D29_4Y",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "HT02b_D29_4Y_M"
+    }, {
+      "dissaggregations1" : "5-9yrs",
+      "disaggregation_code" : "Y5_9",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "HT02b_Y5_9_F"
+    }, {
+      "dissaggregations1" : "5-9yrs",
+      "disaggregation_code" : "Y5_9",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "HT02b_Y5_9_M"
+    }, {
+      "dissaggregations1" : "10-19yrs",
+      "disaggregation_code" : "Y10_19",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "HT02b_Y10_19_F"
+    }, {
+      "dissaggregations1" : "10-19yrs",
+      "disaggregation_code" : "Y10_19",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "HT02b_Y10_19_M"
+    }, {
+      "dissaggregations1" : "20+ yrs",
+      "disaggregation_code" : "Y20P",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "HT02b_Y20P_F"
+    }, {
+      "dissaggregations1" : "20+ yrs",
+      "disaggregation_code" : "Y20P",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "HT02b_Y20P_M"
+    } ]
+  }, {
+    "indicator_name" : "HT02c",
+    "indicator_label" : "HT02c. New HIV Positive Linked to HIV Care",
+    "subsection" : "HTS Register",
+    "sqlQuery" : "WITH base_pop AS (\n    SELECT DISTINCT a.client_id AS client_id\n  FROM mamba_fact_encounter_hts_card_v2 a\n  JOIN mamba_fact_patients_latest_patient_demographics mdp\n    ON mdp.client_id = a.client_id\n  WHERE\n    a.encounter_date >= :startDate\n    AND a.encounter_date <  :endDate\n    AND mdp.birthdate IS NOT NULL\n    AND mdp.gender IS NOT NULL\n    AND a.hts_delivery_model LIKE '%Community%'\n),\nag AS (\n  SELECT\n    ag.age_group_id,\n    ag.label,\n    ag.min_age_days,\n    ag.max_age_days,\n    ag.sort_order\n  FROM report_builder_dim_age_group ag\n  JOIN report_builder_dim_age_category ac\n    ON ac.age_category_id = ag.age_category_id\n  WHERE ac.code = 'MOH_105_OPD_DIAG'\n    AND ag.is_active = 1\n),\ngenders AS (\n  SELECT 'F' AS gender\n  UNION ALL\n  SELECT 'M' AS gender\n),\ncnt AS (\n  SELECT\n    ag.age_group_id AS age_group_id,\n    mdp.gender AS gender,\n    COUNT(DISTINCT base_pop.client_id) AS value\n  FROM base_pop\n  JOIN mamba_fact_patients_latest_patient_demographics mdp\n    ON mdp.client_id = base_pop.client_id\n  JOIN ag\n    ON TIMESTAMPDIFF(DAY, mdp.birthdate, :endDate)\n       BETWEEN ag.min_age_days AND ag.max_age_days\n  WHERE mdp.birthdate IS NOT NULL\n    AND mdp.gender IS NOT NULL\n    AND mdp.gender IN ('F','M')\n  GROUP BY ag.age_group_id, mdp.gender\n)\nSELECT\n  ag.label AS age_group,\n  g.gender AS gender,\n  COALESCE(cnt.value, 0) AS value\nFROM ag\nCROSS JOIN genders g\nLEFT JOIN cnt\n    ON cnt.age_group_id = ag.age_group_id\n   AND cnt.gender = g.gender\nORDER BY ag.sort_order, g.gender;",
+    "dissaggregations" : [ "age_group", "gender" ],
+    "values" : [ {
+      "dissaggregations1" : "0-28d",
+      "disaggregation_code" : "D0_28",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "HT02c_D0_28_F"
+    }, {
+      "dissaggregations1" : "0-28d",
+      "disaggregation_code" : "D0_28",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "HT02c_D0_28_M"
+    }, {
+      "dissaggregations1" : "29d-4yrs",
+      "disaggregation_code" : "D29_4Y",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "HT02c_D29_4Y_F"
+    }, {
+      "dissaggregations1" : "29d-4yrs",
+      "disaggregation_code" : "D29_4Y",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "HT02c_D29_4Y_M"
+    }, {
+      "dissaggregations1" : "5-9yrs",
+      "disaggregation_code" : "Y5_9",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "HT02c_Y5_9_F"
+    }, {
+      "dissaggregations1" : "5-9yrs",
+      "disaggregation_code" : "Y5_9",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "HT02c_Y5_9_M"
+    }, {
+      "dissaggregations1" : "10-19yrs",
+      "disaggregation_code" : "Y10_19",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "HT02c_Y10_19_F"
+    }, {
+      "dissaggregations1" : "10-19yrs",
+      "disaggregation_code" : "Y10_19",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "HT02c_Y10_19_M"
+    }, {
+      "dissaggregations1" : "20+ yrs",
+      "disaggregation_code" : "Y20P",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "HT02c_Y20P_F"
+    }, {
+      "dissaggregations1" : "20+ yrs",
+      "disaggregation_code" : "Y20P",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "HT02c_Y20P_M"
+    } ]
+  }, {
+    "indicator_name" : "HT02d",
+    "indicator_label" : "HT02d. Tested HIV Negative Referred for HIV Prevention Services",
+    "subsection" : "HTS Register",
+    "sqlQuery" : "WITH base_pop AS (\n    SELECT DISTINCT a.client_id AS client_id\n  FROM mamba_fact_encounter_hts_card_v2 a\n  JOIN mamba_fact_patients_latest_patient_demographics mdp\n    ON mdp.client_id = a.client_id\n  WHERE\n    a.encounter_date >= :startDate\n    AND a.encounter_date <  :endDate\n    AND mdp.birthdate IS NOT NULL\n    AND mdp.gender IS NOT NULL\n    AND a.hts_delivery_model LIKE '%Community%'\n    AND a.final_result = 'Negative'\n    AND a.linked_prevention_services = 'Yes'\n),\nag AS (\n  SELECT\n    ag.age_group_id,\n    ag.label,\n    ag.min_age_days,\n    ag.max_age_days,\n    ag.sort_order\n  FROM report_builder_dim_age_group ag\n  JOIN report_builder_dim_age_category ac\n    ON ac.age_category_id = ag.age_category_id\n  WHERE ac.code = 'MOH_105_OPD_DIAG'\n    AND ag.is_active = 1\n),\ngenders AS (\n  SELECT 'F' AS gender\n  UNION ALL\n  SELECT 'M' AS gender\n),\ncnt AS (\n  SELECT\n    ag.age_group_id AS age_group_id,\n    mdp.gender AS gender,\n    COUNT(DISTINCT base_pop.client_id) AS value\n  FROM base_pop\n  JOIN mamba_fact_patients_latest_patient_demographics mdp\n    ON mdp.client_id = base_pop.client_id\n  JOIN ag\n    ON TIMESTAMPDIFF(DAY, mdp.birthdate, :endDate)\n       BETWEEN ag.min_age_days AND ag.max_age_days\n  WHERE mdp.birthdate IS NOT NULL\n    AND mdp.gender IS NOT NULL\n    AND mdp.gender IN ('F','M')\n  GROUP BY ag.age_group_id, mdp.gender\n)\nSELECT\n  ag.label AS age_group,\n  g.gender AS gender,\n  COALESCE(cnt.value, 0) AS value\nFROM ag\nCROSS JOIN genders g\nLEFT JOIN cnt\n    ON cnt.age_group_id = ag.age_group_id\n   AND cnt.gender = g.gender\nORDER BY ag.sort_order, g.gender;",
+    "dissaggregations" : [ "age_group", "gender" ],
+    "values" : [ {
+      "dissaggregations1" : "0-28d",
+      "disaggregation_code" : "D0_28",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "HT02d_D0_28_F"
+    }, {
+      "dissaggregations1" : "0-28d",
+      "disaggregation_code" : "D0_28",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "HT02d_D0_28_M"
+    }, {
+      "dissaggregations1" : "29d-4yrs",
+      "disaggregation_code" : "D29_4Y",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "HT02d_D29_4Y_F"
+    }, {
+      "dissaggregations1" : "29d-4yrs",
+      "disaggregation_code" : "D29_4Y",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "HT02d_D29_4Y_M"
+    }, {
+      "dissaggregations1" : "5-9yrs",
+      "disaggregation_code" : "Y5_9",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "HT02d_Y5_9_F"
+    }, {
+      "dissaggregations1" : "5-9yrs",
+      "disaggregation_code" : "Y5_9",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "HT02d_Y5_9_M"
+    }, {
+      "dissaggregations1" : "10-19yrs",
+      "disaggregation_code" : "Y10_19",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "HT02d_Y10_19_F"
+    }, {
+      "dissaggregations1" : "10-19yrs",
+      "disaggregation_code" : "Y10_19",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "HT02d_Y10_19_M"
+    }, {
+      "dissaggregations1" : "20+ yrs",
+      "disaggregation_code" : "Y20P",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "HT02d_Y20P_F"
+    }, {
+      "dissaggregations1" : "20+ yrs",
+      "disaggregation_code" : "Y20P",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "HT02d_Y20P_M"
+    } ]
+  }, {
+    "indicator_name" : "HT03a.",
+    "indicator_label" : "HT03a. Contacts Elicited (Index)",
+    "subsection" : "HTS Contact Tracing Register",
+    "sqlQuery" : "WITH base_pop AS (\n    SELECT DISTINCT a.client_id AS client_id\n  FROM mamba_fact_encounter_hts_contact_tracing a\n  JOIN mamba_fact_patients_latest_patient_demographics mdp\n    ON mdp.client_id = a.client_id\n  WHERE\n    a.encounter_date >= :startDate\n    AND a.encounter_date < :endDate\n    AND mdp.birthdate IS NOT NULL\n    AND mdp.gender IS NOT NULL\n    AND a.contact_notification_method IS NOT NULL\n    AND a.contact_notification_method LIKE '%Index%'\n    AND a.contact_name IS NOT NULL\n),\nag AS (\n  SELECT\n    ag.age_group_id,\n    ag.label,\n    ag.min_age_days,\n    ag.max_age_days,\n    ag.sort_order\n  FROM report_builder_dim_age_group ag\n  JOIN report_builder_dim_age_category ac\n    ON ac.age_category_id = ag.age_category_id\n  WHERE ac.code = 'MOH_105_OPD_DIAG'\n    AND ag.is_active = 1\n),\ngenders AS (\n  SELECT 'F' AS gender\n  UNION ALL\n  SELECT 'M' AS gender\n),\ncnt AS (\n  SELECT\n    ag.age_group_id AS age_group_id,\n    mdp.gender AS gender,\n    COUNT(DISTINCT base_pop.client_id) AS value\n  FROM base_pop\n  JOIN mamba_fact_patients_latest_patient_demographics mdp\n    ON mdp.client_id = base_pop.client_id\n  JOIN ag\n    ON TIMESTAMPDIFF(DAY, mdp.birthdate, :endDate)\n       BETWEEN ag.min_age_days AND ag.max_age_days\n  WHERE mdp.birthdate IS NOT NULL\n    AND mdp.gender IS NOT NULL\n    AND mdp.gender IN ('F','M')\n  GROUP BY ag.age_group_id, mdp.gender\n)\nSELECT\n  ag.label AS age_group,\n  g.gender AS gender,\n  COALESCE(cnt.value, 0) AS value\nFROM ag\nCROSS JOIN genders g\nLEFT JOIN cnt\n    ON cnt.age_group_id = ag.age_group_id\n   AND cnt.gender = g.gender\nORDER BY ag.sort_order, g.gender;",
+    "dissaggregations" : [ "age_group", "gender" ],
+    "values" : [ {
+      "dissaggregations1" : "0-28d",
+      "disaggregation_code" : "D0_28",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "HT03a_D0_28_F"
+    }, {
+      "dissaggregations1" : "0-28d",
+      "disaggregation_code" : "D0_28",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "HT03a_D0_28_M"
+    }, {
+      "dissaggregations1" : "29d-4yrs",
+      "disaggregation_code" : "D29_4Y",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "HT03a_D29_4Y_F"
+    }, {
+      "dissaggregations1" : "29d-4yrs",
+      "disaggregation_code" : "D29_4Y",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "HT03a_D29_4Y_M"
+    }, {
+      "dissaggregations1" : "5-9yrs",
+      "disaggregation_code" : "Y5_9",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "HT03a_Y5_9_F"
+    }, {
+      "dissaggregations1" : "5-9yrs",
+      "disaggregation_code" : "Y5_9",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "HT03a_Y5_9_M"
+    }, {
+      "dissaggregations1" : "10-19yrs",
+      "disaggregation_code" : "Y10_19",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "HT03a_Y10_19_F"
+    }, {
+      "dissaggregations1" : "10-19yrs",
+      "disaggregation_code" : "Y10_19",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "HT03a_Y10_19_M"
+    }, {
+      "dissaggregations1" : "20+ yrs",
+      "disaggregation_code" : "Y20P",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "HT03a_Y20P_F"
+    }, {
+      "dissaggregations1" : "20+ yrs",
+      "disaggregation_code" : "Y20P",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "HT03a_Y20P_M"
+    } ]
+  }, {
+    "indicator_name" : "HT03b.",
+    "indicator_label" : "HT03b. Contacts Notified (Index)",
+    "subsection" : "HTS Contact Tracing Register",
+    "sqlQuery" : "WITH base_pop AS (\n    SELECT DISTINCT a.client_id AS client_id\n  FROM mamba_fact_encounter_hts_contact_tracing a\n  JOIN mamba_fact_patients_latest_patient_demographics mdp\n    ON mdp.client_id = a.client_id\n  WHERE\n    a.encounter_date >= :startDate\n    AND a.encounter_date < :endDate\n    AND mdp.birthdate IS NOT NULL\n    AND mdp.gender IS NOT NULL\n    AND a.contact_notification_method IS NULL\n    AND a.contact_notification_method LIKE '%Index%'\n),\nag AS (\n  SELECT\n    ag.age_group_id,\n    ag.label,\n    ag.min_age_days,\n    ag.max_age_days,\n    ag.sort_order\n  FROM report_builder_dim_age_group ag\n  JOIN report_builder_dim_age_category ac\n    ON ac.age_category_id = ag.age_category_id\n  WHERE ac.code = 'MOH_105_OPD_DIAG'\n    AND ag.is_active = 1\n),\ngenders AS (\n  SELECT 'F' AS gender\n  UNION ALL\n  SELECT 'M' AS gender\n),\ncnt AS (\n  SELECT\n    ag.age_group_id AS age_group_id,\n    mdp.gender AS gender,\n    COUNT(DISTINCT base_pop.client_id) AS value\n  FROM base_pop\n  JOIN mamba_fact_patients_latest_patient_demographics mdp\n    ON mdp.client_id = base_pop.client_id\n  JOIN ag\n    ON TIMESTAMPDIFF(DAY, mdp.birthdate, :endDate)\n       BETWEEN ag.min_age_days AND ag.max_age_days\n  WHERE mdp.birthdate IS NOT NULL\n    AND mdp.gender IS NOT NULL\n    AND mdp.gender IN ('F','M')\n  GROUP BY ag.age_group_id, mdp.gender\n)\nSELECT\n  ag.label AS age_group,\n  g.gender AS gender,\n  COALESCE(cnt.value, 0) AS value\nFROM ag\nCROSS JOIN genders g\nLEFT JOIN cnt\n    ON cnt.age_group_id = ag.age_group_id\n   AND cnt.gender = g.gender\nORDER BY ag.sort_order, g.gender;",
+    "dissaggregations" : [ "age_group", "gender" ],
+    "values" : [ {
+      "dissaggregations1" : "0-28d",
+      "disaggregation_code" : "D0_28",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "HT03b_D0_28_F"
+    }, {
+      "dissaggregations1" : "0-28d",
+      "disaggregation_code" : "D0_28",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "HT03b_D0_28_M"
+    }, {
+      "dissaggregations1" : "29d-4yrs",
+      "disaggregation_code" : "D29_4Y",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "HT03b_D29_4Y_F"
+    }, {
+      "dissaggregations1" : "29d-4yrs",
+      "disaggregation_code" : "D29_4Y",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "HT03b_D29_4Y_M"
+    }, {
+      "dissaggregations1" : "5-9yrs",
+      "disaggregation_code" : "Y5_9",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "HT03b_Y5_9_F"
+    }, {
+      "dissaggregations1" : "5-9yrs",
+      "disaggregation_code" : "Y5_9",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "HT03b_Y5_9_M"
+    }, {
+      "dissaggregations1" : "10-19yrs",
+      "disaggregation_code" : "Y10_19",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "HT03b_Y10_19_F"
+    }, {
+      "dissaggregations1" : "10-19yrs",
+      "disaggregation_code" : "Y10_19",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "HT03b_Y10_19_M"
+    }, {
+      "dissaggregations1" : "20+ yrs",
+      "disaggregation_code" : "Y20P",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "HT03b_Y20P_F"
+    }, {
+      "dissaggregations1" : "20+ yrs",
+      "disaggregation_code" : "Y20P",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "HT03b_Y20P_M"
+    } ]
+  }, {
+    "indicator_name" : "HT03c.",
+    "indicator_label" : "HT03c. Contacts Tested (Index)",
+    "subsection" : "HTS Contact Tracing Register",
+    "sqlQuery" : "WITH base_pop AS (\n    SELECT DISTINCT a.client_id AS client_id\n  FROM mamba_fact_encounter_hts_contact_tracing a\n  JOIN mamba_fact_patients_latest_patient_demographics mdp\n    ON mdp.client_id = a.client_id\n  WHERE\n    a.encounter_date >= :startDate\n    AND a.encounter_date < :endDate\n    AND mdp.birthdate IS NOT NULL\n    AND mdp.gender IS NOT NULL\n    AND a.contact_notification_method LIKE '%Index%'\n    AND a.hiv_test_results IS NOT NULL\n    AND a.contact_notification_method IS NOT NULL\n),\nag AS (\n  SELECT\n    ag.age_group_id,\n    ag.label,\n    ag.min_age_days,\n    ag.max_age_days,\n    ag.sort_order\n  FROM report_builder_dim_age_group ag\n  JOIN report_builder_dim_age_category ac\n    ON ac.age_category_id = ag.age_category_id\n  WHERE ac.code = 'MOH_105_OPD_DIAG'\n    AND ag.is_active = 1\n),\ngenders AS (\n  SELECT 'F' AS gender\n  UNION ALL\n  SELECT 'M' AS gender\n),\ncnt AS (\n  SELECT\n    ag.age_group_id AS age_group_id,\n    mdp.gender AS gender,\n    COUNT(DISTINCT base_pop.client_id) AS value\n  FROM base_pop\n  JOIN mamba_fact_patients_latest_patient_demographics mdp\n    ON mdp.client_id = base_pop.client_id\n  JOIN ag\n    ON TIMESTAMPDIFF(DAY, mdp.birthdate, :endDate)\n       BETWEEN ag.min_age_days AND ag.max_age_days\n  WHERE mdp.birthdate IS NOT NULL\n    AND mdp.gender IS NOT NULL\n    AND mdp.gender IN ('F','M')\n  GROUP BY ag.age_group_id, mdp.gender\n)\nSELECT\n  ag.label AS age_group,\n  g.gender AS gender,\n  COALESCE(cnt.value, 0) AS value\nFROM ag\nCROSS JOIN genders g\nLEFT JOIN cnt\n    ON cnt.age_group_id = ag.age_group_id\n   AND cnt.gender = g.gender\nORDER BY ag.sort_order, g.gender;",
+    "dissaggregations" : [ "age_group", "gender" ],
+    "values" : [ {
+      "dissaggregations1" : "0-28d",
+      "disaggregation_code" : "D0_28",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "HT03c_D0_28_F"
+    }, {
+      "dissaggregations1" : "0-28d",
+      "disaggregation_code" : "D0_28",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "HT03c_D0_28_M"
+    }, {
+      "dissaggregations1" : "29d-4yrs",
+      "disaggregation_code" : "D29_4Y",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "HT03c_D29_4Y_F"
+    }, {
+      "dissaggregations1" : "29d-4yrs",
+      "disaggregation_code" : "D29_4Y",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "HT03c_D29_4Y_M"
+    }, {
+      "dissaggregations1" : "5-9yrs",
+      "disaggregation_code" : "Y5_9",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "HT03c_Y5_9_F"
+    }, {
+      "dissaggregations1" : "5-9yrs",
+      "disaggregation_code" : "Y5_9",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "HT03c_Y5_9_M"
+    }, {
+      "dissaggregations1" : "10-19yrs",
+      "disaggregation_code" : "Y10_19",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "HT03c_Y10_19_F"
+    }, {
+      "dissaggregations1" : "10-19yrs",
+      "disaggregation_code" : "Y10_19",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "HT03c_Y10_19_M"
+    }, {
+      "dissaggregations1" : "20+ yrs",
+      "disaggregation_code" : "Y20P",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "HT03c_Y20P_F"
+    }, {
+      "dissaggregations1" : "20+ yrs",
+      "disaggregation_code" : "Y20P",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "HT03c_Y20P_M"
+    } ]
+  }, {
+    "indicator_name" : "HT03d.",
+    "indicator_label" : "HT03d. New HIV Positives (Index)",
+    "subsection" : "HTS Contact Tracing Register",
+    "sqlQuery" : "WITH base_pop AS (\n    SELECT DISTINCT a.client_id AS client_id\n  FROM mamba_fact_encounter_hts_contact_tracing a\n  JOIN mamba_fact_patients_latest_patient_demographics mdp\n    ON mdp.client_id = a.client_id\n  WHERE\n    a.encounter_date >= :startDate\n    AND a.encounter_date < :endDate\n    AND mdp.birthdate IS NOT NULL\n    AND mdp.gender IS NOT NULL\n    AND a.hiv_test_results = 'Positive'\n    AND a.contact_notification_method IS NOT NULL\n    AND a.contact_notification_method LIKE '%Index%'\n),\nag AS (\n  SELECT\n    ag.age_group_id,\n    ag.label,\n    ag.min_age_days,\n    ag.max_age_days,\n    ag.sort_order\n  FROM report_builder_dim_age_group ag\n  JOIN report_builder_dim_age_category ac\n    ON ac.age_category_id = ag.age_category_id\n  WHERE ac.code = 'MOH_105_OPD_DIAG'\n    AND ag.is_active = 1\n),\ngenders AS (\n  SELECT 'F' AS gender\n  UNION ALL\n  SELECT 'M' AS gender\n),\ncnt AS (\n  SELECT\n    ag.age_group_id AS age_group_id,\n    mdp.gender AS gender,\n    COUNT(DISTINCT base_pop.client_id) AS value\n  FROM base_pop\n  JOIN mamba_fact_patients_latest_patient_demographics mdp\n    ON mdp.client_id = base_pop.client_id\n  JOIN ag\n    ON TIMESTAMPDIFF(DAY, mdp.birthdate, :endDate)\n       BETWEEN ag.min_age_days AND ag.max_age_days\n  WHERE mdp.birthdate IS NOT NULL\n    AND mdp.gender IS NOT NULL\n    AND mdp.gender IN ('F','M')\n  GROUP BY ag.age_group_id, mdp.gender\n)\nSELECT\n  ag.label AS age_group,\n  g.gender AS gender,\n  COALESCE(cnt.value, 0) AS value\nFROM ag\nCROSS JOIN genders g\nLEFT JOIN cnt\n    ON cnt.age_group_id = ag.age_group_id\n   AND cnt.gender = g.gender\nORDER BY ag.sort_order, g.gender;",
+    "dissaggregations" : [ "age_group", "gender" ],
+    "values" : [ {
+      "dissaggregations1" : "0-28d",
+      "disaggregation_code" : "D0_28",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "HT03d_D0_28_F"
+    }, {
+      "dissaggregations1" : "0-28d",
+      "disaggregation_code" : "D0_28",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "HT03d_D0_28_M"
+    }, {
+      "dissaggregations1" : "29d-4yrs",
+      "disaggregation_code" : "D29_4Y",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "HT03d_D29_4Y_F"
+    }, {
+      "dissaggregations1" : "29d-4yrs",
+      "disaggregation_code" : "D29_4Y",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "HT03d_D29_4Y_M"
+    }, {
+      "dissaggregations1" : "5-9yrs",
+      "disaggregation_code" : "Y5_9",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "HT03d_Y5_9_F"
+    }, {
+      "dissaggregations1" : "5-9yrs",
+      "disaggregation_code" : "Y5_9",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "HT03d_Y5_9_M"
+    }, {
+      "dissaggregations1" : "10-19yrs",
+      "disaggregation_code" : "Y10_19",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "HT03d_Y10_19_F"
+    }, {
+      "dissaggregations1" : "10-19yrs",
+      "disaggregation_code" : "Y10_19",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "HT03d_Y10_19_M"
+    }, {
+      "dissaggregations1" : "20+ yrs",
+      "disaggregation_code" : "Y20P",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "HT03d_Y20P_F"
+    }, {
+      "dissaggregations1" : "20+ yrs",
+      "disaggregation_code" : "Y20P",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "HT03d_Y20P_M"
+    } ]
+  }, {
+    "indicator_name" : "HT03e.",
+    "indicator_label" : "HT03e. HIV Positives Linked to Care (Index)",
+    "subsection" : "HTS Contact Tracing Register",
+    "sqlQuery" : "WITH base_pop AS (\n    SELECT DISTINCT a.client_id AS client_id\n  FROM mamba_fact_encounter_hts_contact_tracing a\n  JOIN mamba_fact_patients_latest_patient_demographics mdp\n    ON mdp.client_id = a.client_id\n  WHERE\n    a.encounter_date >= :startDate\n    AND a.encounter_date < :endDate\n    AND mdp.birthdate IS NOT NULL\n    AND mdp.gender IS NOT NULL\n    AND a.hiv_test_results = 'Positive'\n    AND a.case_closure_status LIKE '%in HIV Care%'\n    AND a.contact_notification_method IS NOT NULL\n    AND a.contact_notification_method LIKE '%Index%'\n),\nag AS (\n  SELECT\n    ag.age_group_id,\n    ag.label,\n    ag.min_age_days,\n    ag.max_age_days,\n    ag.sort_order\n  FROM report_builder_dim_age_group ag\n  JOIN report_builder_dim_age_category ac\n    ON ac.age_category_id = ag.age_category_id\n  WHERE ac.code = 'MOH_105_OPD_DIAG'\n    AND ag.is_active = 1\n),\ngenders AS (\n  SELECT 'F' AS gender\n  UNION ALL\n  SELECT 'M' AS gender\n),\ncnt AS (\n  SELECT\n    ag.age_group_id AS age_group_id,\n    mdp.gender AS gender,\n    COUNT(DISTINCT base_pop.client_id) AS value\n  FROM base_pop\n  JOIN mamba_fact_patients_latest_patient_demographics mdp\n    ON mdp.client_id = base_pop.client_id\n  JOIN ag\n    ON TIMESTAMPDIFF(DAY, mdp.birthdate, :endDate)\n       BETWEEN ag.min_age_days AND ag.max_age_days\n  WHERE mdp.birthdate IS NOT NULL\n    AND mdp.gender IS NOT NULL\n    AND mdp.gender IN ('F','M')\n  GROUP BY ag.age_group_id, mdp.gender\n)\nSELECT\n  ag.label AS age_group,\n  g.gender AS gender,\n  COALESCE(cnt.value, 0) AS value\nFROM ag\nCROSS JOIN genders g\nLEFT JOIN cnt\n    ON cnt.age_group_id = ag.age_group_id\n   AND cnt.gender = g.gender\nORDER BY ag.sort_order, g.gender;",
+    "dissaggregations" : [ "age_group", "gender" ],
+    "values" : [ {
+      "dissaggregations1" : "0-28d",
+      "disaggregation_code" : "D0_28",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "HT03e_D0_28_F"
+    }, {
+      "dissaggregations1" : "0-28d",
+      "disaggregation_code" : "D0_28",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "HT03e_D0_28_M"
+    }, {
+      "dissaggregations1" : "29d-4yrs",
+      "disaggregation_code" : "D29_4Y",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "HT03e_D29_4Y_F"
+    }, {
+      "dissaggregations1" : "29d-4yrs",
+      "disaggregation_code" : "D29_4Y",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "HT03e_D29_4Y_M"
+    }, {
+      "dissaggregations1" : "5-9yrs",
+      "disaggregation_code" : "Y5_9",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "HT03e_Y5_9_F"
+    }, {
+      "dissaggregations1" : "5-9yrs",
+      "disaggregation_code" : "Y5_9",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "HT03e_Y5_9_M"
+    }, {
+      "dissaggregations1" : "10-19yrs",
+      "disaggregation_code" : "Y10_19",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "HT03e_Y10_19_F"
+    }, {
+      "dissaggregations1" : "10-19yrs",
+      "disaggregation_code" : "Y10_19",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "HT03e_Y10_19_M"
+    }, {
+      "dissaggregations1" : "20+ yrs",
+      "disaggregation_code" : "Y20P",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "HT03e_Y20P_F"
+    }, {
+      "dissaggregations1" : "20+ yrs",
+      "disaggregation_code" : "Y20P",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "HT03e_Y20P_M"
+    } ]
+  }, {
+    "indicator_name" : "HT03f.",
+    "indicator_label" : "HT03f. HIV Negative Referred to Prevention (Index)",
+    "subsection" : "HTS Contact Tracing Register",
+    "sqlQuery" : "WITH base_pop AS (\n    SELECT DISTINCT a.client_id AS client_id\n  FROM mamba_fact_encounter_hts_contact_tracing a\n  JOIN mamba_fact_patients_latest_patient_demographics mdp\n    ON mdp.client_id = a.client_id\n  WHERE\n    a.encounter_date >= :startDate\n    AND a.encounter_date < :endDate\n    AND mdp.birthdate IS NOT NULL\n    AND mdp.gender IS NOT NULL\n    AND a.contact_notification_method IS NOT NULL\n    AND a.contact_notification_method LIKE '%Index%'\n    AND a.hiv_test_results LIKE '%Nagative%'\n),\nag AS (\n  SELECT\n    ag.age_group_id,\n    ag.label,\n    ag.min_age_days,\n    ag.max_age_days,\n    ag.sort_order\n  FROM report_builder_dim_age_group ag\n  JOIN report_builder_dim_age_category ac\n    ON ac.age_category_id = ag.age_category_id\n  WHERE ac.code = 'MOH_105_OPD_DIAG'\n    AND ag.is_active = 1\n),\ngenders AS (\n  SELECT 'F' AS gender\n  UNION ALL\n  SELECT 'M' AS gender\n),\ncnt AS (\n  SELECT\n    ag.age_group_id AS age_group_id,\n    mdp.gender AS gender,\n    COUNT(DISTINCT base_pop.client_id) AS value\n  FROM base_pop\n  JOIN mamba_fact_patients_latest_patient_demographics mdp\n    ON mdp.client_id = base_pop.client_id\n  JOIN ag\n    ON TIMESTAMPDIFF(DAY, mdp.birthdate, :endDate)\n       BETWEEN ag.min_age_days AND ag.max_age_days\n  WHERE mdp.birthdate IS NOT NULL\n    AND mdp.gender IS NOT NULL\n    AND mdp.gender IN ('F','M')\n  GROUP BY ag.age_group_id, mdp.gender\n)\nSELECT\n  ag.label AS age_group,\n  g.gender AS gender,\n  COALESCE(cnt.value, 0) AS value\nFROM ag\nCROSS JOIN genders g\nLEFT JOIN cnt\n    ON cnt.age_group_id = ag.age_group_id\n   AND cnt.gender = g.gender\nORDER BY ag.sort_order, g.gender;",
+    "dissaggregations" : [ "age_group", "gender" ],
+    "values" : [ {
+      "dissaggregations1" : "0-28d",
+      "disaggregation_code" : "D0_28",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "HT03f_D0_28_F"
+    }, {
+      "dissaggregations1" : "0-28d",
+      "disaggregation_code" : "D0_28",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "HT03f_D0_28_M"
+    }, {
+      "dissaggregations1" : "29d-4yrs",
+      "disaggregation_code" : "D29_4Y",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "HT03f_D29_4Y_F"
+    }, {
+      "dissaggregations1" : "29d-4yrs",
+      "disaggregation_code" : "D29_4Y",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "HT03f_D29_4Y_M"
+    }, {
+      "dissaggregations1" : "5-9yrs",
+      "disaggregation_code" : "Y5_9",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "HT03f_Y5_9_F"
+    }, {
+      "dissaggregations1" : "5-9yrs",
+      "disaggregation_code" : "Y5_9",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "HT03f_Y5_9_M"
+    }, {
+      "dissaggregations1" : "10-19yrs",
+      "disaggregation_code" : "Y10_19",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "HT03f_Y10_19_F"
+    }, {
+      "dissaggregations1" : "10-19yrs",
+      "disaggregation_code" : "Y10_19",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "HT03f_Y10_19_M"
+    }, {
+      "dissaggregations1" : "20+ yrs",
+      "disaggregation_code" : "Y20P",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "HT03f_Y20P_F"
+    }, {
+      "dissaggregations1" : "20+ yrs",
+      "disaggregation_code" : "Y20P",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "HT03f_Y20P_M"
+    } ]
+  }, {
+    "indicator_name" : "HT04a.",
+    "indicator_label" : "HT04a. Contacts Elicited (SNS)",
+    "subsection" : "HTS Contact Tracing Register",
+    "sqlQuery" : "WITH base_pop AS (\n    SELECT DISTINCT a.client_id AS client_id\n  FROM mamba_fact_encounter_hts_contact_tracing a\n  JOIN mamba_fact_patients_latest_patient_demographics mdp\n    ON mdp.client_id = a.client_id\n  WHERE\n    a.encounter_date >= :startDate\n    AND a.encounter_date < :endDate\n    AND mdp.birthdate IS NOT NULL\n    AND mdp.gender IS NOT NULL\n    AND a.contact_name IS NOT NULL\n    AND a.contact_notification_method IS NOT NULL\n    AND a.contact_notification_method LIKE '%SNS%'\n),\nag AS (\n  SELECT\n    ag.age_group_id,\n    ag.label,\n    ag.min_age_days,\n    ag.max_age_days,\n    ag.sort_order\n  FROM report_builder_dim_age_group ag\n  JOIN report_builder_dim_age_category ac\n    ON ac.age_category_id = ag.age_category_id\n  WHERE ac.code = 'MOH_105_OPD_DIAG'\n    AND ag.is_active = 1\n),\ngenders AS (\n  SELECT 'F' AS gender\n  UNION ALL\n  SELECT 'M' AS gender\n),\ncnt AS (\n  SELECT\n    ag.age_group_id AS age_group_id,\n    mdp.gender AS gender,\n    COUNT(DISTINCT base_pop.client_id) AS value\n  FROM base_pop\n  JOIN mamba_fact_patients_latest_patient_demographics mdp\n    ON mdp.client_id = base_pop.client_id\n  JOIN ag\n    ON TIMESTAMPDIFF(DAY, mdp.birthdate, :endDate)\n       BETWEEN ag.min_age_days AND ag.max_age_days\n  WHERE mdp.birthdate IS NOT NULL\n    AND mdp.gender IS NOT NULL\n    AND mdp.gender IN ('F','M')\n  GROUP BY ag.age_group_id, mdp.gender\n)\nSELECT\n  ag.label AS age_group,\n  g.gender AS gender,\n  COALESCE(cnt.value, 0) AS value\nFROM ag\nCROSS JOIN genders g\nLEFT JOIN cnt\n    ON cnt.age_group_id = ag.age_group_id\n   AND cnt.gender = g.gender\nORDER BY ag.sort_order, g.gender;",
+    "dissaggregations" : [ "age_group", "gender" ],
+    "values" : [ {
+      "dissaggregations1" : "0-28d",
+      "disaggregation_code" : "D0_28",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "HT04a_D0_28_F"
+    }, {
+      "dissaggregations1" : "0-28d",
+      "disaggregation_code" : "D0_28",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "HT04a_D0_28_M"
+    }, {
+      "dissaggregations1" : "29d-4yrs",
+      "disaggregation_code" : "D29_4Y",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "HT04a_D29_4Y_F"
+    }, {
+      "dissaggregations1" : "29d-4yrs",
+      "disaggregation_code" : "D29_4Y",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "HT04a_D29_4Y_M"
+    }, {
+      "dissaggregations1" : "5-9yrs",
+      "disaggregation_code" : "Y5_9",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "HT04a_Y5_9_F"
+    }, {
+      "dissaggregations1" : "5-9yrs",
+      "disaggregation_code" : "Y5_9",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "HT04a_Y5_9_M"
+    }, {
+      "dissaggregations1" : "10-19yrs",
+      "disaggregation_code" : "Y10_19",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "HT04a_Y10_19_F"
+    }, {
+      "dissaggregations1" : "10-19yrs",
+      "disaggregation_code" : "Y10_19",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "HT04a_Y10_19_M"
+    }, {
+      "dissaggregations1" : "20+ yrs",
+      "disaggregation_code" : "Y20P",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "HT04a_Y20P_F"
+    }, {
+      "dissaggregations1" : "20+ yrs",
+      "disaggregation_code" : "Y20P",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "HT04a_Y20P_M"
+    } ]
+  }, {
+    "indicator_name" : "HT04b.",
+    "indicator_label" : "HT04b. Contacts Notified (SNS)",
+    "subsection" : "HTS Contact Tracing Register",
+    "sqlQuery" : "WITH base_pop AS (\n    SELECT DISTINCT a.client_id AS client_id\n  FROM mamba_fact_encounter_hts_contact_tracing a\n  JOIN mamba_fact_patients_latest_patient_demographics mdp\n    ON mdp.client_id = a.client_id\n  WHERE\n    a.encounter_date >= :startDate\n    AND a.encounter_date < :endDate\n    AND mdp.birthdate IS NOT NULL\n    AND mdp.gender IS NOT NULL\n    AND a.contact_notification_method IS NOT NULL\n    AND a.contact_notification_method LIKE 'SNS'\n),\nag AS (\n  SELECT\n    ag.age_group_id,\n    ag.label,\n    ag.min_age_days,\n    ag.max_age_days,\n    ag.sort_order\n  FROM report_builder_dim_age_group ag\n  JOIN report_builder_dim_age_category ac\n    ON ac.age_category_id = ag.age_category_id\n  WHERE ac.code = 'MOH_105_OPD_DIAG'\n    AND ag.is_active = 1\n),\ngenders AS (\n  SELECT 'F' AS gender\n  UNION ALL\n  SELECT 'M' AS gender\n),\ncnt AS (\n  SELECT\n    ag.age_group_id AS age_group_id,\n    mdp.gender AS gender,\n    COUNT(DISTINCT base_pop.client_id) AS value\n  FROM base_pop\n  JOIN mamba_fact_patients_latest_patient_demographics mdp\n    ON mdp.client_id = base_pop.client_id\n  JOIN ag\n    ON TIMESTAMPDIFF(DAY, mdp.birthdate, :endDate)\n       BETWEEN ag.min_age_days AND ag.max_age_days\n  WHERE mdp.birthdate IS NOT NULL\n    AND mdp.gender IS NOT NULL\n    AND mdp.gender IN ('F','M')\n  GROUP BY ag.age_group_id, mdp.gender\n)\nSELECT\n  ag.label AS age_group,\n  g.gender AS gender,\n  COALESCE(cnt.value, 0) AS value\nFROM ag\nCROSS JOIN genders g\nLEFT JOIN cnt\n    ON cnt.age_group_id = ag.age_group_id\n   AND cnt.gender = g.gender\nORDER BY ag.sort_order, g.gender;",
+    "dissaggregations" : [ "age_group", "gender" ],
+    "values" : [ {
+      "dissaggregations1" : "0-28d",
+      "disaggregation_code" : "D0_28",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "HT04b_D0_28_F"
+    }, {
+      "dissaggregations1" : "0-28d",
+      "disaggregation_code" : "D0_28",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "HT04b_D0_28_M"
+    }, {
+      "dissaggregations1" : "29d-4yrs",
+      "disaggregation_code" : "D29_4Y",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "HT04b_D29_4Y_F"
+    }, {
+      "dissaggregations1" : "29d-4yrs",
+      "disaggregation_code" : "D29_4Y",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "HT04b_D29_4Y_M"
+    }, {
+      "dissaggregations1" : "5-9yrs",
+      "disaggregation_code" : "Y5_9",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "HT04b_Y5_9_F"
+    }, {
+      "dissaggregations1" : "5-9yrs",
+      "disaggregation_code" : "Y5_9",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "HT04b_Y5_9_M"
+    }, {
+      "dissaggregations1" : "10-19yrs",
+      "disaggregation_code" : "Y10_19",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "HT04b_Y10_19_F"
+    }, {
+      "dissaggregations1" : "10-19yrs",
+      "disaggregation_code" : "Y10_19",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "HT04b_Y10_19_M"
+    }, {
+      "dissaggregations1" : "20+ yrs",
+      "disaggregation_code" : "Y20P",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "HT04b_Y20P_F"
+    }, {
+      "dissaggregations1" : "20+ yrs",
+      "disaggregation_code" : "Y20P",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "HT04b_Y20P_M"
+    } ]
+  }, {
+    "indicator_name" : "HT04c.",
+    "indicator_label" : "HT04c. Contacts Tested (SNS)",
+    "subsection" : "HTS Contact Tracing Register",
+    "sqlQuery" : "WITH base_pop AS (\n    SELECT DISTINCT a.client_id AS client_id\n  FROM mamba_fact_encounter_hts_contact_tracing a\n  JOIN mamba_fact_patients_latest_patient_demographics mdp\n    ON mdp.client_id = a.client_id\n  WHERE\n    a.encounter_date >= :startDate\n    AND a.encounter_date < :endDate\n    AND mdp.birthdate IS NOT NULL\n    AND mdp.gender IS NOT NULL\n    AND a.hiv_test_results IS NOT NULL\n    AND a.contact_notification_method IS NOT NULL\n    AND a.contact_notification_method LIKE '%SNS%'\n),\nag AS (\n  SELECT\n    ag.age_group_id,\n    ag.label,\n    ag.min_age_days,\n    ag.max_age_days,\n    ag.sort_order\n  FROM report_builder_dim_age_group ag\n  JOIN report_builder_dim_age_category ac\n    ON ac.age_category_id = ag.age_category_id\n  WHERE ac.code = 'MOH_105_OPD_DIAG'\n    AND ag.is_active = 1\n),\ngenders AS (\n  SELECT 'F' AS gender\n  UNION ALL\n  SELECT 'M' AS gender\n),\ncnt AS (\n  SELECT\n    ag.age_group_id AS age_group_id,\n    mdp.gender AS gender,\n    COUNT(DISTINCT base_pop.client_id) AS value\n  FROM base_pop\n  JOIN mamba_fact_patients_latest_patient_demographics mdp\n    ON mdp.client_id = base_pop.client_id\n  JOIN ag\n    ON TIMESTAMPDIFF(DAY, mdp.birthdate, :endDate)\n       BETWEEN ag.min_age_days AND ag.max_age_days\n  WHERE mdp.birthdate IS NOT NULL\n    AND mdp.gender IS NOT NULL\n    AND mdp.gender IN ('F','M')\n  GROUP BY ag.age_group_id, mdp.gender\n)\nSELECT\n  ag.label AS age_group,\n  g.gender AS gender,\n  COALESCE(cnt.value, 0) AS value\nFROM ag\nCROSS JOIN genders g\nLEFT JOIN cnt\n    ON cnt.age_group_id = ag.age_group_id\n   AND cnt.gender = g.gender\nORDER BY ag.sort_order, g.gender;",
+    "dissaggregations" : [ "age_group", "gender" ],
+    "values" : [ {
+      "dissaggregations1" : "0-28d",
+      "disaggregation_code" : "D0_28",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "HT04c_D0_28_F"
+    }, {
+      "dissaggregations1" : "0-28d",
+      "disaggregation_code" : "D0_28",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "HT04c_D0_28_M"
+    }, {
+      "dissaggregations1" : "29d-4yrs",
+      "disaggregation_code" : "D29_4Y",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "HT04c_D29_4Y_F"
+    }, {
+      "dissaggregations1" : "29d-4yrs",
+      "disaggregation_code" : "D29_4Y",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "HT04c_D29_4Y_M"
+    }, {
+      "dissaggregations1" : "5-9yrs",
+      "disaggregation_code" : "Y5_9",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "HT04c_Y5_9_F"
+    }, {
+      "dissaggregations1" : "5-9yrs",
+      "disaggregation_code" : "Y5_9",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "HT04c_Y5_9_M"
+    }, {
+      "dissaggregations1" : "10-19yrs",
+      "disaggregation_code" : "Y10_19",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "HT04c_Y10_19_F"
+    }, {
+      "dissaggregations1" : "10-19yrs",
+      "disaggregation_code" : "Y10_19",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "HT04c_Y10_19_M"
+    }, {
+      "dissaggregations1" : "20+ yrs",
+      "disaggregation_code" : "Y20P",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "HT04c_Y20P_F"
+    }, {
+      "dissaggregations1" : "20+ yrs",
+      "disaggregation_code" : "Y20P",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "HT04c_Y20P_M"
+    } ]
+  }, {
+    "indicator_name" : "HT04d.",
+    "indicator_label" : "HT04d. New HIV Positives (SNS)",
+    "subsection" : "HTS Contact Tracing Register",
+    "sqlQuery" : "WITH base_pop AS (\n    SELECT DISTINCT a.client_id AS client_id\n  FROM mamba_fact_encounter_hts_contact_tracing a\n  JOIN mamba_fact_patients_latest_patient_demographics mdp\n    ON mdp.client_id = a.client_id\n  WHERE\n    a.encounter_date >= :startDate\n    AND a.encounter_date < :endDate\n    AND mdp.birthdate IS NOT NULL\n    AND mdp.gender IS NOT NULL\n    AND a.hiv_test_results = 'Positive'\n    AND a.case_closure_status LIKE '%in HIV Care%'\n    AND a.contact_notification_method IS NOT NULL\n    AND a.contact_notification_method LIKE '%SNS%'\n),\nag AS (\n  SELECT\n    ag.age_group_id,\n    ag.label,\n    ag.min_age_days,\n    ag.max_age_days,\n    ag.sort_order\n  FROM report_builder_dim_age_group ag\n  JOIN report_builder_dim_age_category ac\n    ON ac.age_category_id = ag.age_category_id\n  WHERE ac.code = 'MOH_105_OPD_DIAG'\n    AND ag.is_active = 1\n),\ngenders AS (\n  SELECT 'F' AS gender\n  UNION ALL\n  SELECT 'M' AS gender\n),\ncnt AS (\n  SELECT\n    ag.age_group_id AS age_group_id,\n    mdp.gender AS gender,\n    COUNT(DISTINCT base_pop.client_id) AS value\n  FROM base_pop\n  JOIN mamba_fact_patients_latest_patient_demographics mdp\n    ON mdp.client_id = base_pop.client_id\n  JOIN ag\n    ON TIMESTAMPDIFF(DAY, mdp.birthdate, :endDate)\n       BETWEEN ag.min_age_days AND ag.max_age_days\n  WHERE mdp.birthdate IS NOT NULL\n    AND mdp.gender IS NOT NULL\n    AND mdp.gender IN ('F','M')\n  GROUP BY ag.age_group_id, mdp.gender\n)\nSELECT\n  ag.label AS age_group,\n  g.gender AS gender,\n  COALESCE(cnt.value, 0) AS value\nFROM ag\nCROSS JOIN genders g\nLEFT JOIN cnt\n    ON cnt.age_group_id = ag.age_group_id\n   AND cnt.gender = g.gender\nORDER BY ag.sort_order, g.gender;",
+    "dissaggregations" : [ "age_group", "gender" ],
+    "values" : [ {
+      "dissaggregations1" : "0-28d",
+      "disaggregation_code" : "D0_28",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "HT04d_D0_28_F"
+    }, {
+      "dissaggregations1" : "0-28d",
+      "disaggregation_code" : "D0_28",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "HT04d_D0_28_M"
+    }, {
+      "dissaggregations1" : "29d-4yrs",
+      "disaggregation_code" : "D29_4Y",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "HT04d_D29_4Y_F"
+    }, {
+      "dissaggregations1" : "29d-4yrs",
+      "disaggregation_code" : "D29_4Y",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "HT04d_D29_4Y_M"
+    }, {
+      "dissaggregations1" : "5-9yrs",
+      "disaggregation_code" : "Y5_9",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "HT04d_Y5_9_F"
+    }, {
+      "dissaggregations1" : "5-9yrs",
+      "disaggregation_code" : "Y5_9",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "HT04d_Y5_9_M"
+    }, {
+      "dissaggregations1" : "10-19yrs",
+      "disaggregation_code" : "Y10_19",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "HT04d_Y10_19_F"
+    }, {
+      "dissaggregations1" : "10-19yrs",
+      "disaggregation_code" : "Y10_19",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "HT04d_Y10_19_M"
+    }, {
+      "dissaggregations1" : "20+ yrs",
+      "disaggregation_code" : "Y20P",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "HT04d_Y20P_F"
+    }, {
+      "dissaggregations1" : "20+ yrs",
+      "disaggregation_code" : "Y20P",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "HT04d_Y20P_M"
+    } ]
+  }, {
+    "indicator_name" : "HT04e.",
+    "indicator_label" : "HT04e. HIV Positives Linked to Care (SNS)",
+    "subsection" : "HTS Contact Tracing Register",
+    "sqlQuery" : "WITH base_pop AS (\n    SELECT DISTINCT a.client_id AS client_id\n  FROM mamba_fact_encounter_hts_contact_tracing a\n  JOIN mamba_fact_patients_latest_patient_demographics mdp\n    ON mdp.client_id = a.client_id\n  WHERE\n    a.encounter_date >= :startDate\n    AND a.encounter_date < :endDate\n    AND mdp.birthdate IS NOT NULL\n    AND mdp.gender IS NOT NULL\n    AND a.hiv_test_results = 'Positive'\n    AND a.case_closure_status LIKE '%in HIV Care%'\n    AND a.contact_notification_method IS NOT NULL\n    AND a.contact_notification_method LIKE '%SNS%'\n),\nag AS (\n  SELECT\n    ag.age_group_id,\n    ag.label,\n    ag.min_age_days,\n    ag.max_age_days,\n    ag.sort_order\n  FROM report_builder_dim_age_group ag\n  JOIN report_builder_dim_age_category ac\n    ON ac.age_category_id = ag.age_category_id\n  WHERE ac.code = 'MOH_105_OPD_DIAG'\n    AND ag.is_active = 1\n),\ngenders AS (\n  SELECT 'F' AS gender\n  UNION ALL\n  SELECT 'M' AS gender\n),\ncnt AS (\n  SELECT\n    ag.age_group_id AS age_group_id,\n    mdp.gender AS gender,\n    COUNT(DISTINCT base_pop.client_id) AS value\n  FROM base_pop\n  JOIN mamba_fact_patients_latest_patient_demographics mdp\n    ON mdp.client_id = base_pop.client_id\n  JOIN ag\n    ON TIMESTAMPDIFF(DAY, mdp.birthdate, :endDate)\n       BETWEEN ag.min_age_days AND ag.max_age_days\n  WHERE mdp.birthdate IS NOT NULL\n    AND mdp.gender IS NOT NULL\n    AND mdp.gender IN ('F','M')\n  GROUP BY ag.age_group_id, mdp.gender\n)\nSELECT\n  ag.label AS age_group,\n  g.gender AS gender,\n  COALESCE(cnt.value, 0) AS value\nFROM ag\nCROSS JOIN genders g\nLEFT JOIN cnt\n    ON cnt.age_group_id = ag.age_group_id\n   AND cnt.gender = g.gender\nORDER BY ag.sort_order, g.gender;",
+    "dissaggregations" : [ "age_group", "gender" ],
+    "values" : [ {
+      "dissaggregations1" : "0-28d",
+      "disaggregation_code" : "D0_28",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "HT04e_D0_28_F"
+    }, {
+      "dissaggregations1" : "0-28d",
+      "disaggregation_code" : "D0_28",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "HT04e_D0_28_M"
+    }, {
+      "dissaggregations1" : "29d-4yrs",
+      "disaggregation_code" : "D29_4Y",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "HT04e_D29_4Y_F"
+    }, {
+      "dissaggregations1" : "29d-4yrs",
+      "disaggregation_code" : "D29_4Y",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "HT04e_D29_4Y_M"
+    }, {
+      "dissaggregations1" : "5-9yrs",
+      "disaggregation_code" : "Y5_9",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "HT04e_Y5_9_F"
+    }, {
+      "dissaggregations1" : "5-9yrs",
+      "disaggregation_code" : "Y5_9",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "HT04e_Y5_9_M"
+    }, {
+      "dissaggregations1" : "10-19yrs",
+      "disaggregation_code" : "Y10_19",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "HT04e_Y10_19_F"
+    }, {
+      "dissaggregations1" : "10-19yrs",
+      "disaggregation_code" : "Y10_19",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "HT04e_Y10_19_M"
+    }, {
+      "dissaggregations1" : "20+ yrs",
+      "disaggregation_code" : "Y20P",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "HT04e_Y20P_F"
+    }, {
+      "dissaggregations1" : "20+ yrs",
+      "disaggregation_code" : "Y20P",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "HT04e_Y20P_M"
+    } ]
+  }, {
+    "indicator_name" : "HT04f.",
+    "indicator_label" : "HT04f. HIV Negative Referred to Prevention (SNS)",
+    "subsection" : "HTS Contact Tracing Register",
+    "sqlQuery" : "WITH base_pop AS (\n    SELECT DISTINCT a.client_id AS client_id\n  FROM mamba_fact_encounter_hts_contact_tracing a\n  JOIN mamba_fact_patients_latest_patient_demographics mdp\n    ON mdp.client_id = a.client_id\n  WHERE\n    a.encounter_date >= :startDate\n    AND a.encounter_date < :endDate\n    AND mdp.birthdate IS NOT NULL\n    AND mdp.gender IS NOT NULL\n    AND a.hiv_test_results = 'Negative'\n    AND a.hiv_prevention_services IS NOT NULL\n),\nag AS (\n  SELECT\n    ag.age_group_id,\n    ag.label,\n    ag.min_age_days,\n    ag.max_age_days,\n    ag.sort_order\n  FROM report_builder_dim_age_group ag\n  JOIN report_builder_dim_age_category ac\n    ON ac.age_category_id = ag.age_category_id\n  WHERE ac.code = 'MOH_105_OPD_DIAG'\n    AND ag.is_active = 1\n),\ngenders AS (\n  SELECT 'F' AS gender\n  UNION ALL\n  SELECT 'M' AS gender\n),\ncnt AS (\n  SELECT\n    ag.age_group_id AS age_group_id,\n    mdp.gender AS gender,\n    COUNT(DISTINCT base_pop.client_id) AS value\n  FROM base_pop\n  JOIN mamba_fact_patients_latest_patient_demographics mdp\n    ON mdp.client_id = base_pop.client_id\n  JOIN ag\n    ON TIMESTAMPDIFF(DAY, mdp.birthdate, :endDate)\n       BETWEEN ag.min_age_days AND ag.max_age_days\n  WHERE mdp.birthdate IS NOT NULL\n    AND mdp.gender IS NOT NULL\n    AND mdp.gender IN ('F','M')\n  GROUP BY ag.age_group_id, mdp.gender\n)\nSELECT\n  ag.label AS age_group,\n  g.gender AS gender,\n  COALESCE(cnt.value, 0) AS value\nFROM ag\nCROSS JOIN genders g\nLEFT JOIN cnt\n    ON cnt.age_group_id = ag.age_group_id\n   AND cnt.gender = g.gender\nORDER BY ag.sort_order, g.gender;",
+    "dissaggregations" : [ "age_group", "gender" ],
+    "values" : [ {
+      "dissaggregations1" : "0-28d",
+      "disaggregation_code" : "D0_28",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "HT04f_D0_28_F"
+    }, {
+      "dissaggregations1" : "0-28d",
+      "disaggregation_code" : "D0_28",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "HT04f_D0_28_M"
+    }, {
+      "dissaggregations1" : "29d-4yrs",
+      "disaggregation_code" : "D29_4Y",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "HT04f_D29_4Y_F"
+    }, {
+      "dissaggregations1" : "29d-4yrs",
+      "disaggregation_code" : "D29_4Y",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "HT04f_D29_4Y_M"
+    }, {
+      "dissaggregations1" : "5-9yrs",
+      "disaggregation_code" : "Y5_9",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "HT04f_Y5_9_F"
+    }, {
+      "dissaggregations1" : "5-9yrs",
+      "disaggregation_code" : "Y5_9",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "HT04f_Y5_9_M"
+    }, {
+      "dissaggregations1" : "10-19yrs",
+      "disaggregation_code" : "Y10_19",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "HT04f_Y10_19_F"
+    }, {
+      "dissaggregations1" : "10-19yrs",
+      "disaggregation_code" : "Y10_19",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "HT04f_Y10_19_M"
+    }, {
+      "dissaggregations1" : "20+ yrs",
+      "disaggregation_code" : "Y20P",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "HT04f_Y20P_F"
+    }, {
+      "dissaggregations1" : "20+ yrs",
+      "disaggregation_code" : "Y20P",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "HT04f_Y20P_M"
+    } ]
+  }, {
+    "indicator_name" : "HT05a1.",
+    "indicator_label" : "HT05a1. Directly Assisted (Facility)",
+    "subsection" : "HIV- Self Test Register",
+    "sqlQuery" : "WITH base_pop AS (\n    SELECT DISTINCT a.client_id AS client_id\n  FROM mamba_fact_encounter_hiv_self_testing a\n  JOIN mamba_fact_patients_latest_patient_demographics mdp\n    ON mdp.client_id = a.client_id\n  WHERE\n    a.encounter_date >= :startDate\n    AND a.encounter_date <= :endDate\n    AND mdp.birthdate IS NOT NULL\n    AND mdp.gender IS NOT NULL\n    AND a.distribution_model = 'ecb88326-0a3f-44a5-9bbf-df4bfc3239e1'\n    AND a.hiv_self_testing_approach = '9638bacf-6443-4391-bbc3-f154eaac3245'\n),\nag AS (\n  SELECT\n    ag.age_group_id,\n    ag.label,\n    ag.min_age_days,\n    ag.max_age_days,\n    ag.sort_order\n  FROM report_builder_dim_age_group ag\n  JOIN report_builder_dim_age_category ac\n    ON ac.age_category_id = ag.age_category_id\n  WHERE ac.code = 'HMIS_106A'\n    AND ag.is_active = 1\n),\ngenders AS (\n  SELECT 'F' AS gender\n  UNION ALL\n  SELECT 'M' AS gender\n),\ncnt AS (\n  SELECT\n    ag.age_group_id AS age_group_id,\n    mdp.gender AS gender,\n    COUNT(DISTINCT base_pop.client_id) AS value\n  FROM base_pop\n  JOIN mamba_fact_patients_latest_patient_demographics mdp\n    ON mdp.client_id = base_pop.client_id\n  JOIN ag\n    ON TIMESTAMPDIFF(DAY, mdp.birthdate, :endDate)\n       BETWEEN ag.min_age_days AND ag.max_age_days\n  WHERE mdp.birthdate IS NOT NULL\n    AND mdp.gender IS NOT NULL\n    AND mdp.gender IN ('F','M')\n  GROUP BY ag.age_group_id, mdp.gender\n)\nSELECT\n  ag.label AS age_group,\n  g.gender AS gender,\n  COALESCE(cnt.value, 0) AS value\nFROM ag\nCROSS JOIN genders g\nLEFT JOIN cnt\n    ON cnt.age_group_id = ag.age_group_id\n   AND cnt.gender = g.gender\nORDER BY ag.sort_order, g.gender;",
+    "dissaggregations" : [ "age_group", "gender" ],
+    "values" : [ {
+      "dissaggregations1" : "0–4 yrs",
+      "disaggregation_code" : "Y0_4",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "HT05a1_Y0_4_F"
+    }, {
+      "dissaggregations1" : "0–4 yrs",
+      "disaggregation_code" : "Y0_4",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "HT05a1_Y0_4_M"
+    }, {
+      "dissaggregations1" : "5–9 yrs",
+      "disaggregation_code" : "Y5_9",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "HT05a1_Y5_9_F"
+    }, {
+      "dissaggregations1" : "5–9 yrs",
+      "disaggregation_code" : "Y5_9",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "HT05a1_Y5_9_M"
+    }, {
+      "dissaggregations1" : "10–14 yrs",
+      "disaggregation_code" : "Y10_14",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "HT05a1_Y10_14_F"
+    }, {
+      "dissaggregations1" : "10–14 yrs",
+      "disaggregation_code" : "Y10_14",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "HT05a1_Y10_14_M"
+    }, {
+      "dissaggregations1" : "15–19 yrs",
+      "disaggregation_code" : "Y15_19",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "HT05a1_Y15_19_F"
+    }, {
+      "dissaggregations1" : "15–19 yrs",
+      "disaggregation_code" : "Y15_19",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "HT05a1_Y15_19_M"
+    }, {
+      "dissaggregations1" : "20–24 yrs",
+      "disaggregation_code" : "Y20_24",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "HT05a1_Y20_24_F"
+    }, {
+      "dissaggregations1" : "20–24 yrs",
+      "disaggregation_code" : "Y20_24",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "HT05a1_Y20_24_M"
+    }, {
+      "dissaggregations1" : "25–29 yrs",
+      "disaggregation_code" : "Y25_29",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "HT05a1_Y25_29_F"
+    }, {
+      "dissaggregations1" : "25–29 yrs",
+      "disaggregation_code" : "Y25_29",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "HT05a1_Y25_29_M"
+    }, {
+      "dissaggregations1" : "30–39 yrs",
+      "disaggregation_code" : "Y30_39",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "HT05a1_Y30_39_F"
+    }, {
+      "dissaggregations1" : "30–39 yrs",
+      "disaggregation_code" : "Y30_39",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "HT05a1_Y30_39_M"
+    }, {
+      "dissaggregations1" : "40–49 yrs",
+      "disaggregation_code" : "Y40_49",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "HT05a1_Y40_49_F"
+    }, {
+      "dissaggregations1" : "40–49 yrs",
+      "disaggregation_code" : "Y40_49",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "HT05a1_Y40_49_M"
+    }, {
+      "dissaggregations1" : "50+ yrs",
+      "disaggregation_code" : "Y50P",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "HT05a1_Y50P_F"
+    }, {
+      "dissaggregations1" : "50+ yrs",
+      "disaggregation_code" : "Y50P",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "HT05a1_Y50P_M"
+    } ]
+  }, {
+    "indicator_name" : "HT05a2.",
+    "indicator_label" : "HT05a2. Unassisted (Facility)",
+    "subsection" : "HIV- Self Test Register",
+    "sqlQuery" : "WITH base_pop AS (\n    SELECT DISTINCT a.client_id AS client_id\n  FROM mamba_fact_encounter_hiv_self_testing a\n  JOIN mamba_fact_patients_latest_patient_demographics mdp\n    ON mdp.client_id = a.client_id\n  WHERE\n    a.encounter_date >= :startDate\n    AND a.encounter_date <= :endDate\n    AND mdp.birthdate IS NOT NULL\n    AND mdp.gender IS NOT NULL\n    AND a.distribution_model = 'ecb88326-0a3f-44a5-9bbf-df4bfc3239e1'\n    AND a.hiv_self_testing_approach = '534658fe-3682-4007-bee1-3f600edb2818'\n),\nag AS (\n  SELECT\n    ag.age_group_id,\n    ag.label,\n    ag.min_age_days,\n    ag.max_age_days,\n    ag.sort_order\n  FROM report_builder_dim_age_group ag\n  JOIN report_builder_dim_age_category ac\n    ON ac.age_category_id = ag.age_category_id\n  WHERE ac.code = 'HMIS_106A'\n    AND ag.is_active = 1\n),\ngenders AS (\n  SELECT 'F' AS gender\n  UNION ALL\n  SELECT 'M' AS gender\n),\ncnt AS (\n  SELECT\n    ag.age_group_id AS age_group_id,\n    mdp.gender AS gender,\n    COUNT(DISTINCT base_pop.client_id) AS value\n  FROM base_pop\n  JOIN mamba_fact_patients_latest_patient_demographics mdp\n    ON mdp.client_id = base_pop.client_id\n  JOIN ag\n    ON TIMESTAMPDIFF(DAY, mdp.birthdate, :endDate)\n       BETWEEN ag.min_age_days AND ag.max_age_days\n  WHERE mdp.birthdate IS NOT NULL\n    AND mdp.gender IS NOT NULL\n    AND mdp.gender IN ('F','M')\n  GROUP BY ag.age_group_id, mdp.gender\n)\nSELECT\n  ag.label AS age_group,\n  g.gender AS gender,\n  COALESCE(cnt.value, 0) AS value\nFROM ag\nCROSS JOIN genders g\nLEFT JOIN cnt\n    ON cnt.age_group_id = ag.age_group_id\n   AND cnt.gender = g.gender\nORDER BY ag.sort_order, g.gender;",
+    "dissaggregations" : [ "age_group", "gender" ],
+    "values" : [ {
+      "dissaggregations1" : "0–4 yrs",
+      "disaggregation_code" : "Y0_4",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "HT05a2_Y0_4_F"
+    }, {
+      "dissaggregations1" : "0–4 yrs",
+      "disaggregation_code" : "Y0_4",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "HT05a2_Y0_4_M"
+    }, {
+      "dissaggregations1" : "5–9 yrs",
+      "disaggregation_code" : "Y5_9",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "HT05a2_Y5_9_F"
+    }, {
+      "dissaggregations1" : "5–9 yrs",
+      "disaggregation_code" : "Y5_9",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "HT05a2_Y5_9_M"
+    }, {
+      "dissaggregations1" : "10–14 yrs",
+      "disaggregation_code" : "Y10_14",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "HT05a2_Y10_14_F"
+    }, {
+      "dissaggregations1" : "10–14 yrs",
+      "disaggregation_code" : "Y10_14",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "HT05a2_Y10_14_M"
+    }, {
+      "dissaggregations1" : "15–19 yrs",
+      "disaggregation_code" : "Y15_19",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "HT05a2_Y15_19_F"
+    }, {
+      "dissaggregations1" : "15–19 yrs",
+      "disaggregation_code" : "Y15_19",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "HT05a2_Y15_19_M"
+    }, {
+      "dissaggregations1" : "20–24 yrs",
+      "disaggregation_code" : "Y20_24",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "HT05a2_Y20_24_F"
+    }, {
+      "dissaggregations1" : "20–24 yrs",
+      "disaggregation_code" : "Y20_24",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "HT05a2_Y20_24_M"
+    }, {
+      "dissaggregations1" : "25–29 yrs",
+      "disaggregation_code" : "Y25_29",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "HT05a2_Y25_29_F"
+    }, {
+      "dissaggregations1" : "25–29 yrs",
+      "disaggregation_code" : "Y25_29",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "HT05a2_Y25_29_M"
+    }, {
+      "dissaggregations1" : "30–39 yrs",
+      "disaggregation_code" : "Y30_39",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "HT05a2_Y30_39_F"
+    }, {
+      "dissaggregations1" : "30–39 yrs",
+      "disaggregation_code" : "Y30_39",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "HT05a2_Y30_39_M"
+    }, {
+      "dissaggregations1" : "40–49 yrs",
+      "disaggregation_code" : "Y40_49",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "HT05a2_Y40_49_F"
+    }, {
+      "dissaggregations1" : "40–49 yrs",
+      "disaggregation_code" : "Y40_49",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "HT05a2_Y40_49_M"
+    }, {
+      "dissaggregations1" : "50+ yrs",
+      "disaggregation_code" : "Y50P",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "HT05a2_Y50P_F"
+    }, {
+      "dissaggregations1" : "50+ yrs",
+      "disaggregation_code" : "Y50P",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "HT05a2_Y50P_M"
+    } ]
+  }, {
+    "indicator_name" : "HT05b1.",
+    "indicator_label" : "HT05b1. Results Returned (Facility)",
+    "subsection" : "HIV- Self Test Register",
+    "sqlQuery" : "WITH base_pop AS (\n    SELECT DISTINCT a.client_id AS client_id\n  FROM mamba_fact_encounter_hiv_self_testing a\n  JOIN mamba_fact_patients_latest_patient_demographics mdp\n    ON mdp.client_id = a.client_id\n  WHERE\n    a.encounter_date >= :startDate\n    AND a.encounter_date <= :endDate\n    AND mdp.birthdate IS NOT NULL\n    AND mdp.gender IS NOT NULL\n    AND a.distribution_model = 'ecb88326-0a3f-44a5-9bbf-df4bfc3239e1'\n    AND a.hivst_results IS NOT NULL\n),\nag AS (\n  SELECT\n    ag.age_group_id,\n    ag.label,\n    ag.min_age_days,\n    ag.max_age_days,\n    ag.sort_order\n  FROM report_builder_dim_age_group ag\n  JOIN report_builder_dim_age_category ac\n    ON ac.age_category_id = ag.age_category_id\n  WHERE ac.code = 'HMIS_106A'\n    AND ag.is_active = 1\n),\ngenders AS (\n  SELECT 'F' AS gender\n  UNION ALL\n  SELECT 'M' AS gender\n),\ncnt AS (\n  SELECT\n    ag.age_group_id AS age_group_id,\n    mdp.gender AS gender,\n    COUNT(DISTINCT base_pop.client_id) AS value\n  FROM base_pop\n  JOIN mamba_fact_patients_latest_patient_demographics mdp\n    ON mdp.client_id = base_pop.client_id\n  JOIN ag\n    ON TIMESTAMPDIFF(DAY, mdp.birthdate, :endDate)\n       BETWEEN ag.min_age_days AND ag.max_age_days\n  WHERE mdp.birthdate IS NOT NULL\n    AND mdp.gender IS NOT NULL\n    AND mdp.gender IN ('F','M')\n  GROUP BY ag.age_group_id, mdp.gender\n)\nSELECT\n  ag.label AS age_group,\n  g.gender AS gender,\n  COALESCE(cnt.value, 0) AS value\nFROM ag\nCROSS JOIN genders g\nLEFT JOIN cnt\n    ON cnt.age_group_id = ag.age_group_id\n   AND cnt.gender = g.gender\nORDER BY ag.sort_order, g.gender;",
+    "dissaggregations" : [ "age_group", "gender" ],
+    "values" : [ {
+      "dissaggregations1" : "0–4 yrs",
+      "disaggregation_code" : "Y0_4",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "HT05b1_Y0_4_F"
+    }, {
+      "dissaggregations1" : "0–4 yrs",
+      "disaggregation_code" : "Y0_4",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "HT05b1_Y0_4_M"
+    }, {
+      "dissaggregations1" : "5–9 yrs",
+      "disaggregation_code" : "Y5_9",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "HT05b1_Y5_9_F"
+    }, {
+      "dissaggregations1" : "5–9 yrs",
+      "disaggregation_code" : "Y5_9",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "HT05b1_Y5_9_M"
+    }, {
+      "dissaggregations1" : "10–14 yrs",
+      "disaggregation_code" : "Y10_14",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "HT05b1_Y10_14_F"
+    }, {
+      "dissaggregations1" : "10–14 yrs",
+      "disaggregation_code" : "Y10_14",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "HT05b1_Y10_14_M"
+    }, {
+      "dissaggregations1" : "15–19 yrs",
+      "disaggregation_code" : "Y15_19",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "HT05b1_Y15_19_F"
+    }, {
+      "dissaggregations1" : "15–19 yrs",
+      "disaggregation_code" : "Y15_19",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "HT05b1_Y15_19_M"
+    }, {
+      "dissaggregations1" : "20–24 yrs",
+      "disaggregation_code" : "Y20_24",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "HT05b1_Y20_24_F"
+    }, {
+      "dissaggregations1" : "20–24 yrs",
+      "disaggregation_code" : "Y20_24",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "HT05b1_Y20_24_M"
+    }, {
+      "dissaggregations1" : "25–29 yrs",
+      "disaggregation_code" : "Y25_29",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "HT05b1_Y25_29_F"
+    }, {
+      "dissaggregations1" : "25–29 yrs",
+      "disaggregation_code" : "Y25_29",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "HT05b1_Y25_29_M"
+    }, {
+      "dissaggregations1" : "30–39 yrs",
+      "disaggregation_code" : "Y30_39",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "HT05b1_Y30_39_F"
+    }, {
+      "dissaggregations1" : "30–39 yrs",
+      "disaggregation_code" : "Y30_39",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "HT05b1_Y30_39_M"
+    }, {
+      "dissaggregations1" : "40–49 yrs",
+      "disaggregation_code" : "Y40_49",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "HT05b1_Y40_49_F"
+    }, {
+      "dissaggregations1" : "40–49 yrs",
+      "disaggregation_code" : "Y40_49",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "HT05b1_Y40_49_M"
+    }, {
+      "dissaggregations1" : "50+ yrs",
+      "disaggregation_code" : "Y50P",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "HT05b1_Y50P_F"
+    }, {
+      "dissaggregations1" : "50+ yrs",
+      "disaggregation_code" : "Y50P",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "HT05b1_Y50P_M"
+    } ]
+  }, {
+    "indicator_name" : "HT05b2.",
+    "indicator_label" : "HT05b2. Total Positive (Facility)",
+    "subsection" : "HIV- Self Test Register",
+    "sqlQuery" : "WITH base_pop AS (\n    SELECT DISTINCT a.client_id AS client_id\n  FROM mamba_fact_encounter_hiv_self_testing a\n  JOIN mamba_fact_patients_latest_patient_demographics mdp\n    ON mdp.client_id = a.client_id\n  WHERE\n    a.encounter_date >= :startDate\n    AND a.encounter_date <= :endDate\n    AND mdp.birthdate IS NOT NULL\n    AND mdp.gender IS NOT NULL\n    AND a.distribution_model = 'ecb88326-0a3f-44a5-9bbf-df4bfc3239e1'\n    AND a.hivst_results = 'dc9f3fdd-30ab-102d-86b0-7a5022ba4115'\n),\nag AS (\n  SELECT\n    ag.age_group_id,\n    ag.label,\n    ag.min_age_days,\n    ag.max_age_days,\n    ag.sort_order\n  FROM report_builder_dim_age_group ag\n  JOIN report_builder_dim_age_category ac\n    ON ac.age_category_id = ag.age_category_id\n  WHERE ac.code = 'HMIS_106A'\n    AND ag.is_active = 1\n),\ngenders AS (\n  SELECT 'F' AS gender\n  UNION ALL\n  SELECT 'M' AS gender\n),\ncnt AS (\n  SELECT\n    ag.age_group_id AS age_group_id,\n    mdp.gender AS gender,\n    COUNT(DISTINCT base_pop.client_id) AS value\n  FROM base_pop\n  JOIN mamba_fact_patients_latest_patient_demographics mdp\n    ON mdp.client_id = base_pop.client_id\n  JOIN ag\n    ON TIMESTAMPDIFF(DAY, mdp.birthdate, :endDate)\n       BETWEEN ag.min_age_days AND ag.max_age_days\n  WHERE mdp.birthdate IS NOT NULL\n    AND mdp.gender IS NOT NULL\n    AND mdp.gender IN ('F','M')\n  GROUP BY ag.age_group_id, mdp.gender\n)\nSELECT\n  ag.label AS age_group,\n  g.gender AS gender,\n  COALESCE(cnt.value, 0) AS value\nFROM ag\nCROSS JOIN genders g\nLEFT JOIN cnt\n    ON cnt.age_group_id = ag.age_group_id\n   AND cnt.gender = g.gender\nORDER BY ag.sort_order, g.gender;",
+    "dissaggregations" : [ "age_group", "gender" ],
+    "values" : [ {
+      "dissaggregations1" : "0–4 yrs",
+      "disaggregation_code" : "Y0_4",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "HT05b2_Y0_4_F"
+    }, {
+      "dissaggregations1" : "0–4 yrs",
+      "disaggregation_code" : "Y0_4",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "HT05b2_Y0_4_M"
+    }, {
+      "dissaggregations1" : "5–9 yrs",
+      "disaggregation_code" : "Y5_9",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "HT05b2_Y5_9_F"
+    }, {
+      "dissaggregations1" : "5–9 yrs",
+      "disaggregation_code" : "Y5_9",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "HT05b2_Y5_9_M"
+    }, {
+      "dissaggregations1" : "10–14 yrs",
+      "disaggregation_code" : "Y10_14",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "HT05b2_Y10_14_F"
+    }, {
+      "dissaggregations1" : "10–14 yrs",
+      "disaggregation_code" : "Y10_14",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "HT05b2_Y10_14_M"
+    }, {
+      "dissaggregations1" : "15–19 yrs",
+      "disaggregation_code" : "Y15_19",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "HT05b2_Y15_19_F"
+    }, {
+      "dissaggregations1" : "15–19 yrs",
+      "disaggregation_code" : "Y15_19",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "HT05b2_Y15_19_M"
+    }, {
+      "dissaggregations1" : "20–24 yrs",
+      "disaggregation_code" : "Y20_24",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "HT05b2_Y20_24_F"
+    }, {
+      "dissaggregations1" : "20–24 yrs",
+      "disaggregation_code" : "Y20_24",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "HT05b2_Y20_24_M"
+    }, {
+      "dissaggregations1" : "25–29 yrs",
+      "disaggregation_code" : "Y25_29",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "HT05b2_Y25_29_F"
+    }, {
+      "dissaggregations1" : "25–29 yrs",
+      "disaggregation_code" : "Y25_29",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "HT05b2_Y25_29_M"
+    }, {
+      "dissaggregations1" : "30–39 yrs",
+      "disaggregation_code" : "Y30_39",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "HT05b2_Y30_39_F"
+    }, {
+      "dissaggregations1" : "30–39 yrs",
+      "disaggregation_code" : "Y30_39",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "HT05b2_Y30_39_M"
+    }, {
+      "dissaggregations1" : "40–49 yrs",
+      "disaggregation_code" : "Y40_49",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "HT05b2_Y40_49_F"
+    }, {
+      "dissaggregations1" : "40–49 yrs",
+      "disaggregation_code" : "Y40_49",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "HT05b2_Y40_49_M"
+    }, {
+      "dissaggregations1" : "50+ yrs",
+      "disaggregation_code" : "Y50P",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "HT05b2_Y50P_F"
+    }, {
+      "dissaggregations1" : "50+ yrs",
+      "disaggregation_code" : "Y50P",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "HT05b2_Y50P_M"
+    } ]
+  }, {
+    "indicator_name" : "HT05b3.",
+    "indicator_label" : "HT05b3. Confirmed Positive (Facility)",
+    "subsection" : "HIV- Self Test Register",
+    "sqlQuery" : "WITH base_pop AS (\n    SELECT DISTINCT a.client_id AS client_id\n  FROM mamba_fact_encounter_hiv_self_testing a\n  JOIN mamba_fact_patients_latest_patient_demographics mdp\n    ON mdp.client_id = a.client_id\n  WHERE\n    a.encounter_date >= :startDate\n    AND a.encounter_date <= :endDate\n    AND mdp.birthdate IS NOT NULL\n    AND mdp.gender IS NOT NULL\n    AND a.distribution_model = 'ecb88326-0a3f-44a5-9bbf-df4bfc3239e1'\n    AND a.hivst_results = 'dc9f3fdd-30ab-102d-86b0-7a5022ba4115'\n    AND a.confirmatory_test_results = 'dc866728-30ab-102d-86b0-7a5022ba4115'\n),\nag AS (\n  SELECT\n    ag.age_group_id,\n    ag.label,\n    ag.min_age_days,\n    ag.max_age_days,\n    ag.sort_order\n  FROM report_builder_dim_age_group ag\n  JOIN report_builder_dim_age_category ac\n    ON ac.age_category_id = ag.age_category_id\n  WHERE ac.code = 'HMIS_106A'\n    AND ag.is_active = 1\n),\ngenders AS (\n  SELECT 'F' AS gender\n  UNION ALL\n  SELECT 'M' AS gender\n),\ncnt AS (\n  SELECT\n    ag.age_group_id AS age_group_id,\n    mdp.gender AS gender,\n    COUNT(DISTINCT base_pop.client_id) AS value\n  FROM base_pop\n  JOIN mamba_fact_patients_latest_patient_demographics mdp\n    ON mdp.client_id = base_pop.client_id\n  JOIN ag\n    ON TIMESTAMPDIFF(DAY, mdp.birthdate, :endDate)\n       BETWEEN ag.min_age_days AND ag.max_age_days\n  WHERE mdp.birthdate IS NOT NULL\n    AND mdp.gender IS NOT NULL\n    AND mdp.gender IN ('F','M')\n  GROUP BY ag.age_group_id, mdp.gender\n)\nSELECT\n  ag.label AS age_group,\n  g.gender AS gender,\n  COALESCE(cnt.value, 0) AS value\nFROM ag\nCROSS JOIN genders g\nLEFT JOIN cnt\n    ON cnt.age_group_id = ag.age_group_id\n   AND cnt.gender = g.gender\nORDER BY ag.sort_order, g.gender;",
+    "dissaggregations" : [ "age_group", "gender" ],
+    "values" : [ {
+      "dissaggregations1" : "0–4 yrs",
+      "disaggregation_code" : "Y0_4",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "HT05b3_Y0_4_F"
+    }, {
+      "dissaggregations1" : "0–4 yrs",
+      "disaggregation_code" : "Y0_4",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "HT05b3_Y0_4_M"
+    }, {
+      "dissaggregations1" : "5–9 yrs",
+      "disaggregation_code" : "Y5_9",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "HT05b3_Y5_9_F"
+    }, {
+      "dissaggregations1" : "5–9 yrs",
+      "disaggregation_code" : "Y5_9",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "HT05b3_Y5_9_M"
+    }, {
+      "dissaggregations1" : "10–14 yrs",
+      "disaggregation_code" : "Y10_14",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "HT05b3_Y10_14_F"
+    }, {
+      "dissaggregations1" : "10–14 yrs",
+      "disaggregation_code" : "Y10_14",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "HT05b3_Y10_14_M"
+    }, {
+      "dissaggregations1" : "15–19 yrs",
+      "disaggregation_code" : "Y15_19",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "HT05b3_Y15_19_F"
+    }, {
+      "dissaggregations1" : "15–19 yrs",
+      "disaggregation_code" : "Y15_19",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "HT05b3_Y15_19_M"
+    }, {
+      "dissaggregations1" : "20–24 yrs",
+      "disaggregation_code" : "Y20_24",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "HT05b3_Y20_24_F"
+    }, {
+      "dissaggregations1" : "20–24 yrs",
+      "disaggregation_code" : "Y20_24",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "HT05b3_Y20_24_M"
+    }, {
+      "dissaggregations1" : "25–29 yrs",
+      "disaggregation_code" : "Y25_29",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "HT05b3_Y25_29_F"
+    }, {
+      "dissaggregations1" : "25–29 yrs",
+      "disaggregation_code" : "Y25_29",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "HT05b3_Y25_29_M"
+    }, {
+      "dissaggregations1" : "30–39 yrs",
+      "disaggregation_code" : "Y30_39",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "HT05b3_Y30_39_F"
+    }, {
+      "dissaggregations1" : "30–39 yrs",
+      "disaggregation_code" : "Y30_39",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "HT05b3_Y30_39_M"
+    }, {
+      "dissaggregations1" : "40–49 yrs",
+      "disaggregation_code" : "Y40_49",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "HT05b3_Y40_49_F"
+    }, {
+      "dissaggregations1" : "40–49 yrs",
+      "disaggregation_code" : "Y40_49",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "HT05b3_Y40_49_M"
+    }, {
+      "dissaggregations1" : "50+ yrs",
+      "disaggregation_code" : "Y50P",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "HT05b3_Y50P_F"
+    }, {
+      "dissaggregations1" : "50+ yrs",
+      "disaggregation_code" : "Y50P",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "HT05b3_Y50P_M"
+    } ]
+  }, {
+    "indicator_name" : "HT05b4.",
+    "indicator_label" : "HT05b4. Linked to HIV Care (Facility)",
+    "subsection" : "HIV- Self Test Register",
+    "sqlQuery" : "WITH base_pop AS (\n    SELECT DISTINCT a.client_id AS client_id\n  FROM mamba_fact_encounter_hiv_self_testing a\n  JOIN mamba_fact_patients_latest_patient_demographics mdp\n    ON mdp.client_id = a.client_id\n  WHERE\n    a.encounter_date >= :startDate\n    AND a.encounter_date <= :endDate\n    AND mdp.birthdate IS NOT NULL\n    AND mdp.gender IS NOT NULL\n    AND a.distribution_model = 'ecb88326-0a3f-44a5-9bbf-df4bfc3239e1'\n    AND a.hivst_results = 'dc9f3fdd-30ab-102d-86b0-7a5022ba4115'\n    AND a.confirmatory_test_results = 'dc866728-30ab-102d-86b0-7a5022ba4115'\n    AND a.linked_to_hiv_care = '1065AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA'\n),\nag AS (\n  SELECT\n    ag.age_group_id,\n    ag.label,\n    ag.min_age_days,\n    ag.max_age_days,\n    ag.sort_order\n  FROM report_builder_dim_age_group ag\n  JOIN report_builder_dim_age_category ac\n    ON ac.age_category_id = ag.age_category_id\n  WHERE ac.code = 'HMIS_106A'\n    AND ag.is_active = 1\n),\ngenders AS (\n  SELECT 'F' AS gender\n  UNION ALL\n  SELECT 'M' AS gender\n),\ncnt AS (\n  SELECT\n    ag.age_group_id AS age_group_id,\n    mdp.gender AS gender,\n    COUNT(DISTINCT base_pop.client_id) AS value\n  FROM base_pop\n  JOIN mamba_fact_patients_latest_patient_demographics mdp\n    ON mdp.client_id = base_pop.client_id\n  JOIN ag\n    ON TIMESTAMPDIFF(DAY, mdp.birthdate, :endDate)\n       BETWEEN ag.min_age_days AND ag.max_age_days\n  WHERE mdp.birthdate IS NOT NULL\n    AND mdp.gender IS NOT NULL\n    AND mdp.gender IN ('F','M')\n  GROUP BY ag.age_group_id, mdp.gender\n)\nSELECT\n  ag.label AS age_group,\n  g.gender AS gender,\n  COALESCE(cnt.value, 0) AS value\nFROM ag\nCROSS JOIN genders g\nLEFT JOIN cnt\n    ON cnt.age_group_id = ag.age_group_id\n   AND cnt.gender = g.gender\nORDER BY ag.sort_order, g.gender;",
+    "dissaggregations" : [ "age_group", "gender" ],
+    "values" : [ {
+      "dissaggregations1" : "0–4 yrs",
+      "disaggregation_code" : "Y0_4",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "HT05b4_Y0_4_F"
+    }, {
+      "dissaggregations1" : "0–4 yrs",
+      "disaggregation_code" : "Y0_4",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "HT05b4_Y0_4_M"
+    }, {
+      "dissaggregations1" : "5–9 yrs",
+      "disaggregation_code" : "Y5_9",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "HT05b4_Y5_9_F"
+    }, {
+      "dissaggregations1" : "5–9 yrs",
+      "disaggregation_code" : "Y5_9",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "HT05b4_Y5_9_M"
+    }, {
+      "dissaggregations1" : "10–14 yrs",
+      "disaggregation_code" : "Y10_14",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "HT05b4_Y10_14_F"
+    }, {
+      "dissaggregations1" : "10–14 yrs",
+      "disaggregation_code" : "Y10_14",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "HT05b4_Y10_14_M"
+    }, {
+      "dissaggregations1" : "15–19 yrs",
+      "disaggregation_code" : "Y15_19",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "HT05b4_Y15_19_F"
+    }, {
+      "dissaggregations1" : "15–19 yrs",
+      "disaggregation_code" : "Y15_19",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "HT05b4_Y15_19_M"
+    }, {
+      "dissaggregations1" : "20–24 yrs",
+      "disaggregation_code" : "Y20_24",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "HT05b4_Y20_24_F"
+    }, {
+      "dissaggregations1" : "20–24 yrs",
+      "disaggregation_code" : "Y20_24",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "HT05b4_Y20_24_M"
+    }, {
+      "dissaggregations1" : "25–29 yrs",
+      "disaggregation_code" : "Y25_29",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "HT05b4_Y25_29_F"
+    }, {
+      "dissaggregations1" : "25–29 yrs",
+      "disaggregation_code" : "Y25_29",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "HT05b4_Y25_29_M"
+    }, {
+      "dissaggregations1" : "30–39 yrs",
+      "disaggregation_code" : "Y30_39",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "HT05b4_Y30_39_F"
+    }, {
+      "dissaggregations1" : "30–39 yrs",
+      "disaggregation_code" : "Y30_39",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "HT05b4_Y30_39_M"
+    }, {
+      "dissaggregations1" : "40–49 yrs",
+      "disaggregation_code" : "Y40_49",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "HT05b4_Y40_49_F"
+    }, {
+      "dissaggregations1" : "40–49 yrs",
+      "disaggregation_code" : "Y40_49",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "HT05b4_Y40_49_M"
+    }, {
+      "dissaggregations1" : "50+ yrs",
+      "disaggregation_code" : "Y50P",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "HT05b4_Y50P_F"
+    }, {
+      "dissaggregations1" : "50+ yrs",
+      "disaggregation_code" : "Y50P",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "HT05b4_Y50P_M"
+    } ]
+  }, {
+    "indicator_name" : "HT05b5.",
+    "indicator_label" : "HT05b5. Referred to Prevention (Facility)",
+    "subsection" : "HIV- Self Test Register",
+    "sqlQuery" : "WITH base_pop AS (\n    SELECT DISTINCT a.client_id AS client_id\n  FROM mamba_fact_encounter_hiv_self_testing a\n  JOIN mamba_fact_patients_latest_patient_demographics mdp\n    ON mdp.client_id = a.client_id\n  WHERE\n    a.encounter_date >= :startDate\n    AND a.encounter_date <= :endDate\n    AND mdp.birthdate IS NOT NULL\n    AND mdp.gender IS NOT NULL\n    AND a.distribution_model = 'ecb88326-0a3f-44a5-9bbf-df4bfc3239e1'\n    AND a.confirmatory_test_results = 'dc85aa72-30ab-102d-86b0-7a5022ba4115'\n    AND a.linked_to_hiv_prevention_services = '1065AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA'\n),\nag AS (\n  SELECT\n    ag.age_group_id,\n    ag.label,\n    ag.min_age_days,\n    ag.max_age_days,\n    ag.sort_order\n  FROM report_builder_dim_age_group ag\n  JOIN report_builder_dim_age_category ac\n    ON ac.age_category_id = ag.age_category_id\n  WHERE ac.code = 'HMIS_106A'\n    AND ag.is_active = 1\n),\ngenders AS (\n  SELECT 'F' AS gender\n  UNION ALL\n  SELECT 'M' AS gender\n),\ncnt AS (\n  SELECT\n    ag.age_group_id AS age_group_id,\n    mdp.gender AS gender,\n    COUNT(DISTINCT base_pop.client_id) AS value\n  FROM base_pop\n  JOIN mamba_fact_patients_latest_patient_demographics mdp\n    ON mdp.client_id = base_pop.client_id\n  JOIN ag\n    ON TIMESTAMPDIFF(DAY, mdp.birthdate, :endDate)\n       BETWEEN ag.min_age_days AND ag.max_age_days\n  WHERE mdp.birthdate IS NOT NULL\n    AND mdp.gender IS NOT NULL\n    AND mdp.gender IN ('F','M')\n  GROUP BY ag.age_group_id, mdp.gender\n)\nSELECT\n  ag.label AS age_group,\n  g.gender AS gender,\n  COALESCE(cnt.value, 0) AS value\nFROM ag\nCROSS JOIN genders g\nLEFT JOIN cnt\n    ON cnt.age_group_id = ag.age_group_id\n   AND cnt.gender = g.gender\nORDER BY ag.sort_order, g.gender;",
+    "dissaggregations" : [ "age_group", "gender" ],
+    "values" : [ {
+      "dissaggregations1" : "0–4 yrs",
+      "disaggregation_code" : "Y0_4",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "HT05b5_Y0_4_F"
+    }, {
+      "dissaggregations1" : "0–4 yrs",
+      "disaggregation_code" : "Y0_4",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "HT05b5_Y0_4_M"
+    }, {
+      "dissaggregations1" : "5–9 yrs",
+      "disaggregation_code" : "Y5_9",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "HT05b5_Y5_9_F"
+    }, {
+      "dissaggregations1" : "5–9 yrs",
+      "disaggregation_code" : "Y5_9",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "HT05b5_Y5_9_M"
+    }, {
+      "dissaggregations1" : "10–14 yrs",
+      "disaggregation_code" : "Y10_14",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "HT05b5_Y10_14_F"
+    }, {
+      "dissaggregations1" : "10–14 yrs",
+      "disaggregation_code" : "Y10_14",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "HT05b5_Y10_14_M"
+    }, {
+      "dissaggregations1" : "15–19 yrs",
+      "disaggregation_code" : "Y15_19",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "HT05b5_Y15_19_F"
+    }, {
+      "dissaggregations1" : "15–19 yrs",
+      "disaggregation_code" : "Y15_19",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "HT05b5_Y15_19_M"
+    }, {
+      "dissaggregations1" : "20–24 yrs",
+      "disaggregation_code" : "Y20_24",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "HT05b5_Y20_24_F"
+    }, {
+      "dissaggregations1" : "20–24 yrs",
+      "disaggregation_code" : "Y20_24",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "HT05b5_Y20_24_M"
+    }, {
+      "dissaggregations1" : "25–29 yrs",
+      "disaggregation_code" : "Y25_29",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "HT05b5_Y25_29_F"
+    }, {
+      "dissaggregations1" : "25–29 yrs",
+      "disaggregation_code" : "Y25_29",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "HT05b5_Y25_29_M"
+    }, {
+      "dissaggregations1" : "30–39 yrs",
+      "disaggregation_code" : "Y30_39",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "HT05b5_Y30_39_F"
+    }, {
+      "dissaggregations1" : "30–39 yrs",
+      "disaggregation_code" : "Y30_39",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "HT05b5_Y30_39_M"
+    }, {
+      "dissaggregations1" : "40–49 yrs",
+      "disaggregation_code" : "Y40_49",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "HT05b5_Y40_49_F"
+    }, {
+      "dissaggregations1" : "40–49 yrs",
+      "disaggregation_code" : "Y40_49",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "HT05b5_Y40_49_M"
+    }, {
+      "dissaggregations1" : "50+ yrs",
+      "disaggregation_code" : "Y50P",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "HT05b5_Y50P_F"
+    }, {
+      "dissaggregations1" : "50+ yrs",
+      "disaggregation_code" : "Y50P",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "HT05b5_Y50P_M"
+    } ]
+  }, {
+    "indicator_name" : "HT06a1.",
+    "indicator_label" : "HT06a1. Directly Assisted (Community)",
+    "subsection" : "HIV- Self Test Register",
+    "sqlQuery" : "WITH base_pop AS (\n    SELECT DISTINCT a.client_id AS client_id\n  FROM mamba_fact_encounter_hiv_self_testing a\n  JOIN mamba_fact_patients_latest_patient_demographics mdp\n    ON mdp.client_id = a.client_id\n  WHERE\n    a.encounter_date >= :startDate\n    AND a.encounter_date <= :endDate\n    AND mdp.birthdate IS NOT NULL\n    AND mdp.gender IS NOT NULL\n    AND a.distribution_model = '4f4e6d1d-4343-42cc-ba47-2319b8a84369'\n    AND a.hiv_self_testing_approach = '9638bacf-6443-4391-bbc3-f154eaac3245'\n),\nag AS (\n  SELECT\n    ag.age_group_id,\n    ag.label,\n    ag.min_age_days,\n    ag.max_age_days,\n    ag.sort_order\n  FROM report_builder_dim_age_group ag\n  JOIN report_builder_dim_age_category ac\n    ON ac.age_category_id = ag.age_category_id\n  WHERE ac.code = 'HMIS_106A'\n    AND ag.is_active = 1\n),\ngenders AS (\n  SELECT 'F' AS gender\n  UNION ALL\n  SELECT 'M' AS gender\n),\ncnt AS (\n  SELECT\n    ag.age_group_id AS age_group_id,\n    mdp.gender AS gender,\n    COUNT(DISTINCT base_pop.client_id) AS value\n  FROM base_pop\n  JOIN mamba_fact_patients_latest_patient_demographics mdp\n    ON mdp.client_id = base_pop.client_id\n  JOIN ag\n    ON TIMESTAMPDIFF(DAY, mdp.birthdate, :endDate)\n       BETWEEN ag.min_age_days AND ag.max_age_days\n  WHERE mdp.birthdate IS NOT NULL\n    AND mdp.gender IS NOT NULL\n    AND mdp.gender IN ('F','M')\n  GROUP BY ag.age_group_id, mdp.gender\n)\nSELECT\n  ag.label AS age_group,\n  g.gender AS gender,\n  COALESCE(cnt.value, 0) AS value\nFROM ag\nCROSS JOIN genders g\nLEFT JOIN cnt\n    ON cnt.age_group_id = ag.age_group_id\n   AND cnt.gender = g.gender\nORDER BY ag.sort_order, g.gender;",
+    "dissaggregations" : [ "age_group", "gender" ],
+    "values" : [ {
+      "dissaggregations1" : "0–4 yrs",
+      "disaggregation_code" : "Y0_4",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "HT06a1_Y0_4_F"
+    }, {
+      "dissaggregations1" : "0–4 yrs",
+      "disaggregation_code" : "Y0_4",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "HT06a1_Y0_4_M"
+    }, {
+      "dissaggregations1" : "5–9 yrs",
+      "disaggregation_code" : "Y5_9",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "HT06a1_Y5_9_F"
+    }, {
+      "dissaggregations1" : "5–9 yrs",
+      "disaggregation_code" : "Y5_9",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "HT06a1_Y5_9_M"
+    }, {
+      "dissaggregations1" : "10–14 yrs",
+      "disaggregation_code" : "Y10_14",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "HT06a1_Y10_14_F"
+    }, {
+      "dissaggregations1" : "10–14 yrs",
+      "disaggregation_code" : "Y10_14",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "HT06a1_Y10_14_M"
+    }, {
+      "dissaggregations1" : "15–19 yrs",
+      "disaggregation_code" : "Y15_19",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "HT06a1_Y15_19_F"
+    }, {
+      "dissaggregations1" : "15–19 yrs",
+      "disaggregation_code" : "Y15_19",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "HT06a1_Y15_19_M"
+    }, {
+      "dissaggregations1" : "20–24 yrs",
+      "disaggregation_code" : "Y20_24",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "HT06a1_Y20_24_F"
+    }, {
+      "dissaggregations1" : "20–24 yrs",
+      "disaggregation_code" : "Y20_24",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "HT06a1_Y20_24_M"
+    }, {
+      "dissaggregations1" : "25–29 yrs",
+      "disaggregation_code" : "Y25_29",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "HT06a1_Y25_29_F"
+    }, {
+      "dissaggregations1" : "25–29 yrs",
+      "disaggregation_code" : "Y25_29",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "HT06a1_Y25_29_M"
+    }, {
+      "dissaggregations1" : "30–39 yrs",
+      "disaggregation_code" : "Y30_39",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "HT06a1_Y30_39_F"
+    }, {
+      "dissaggregations1" : "30–39 yrs",
+      "disaggregation_code" : "Y30_39",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "HT06a1_Y30_39_M"
+    }, {
+      "dissaggregations1" : "40–49 yrs",
+      "disaggregation_code" : "Y40_49",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "HT06a1_Y40_49_F"
+    }, {
+      "dissaggregations1" : "40–49 yrs",
+      "disaggregation_code" : "Y40_49",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "HT06a1_Y40_49_M"
+    }, {
+      "dissaggregations1" : "50+ yrs",
+      "disaggregation_code" : "Y50P",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "HT06a1_Y50P_F"
+    }, {
+      "dissaggregations1" : "50+ yrs",
+      "disaggregation_code" : "Y50P",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "HT06a1_Y50P_M"
+    } ]
+  }, {
+    "indicator_name" : "HT06a2.",
+    "indicator_label" : "HT06a2. Unassisted (Community)",
+    "subsection" : "HIV- Self Test Register",
+    "sqlQuery" : "WITH base_pop AS (\n    SELECT DISTINCT a.client_id AS client_id\n  FROM mamba_fact_encounter_hiv_self_testing a\n  JOIN mamba_fact_patients_latest_patient_demographics mdp\n    ON mdp.client_id = a.client_id\n  WHERE\n    a.encounter_date >= :startDate\n    AND a.encounter_date <= :endDate\n    AND mdp.birthdate IS NOT NULL\n    AND mdp.gender IS NOT NULL\n    AND a.distribution_model = '4f4e6d1d-4343-42cc-ba47-2319b8a84369'\n    AND a.hiv_self_testing_approach = '534658fe-3682-4007-bee1-3f600edb2818'\n),\nag AS (\n  SELECT\n    ag.age_group_id,\n    ag.label,\n    ag.min_age_days,\n    ag.max_age_days,\n    ag.sort_order\n  FROM report_builder_dim_age_group ag\n  JOIN report_builder_dim_age_category ac\n    ON ac.age_category_id = ag.age_category_id\n  WHERE ac.code = 'HMIS_106A'\n    AND ag.is_active = 1\n),\ngenders AS (\n  SELECT 'F' AS gender\n  UNION ALL\n  SELECT 'M' AS gender\n),\ncnt AS (\n  SELECT\n    ag.age_group_id AS age_group_id,\n    mdp.gender AS gender,\n    COUNT(DISTINCT base_pop.client_id) AS value\n  FROM base_pop\n  JOIN mamba_fact_patients_latest_patient_demographics mdp\n    ON mdp.client_id = base_pop.client_id\n  JOIN ag\n    ON TIMESTAMPDIFF(DAY, mdp.birthdate, :endDate)\n       BETWEEN ag.min_age_days AND ag.max_age_days\n  WHERE mdp.birthdate IS NOT NULL\n    AND mdp.gender IS NOT NULL\n    AND mdp.gender IN ('F','M')\n  GROUP BY ag.age_group_id, mdp.gender\n)\nSELECT\n  ag.label AS age_group,\n  g.gender AS gender,\n  COALESCE(cnt.value, 0) AS value\nFROM ag\nCROSS JOIN genders g\nLEFT JOIN cnt\n    ON cnt.age_group_id = ag.age_group_id\n   AND cnt.gender = g.gender\nORDER BY ag.sort_order, g.gender;",
+    "dissaggregations" : [ "age_group", "gender" ],
+    "values" : [ {
+      "dissaggregations1" : "0–4 yrs",
+      "disaggregation_code" : "Y0_4",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "HT06a2_Y0_4_F"
+    }, {
+      "dissaggregations1" : "0–4 yrs",
+      "disaggregation_code" : "Y0_4",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "HT06a2_Y0_4_M"
+    }, {
+      "dissaggregations1" : "5–9 yrs",
+      "disaggregation_code" : "Y5_9",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "HT06a2_Y5_9_F"
+    }, {
+      "dissaggregations1" : "5–9 yrs",
+      "disaggregation_code" : "Y5_9",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "HT06a2_Y5_9_M"
+    }, {
+      "dissaggregations1" : "10–14 yrs",
+      "disaggregation_code" : "Y10_14",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "HT06a2_Y10_14_F"
+    }, {
+      "dissaggregations1" : "10–14 yrs",
+      "disaggregation_code" : "Y10_14",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "HT06a2_Y10_14_M"
+    }, {
+      "dissaggregations1" : "15–19 yrs",
+      "disaggregation_code" : "Y15_19",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "HT06a2_Y15_19_F"
+    }, {
+      "dissaggregations1" : "15–19 yrs",
+      "disaggregation_code" : "Y15_19",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "HT06a2_Y15_19_M"
+    }, {
+      "dissaggregations1" : "20–24 yrs",
+      "disaggregation_code" : "Y20_24",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "HT06a2_Y20_24_F"
+    }, {
+      "dissaggregations1" : "20–24 yrs",
+      "disaggregation_code" : "Y20_24",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "HT06a2_Y20_24_M"
+    }, {
+      "dissaggregations1" : "25–29 yrs",
+      "disaggregation_code" : "Y25_29",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "HT06a2_Y25_29_F"
+    }, {
+      "dissaggregations1" : "25–29 yrs",
+      "disaggregation_code" : "Y25_29",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "HT06a2_Y25_29_M"
+    }, {
+      "dissaggregations1" : "30–39 yrs",
+      "disaggregation_code" : "Y30_39",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "HT06a2_Y30_39_F"
+    }, {
+      "dissaggregations1" : "30–39 yrs",
+      "disaggregation_code" : "Y30_39",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "HT06a2_Y30_39_M"
+    }, {
+      "dissaggregations1" : "40–49 yrs",
+      "disaggregation_code" : "Y40_49",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "HT06a2_Y40_49_F"
+    }, {
+      "dissaggregations1" : "40–49 yrs",
+      "disaggregation_code" : "Y40_49",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "HT06a2_Y40_49_M"
+    }, {
+      "dissaggregations1" : "50+ yrs",
+      "disaggregation_code" : "Y50P",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "HT06a2_Y50P_F"
+    }, {
+      "dissaggregations1" : "50+ yrs",
+      "disaggregation_code" : "Y50P",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "HT06a2_Y50P_M"
+    } ]
+  }, {
+    "indicator_name" : "HT06b1.",
+    "indicator_label" : "HT06b1. Results Returned (Community)",
+    "subsection" : "HIV- Self Test Register",
+    "sqlQuery" : "WITH base_pop AS (\n    SELECT DISTINCT a.client_id AS client_id\n  FROM mamba_fact_encounter_hiv_self_testing a\n  JOIN mamba_fact_patients_latest_patient_demographics mdp\n    ON mdp.client_id = a.client_id\n  WHERE\n    a.encounter_date >= :startDate\n    AND a.encounter_date <= :endDate\n    AND mdp.birthdate IS NOT NULL\n    AND mdp.gender IS NOT NULL\n    AND a.distribution_model = '4f4e6d1d-4343-42cc-ba47-2319b8a84369'\n    AND a.hivst_results IS NOT NULL\n),\nag AS (\n  SELECT\n    ag.age_group_id,\n    ag.label,\n    ag.min_age_days,\n    ag.max_age_days,\n    ag.sort_order\n  FROM report_builder_dim_age_group ag\n  JOIN report_builder_dim_age_category ac\n    ON ac.age_category_id = ag.age_category_id\n  WHERE ac.code = 'HMIS_106A'\n    AND ag.is_active = 1\n),\ngenders AS (\n  SELECT 'F' AS gender\n  UNION ALL\n  SELECT 'M' AS gender\n),\ncnt AS (\n  SELECT\n    ag.age_group_id AS age_group_id,\n    mdp.gender AS gender,\n    COUNT(DISTINCT base_pop.client_id) AS value\n  FROM base_pop\n  JOIN mamba_fact_patients_latest_patient_demographics mdp\n    ON mdp.client_id = base_pop.client_id\n  JOIN ag\n    ON TIMESTAMPDIFF(DAY, mdp.birthdate, :endDate)\n       BETWEEN ag.min_age_days AND ag.max_age_days\n  WHERE mdp.birthdate IS NOT NULL\n    AND mdp.gender IS NOT NULL\n    AND mdp.gender IN ('F','M')\n  GROUP BY ag.age_group_id, mdp.gender\n)\nSELECT\n  ag.label AS age_group,\n  g.gender AS gender,\n  COALESCE(cnt.value, 0) AS value\nFROM ag\nCROSS JOIN genders g\nLEFT JOIN cnt\n    ON cnt.age_group_id = ag.age_group_id\n   AND cnt.gender = g.gender\nORDER BY ag.sort_order, g.gender;",
+    "dissaggregations" : [ "age_group", "gender" ],
+    "values" : [ {
+      "dissaggregations1" : "0–4 yrs",
+      "disaggregation_code" : "Y0_4",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "HT06b1_Y0_4_F"
+    }, {
+      "dissaggregations1" : "0–4 yrs",
+      "disaggregation_code" : "Y0_4",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "HT06b1_Y0_4_M"
+    }, {
+      "dissaggregations1" : "5–9 yrs",
+      "disaggregation_code" : "Y5_9",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "HT06b1_Y5_9_F"
+    }, {
+      "dissaggregations1" : "5–9 yrs",
+      "disaggregation_code" : "Y5_9",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "HT06b1_Y5_9_M"
+    }, {
+      "dissaggregations1" : "10–14 yrs",
+      "disaggregation_code" : "Y10_14",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "HT06b1_Y10_14_F"
+    }, {
+      "dissaggregations1" : "10–14 yrs",
+      "disaggregation_code" : "Y10_14",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "HT06b1_Y10_14_M"
+    }, {
+      "dissaggregations1" : "15–19 yrs",
+      "disaggregation_code" : "Y15_19",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "HT06b1_Y15_19_F"
+    }, {
+      "dissaggregations1" : "15–19 yrs",
+      "disaggregation_code" : "Y15_19",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "HT06b1_Y15_19_M"
+    }, {
+      "dissaggregations1" : "20–24 yrs",
+      "disaggregation_code" : "Y20_24",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "HT06b1_Y20_24_F"
+    }, {
+      "dissaggregations1" : "20–24 yrs",
+      "disaggregation_code" : "Y20_24",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "HT06b1_Y20_24_M"
+    }, {
+      "dissaggregations1" : "25–29 yrs",
+      "disaggregation_code" : "Y25_29",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "HT06b1_Y25_29_F"
+    }, {
+      "dissaggregations1" : "25–29 yrs",
+      "disaggregation_code" : "Y25_29",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "HT06b1_Y25_29_M"
+    }, {
+      "dissaggregations1" : "30–39 yrs",
+      "disaggregation_code" : "Y30_39",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "HT06b1_Y30_39_F"
+    }, {
+      "dissaggregations1" : "30–39 yrs",
+      "disaggregation_code" : "Y30_39",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "HT06b1_Y30_39_M"
+    }, {
+      "dissaggregations1" : "40–49 yrs",
+      "disaggregation_code" : "Y40_49",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "HT06b1_Y40_49_F"
+    }, {
+      "dissaggregations1" : "40–49 yrs",
+      "disaggregation_code" : "Y40_49",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "HT06b1_Y40_49_M"
+    }, {
+      "dissaggregations1" : "50+ yrs",
+      "disaggregation_code" : "Y50P",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "HT06b1_Y50P_F"
+    }, {
+      "dissaggregations1" : "50+ yrs",
+      "disaggregation_code" : "Y50P",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "HT06b1_Y50P_M"
+    } ]
+  }, {
+    "indicator_name" : "HT06b2.",
+    "indicator_label" : "HT06b2. Total Positive (Community)",
+    "subsection" : "HIV- Self Test Register",
+    "sqlQuery" : "WITH base_pop AS (\n    SELECT DISTINCT a.client_id AS client_id\n  FROM mamba_fact_encounter_hiv_self_testing a\n  JOIN mamba_fact_patients_latest_patient_demographics mdp\n    ON mdp.client_id = a.client_id\n  WHERE\n    a.encounter_date >= :startDate\n    AND a.encounter_date <= :endDate\n    AND mdp.birthdate IS NOT NULL\n    AND mdp.gender IS NOT NULL\n    AND a.distribution_model = '4f4e6d1d-4343-42cc-ba47-2319b8a84369'\n    AND a.hivst_results = 'dc9f3fdd-30ab-102d-86b0-7a5022ba4115'\n),\nag AS (\n  SELECT\n    ag.age_group_id,\n    ag.label,\n    ag.min_age_days,\n    ag.max_age_days,\n    ag.sort_order\n  FROM report_builder_dim_age_group ag\n  JOIN report_builder_dim_age_category ac\n    ON ac.age_category_id = ag.age_category_id\n  WHERE ac.code = 'HMIS_106A'\n    AND ag.is_active = 1\n),\ngenders AS (\n  SELECT 'F' AS gender\n  UNION ALL\n  SELECT 'M' AS gender\n),\ncnt AS (\n  SELECT\n    ag.age_group_id AS age_group_id,\n    mdp.gender AS gender,\n    COUNT(DISTINCT base_pop.client_id) AS value\n  FROM base_pop\n  JOIN mamba_fact_patients_latest_patient_demographics mdp\n    ON mdp.client_id = base_pop.client_id\n  JOIN ag\n    ON TIMESTAMPDIFF(DAY, mdp.birthdate, :endDate)\n       BETWEEN ag.min_age_days AND ag.max_age_days\n  WHERE mdp.birthdate IS NOT NULL\n    AND mdp.gender IS NOT NULL\n    AND mdp.gender IN ('F','M')\n  GROUP BY ag.age_group_id, mdp.gender\n)\nSELECT\n  ag.label AS age_group,\n  g.gender AS gender,\n  COALESCE(cnt.value, 0) AS value\nFROM ag\nCROSS JOIN genders g\nLEFT JOIN cnt\n    ON cnt.age_group_id = ag.age_group_id\n   AND cnt.gender = g.gender\nORDER BY ag.sort_order, g.gender;",
+    "dissaggregations" : [ "age_group", "gender" ],
+    "values" : [ {
+      "dissaggregations1" : "0–4 yrs",
+      "disaggregation_code" : "Y0_4",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "HT06b2_Y0_4_F"
+    }, {
+      "dissaggregations1" : "0–4 yrs",
+      "disaggregation_code" : "Y0_4",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "HT06b2_Y0_4_M"
+    }, {
+      "dissaggregations1" : "5–9 yrs",
+      "disaggregation_code" : "Y5_9",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "HT06b2_Y5_9_F"
+    }, {
+      "dissaggregations1" : "5–9 yrs",
+      "disaggregation_code" : "Y5_9",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "HT06b2_Y5_9_M"
+    }, {
+      "dissaggregations1" : "10–14 yrs",
+      "disaggregation_code" : "Y10_14",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "HT06b2_Y10_14_F"
+    }, {
+      "dissaggregations1" : "10–14 yrs",
+      "disaggregation_code" : "Y10_14",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "HT06b2_Y10_14_M"
+    }, {
+      "dissaggregations1" : "15–19 yrs",
+      "disaggregation_code" : "Y15_19",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "HT06b2_Y15_19_F"
+    }, {
+      "dissaggregations1" : "15–19 yrs",
+      "disaggregation_code" : "Y15_19",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "HT06b2_Y15_19_M"
+    }, {
+      "dissaggregations1" : "20–24 yrs",
+      "disaggregation_code" : "Y20_24",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "HT06b2_Y20_24_F"
+    }, {
+      "dissaggregations1" : "20–24 yrs",
+      "disaggregation_code" : "Y20_24",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "HT06b2_Y20_24_M"
+    }, {
+      "dissaggregations1" : "25–29 yrs",
+      "disaggregation_code" : "Y25_29",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "HT06b2_Y25_29_F"
+    }, {
+      "dissaggregations1" : "25–29 yrs",
+      "disaggregation_code" : "Y25_29",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "HT06b2_Y25_29_M"
+    }, {
+      "dissaggregations1" : "30–39 yrs",
+      "disaggregation_code" : "Y30_39",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "HT06b2_Y30_39_F"
+    }, {
+      "dissaggregations1" : "30–39 yrs",
+      "disaggregation_code" : "Y30_39",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "HT06b2_Y30_39_M"
+    }, {
+      "dissaggregations1" : "40–49 yrs",
+      "disaggregation_code" : "Y40_49",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "HT06b2_Y40_49_F"
+    }, {
+      "dissaggregations1" : "40–49 yrs",
+      "disaggregation_code" : "Y40_49",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "HT06b2_Y40_49_M"
+    }, {
+      "dissaggregations1" : "50+ yrs",
+      "disaggregation_code" : "Y50P",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "HT06b2_Y50P_F"
+    }, {
+      "dissaggregations1" : "50+ yrs",
+      "disaggregation_code" : "Y50P",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "HT06b2_Y50P_M"
+    } ]
+  }, {
+    "indicator_name" : "HT06b3.",
+    "indicator_label" : "HT06b3. Confirmed Positive (Community)",
+    "subsection" : "HIV- Self Test Register",
+    "sqlQuery" : "WITH base_pop AS (\n    SELECT DISTINCT a.client_id AS client_id\n  FROM mamba_fact_encounter_hiv_self_testing a\n  JOIN mamba_fact_patients_latest_patient_demographics mdp\n    ON mdp.client_id = a.client_id\n  WHERE\n    a.encounter_date >= :startDate\n    AND a.encounter_date <= :endDate\n    AND mdp.birthdate IS NOT NULL\n    AND mdp.gender IS NOT NULL\n    AND a.distribution_model = '4f4e6d1d-4343-42cc-ba47-2319b8a84369'\n    AND a.hivst_results = 'dc9f3fdd-30ab-102d-86b0-7a5022ba4115'\n    AND a.confirmatory_test_results = 'dc866728-30ab-102d-86b0-7a5022ba4115'\n),\nag AS (\n  SELECT\n    ag.age_group_id,\n    ag.label,\n    ag.min_age_days,\n    ag.max_age_days,\n    ag.sort_order\n  FROM report_builder_dim_age_group ag\n  JOIN report_builder_dim_age_category ac\n    ON ac.age_category_id = ag.age_category_id\n  WHERE ac.code = 'HMIS_106A'\n    AND ag.is_active = 1\n),\ngenders AS (\n  SELECT 'F' AS gender\n  UNION ALL\n  SELECT 'M' AS gender\n),\ncnt AS (\n  SELECT\n    ag.age_group_id AS age_group_id,\n    mdp.gender AS gender,\n    COUNT(DISTINCT base_pop.client_id) AS value\n  FROM base_pop\n  JOIN mamba_fact_patients_latest_patient_demographics mdp\n    ON mdp.client_id = base_pop.client_id\n  JOIN ag\n    ON TIMESTAMPDIFF(DAY, mdp.birthdate, :endDate)\n       BETWEEN ag.min_age_days AND ag.max_age_days\n  WHERE mdp.birthdate IS NOT NULL\n    AND mdp.gender IS NOT NULL\n    AND mdp.gender IN ('F','M')\n  GROUP BY ag.age_group_id, mdp.gender\n)\nSELECT\n  ag.label AS age_group,\n  g.gender AS gender,\n  COALESCE(cnt.value, 0) AS value\nFROM ag\nCROSS JOIN genders g\nLEFT JOIN cnt\n    ON cnt.age_group_id = ag.age_group_id\n   AND cnt.gender = g.gender\nORDER BY ag.sort_order, g.gender;",
+    "dissaggregations" : [ "age_group", "gender" ],
+    "values" : [ {
+      "dissaggregations1" : "0–4 yrs",
+      "disaggregation_code" : "Y0_4",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "HT06b3_Y0_4_F"
+    }, {
+      "dissaggregations1" : "0–4 yrs",
+      "disaggregation_code" : "Y0_4",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "HT06b3_Y0_4_M"
+    }, {
+      "dissaggregations1" : "5–9 yrs",
+      "disaggregation_code" : "Y5_9",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "HT06b3_Y5_9_F"
+    }, {
+      "dissaggregations1" : "5–9 yrs",
+      "disaggregation_code" : "Y5_9",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "HT06b3_Y5_9_M"
+    }, {
+      "dissaggregations1" : "10–14 yrs",
+      "disaggregation_code" : "Y10_14",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "HT06b3_Y10_14_F"
+    }, {
+      "dissaggregations1" : "10–14 yrs",
+      "disaggregation_code" : "Y10_14",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "HT06b3_Y10_14_M"
+    }, {
+      "dissaggregations1" : "15–19 yrs",
+      "disaggregation_code" : "Y15_19",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "HT06b3_Y15_19_F"
+    }, {
+      "dissaggregations1" : "15–19 yrs",
+      "disaggregation_code" : "Y15_19",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "HT06b3_Y15_19_M"
+    }, {
+      "dissaggregations1" : "20–24 yrs",
+      "disaggregation_code" : "Y20_24",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "HT06b3_Y20_24_F"
+    }, {
+      "dissaggregations1" : "20–24 yrs",
+      "disaggregation_code" : "Y20_24",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "HT06b3_Y20_24_M"
+    }, {
+      "dissaggregations1" : "25–29 yrs",
+      "disaggregation_code" : "Y25_29",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "HT06b3_Y25_29_F"
+    }, {
+      "dissaggregations1" : "25–29 yrs",
+      "disaggregation_code" : "Y25_29",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "HT06b3_Y25_29_M"
+    }, {
+      "dissaggregations1" : "30–39 yrs",
+      "disaggregation_code" : "Y30_39",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "HT06b3_Y30_39_F"
+    }, {
+      "dissaggregations1" : "30–39 yrs",
+      "disaggregation_code" : "Y30_39",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "HT06b3_Y30_39_M"
+    }, {
+      "dissaggregations1" : "40–49 yrs",
+      "disaggregation_code" : "Y40_49",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "HT06b3_Y40_49_F"
+    }, {
+      "dissaggregations1" : "40–49 yrs",
+      "disaggregation_code" : "Y40_49",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "HT06b3_Y40_49_M"
+    }, {
+      "dissaggregations1" : "50+ yrs",
+      "disaggregation_code" : "Y50P",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "HT06b3_Y50P_F"
+    }, {
+      "dissaggregations1" : "50+ yrs",
+      "disaggregation_code" : "Y50P",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "HT06b3_Y50P_M"
+    } ]
+  }, {
+    "indicator_name" : "HT06b4.",
+    "indicator_label" : "HT06b4. Linked to HIV Care (Community)",
+    "subsection" : "HIV- Self Test Register",
+    "sqlQuery" : "WITH base_pop AS (\n    SELECT DISTINCT a.client_id AS client_id\n  FROM mamba_fact_encounter_hiv_self_testing a\n  JOIN mamba_fact_patients_latest_patient_demographics mdp\n    ON mdp.client_id = a.client_id\n  WHERE\n    a.encounter_date >= :startDate\n    AND a.encounter_date <= :endDate\n    AND mdp.birthdate IS NOT NULL\n    AND mdp.gender IS NOT NULL\n    AND a.distribution_model = '4f4e6d1d-4343-42cc-ba47-2319b8a84369'\n    AND a.hivst_results = 'dc9f3fdd-30ab-102d-86b0-7a5022ba4115'\n    AND a.confirmatory_test_results = 'dc866728-30ab-102d-86b0-7a5022ba4115'\n    AND a.linked_to_hiv_care = '1065AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA'\n),\nag AS (\n  SELECT\n    ag.age_group_id,\n    ag.label,\n    ag.min_age_days,\n    ag.max_age_days,\n    ag.sort_order\n  FROM report_builder_dim_age_group ag\n  JOIN report_builder_dim_age_category ac\n    ON ac.age_category_id = ag.age_category_id\n  WHERE ac.code = 'HMIS_106A'\n    AND ag.is_active = 1\n),\ngenders AS (\n  SELECT 'F' AS gender\n  UNION ALL\n  SELECT 'M' AS gender\n),\ncnt AS (\n  SELECT\n    ag.age_group_id AS age_group_id,\n    mdp.gender AS gender,\n    COUNT(DISTINCT base_pop.client_id) AS value\n  FROM base_pop\n  JOIN mamba_fact_patients_latest_patient_demographics mdp\n    ON mdp.client_id = base_pop.client_id\n  JOIN ag\n    ON TIMESTAMPDIFF(DAY, mdp.birthdate, :endDate)\n       BETWEEN ag.min_age_days AND ag.max_age_days\n  WHERE mdp.birthdate IS NOT NULL\n    AND mdp.gender IS NOT NULL\n    AND mdp.gender IN ('F','M')\n  GROUP BY ag.age_group_id, mdp.gender\n)\nSELECT\n  ag.label AS age_group,\n  g.gender AS gender,\n  COALESCE(cnt.value, 0) AS value\nFROM ag\nCROSS JOIN genders g\nLEFT JOIN cnt\n    ON cnt.age_group_id = ag.age_group_id\n   AND cnt.gender = g.gender\nORDER BY ag.sort_order, g.gender;",
+    "dissaggregations" : [ "age_group", "gender" ],
+    "values" : [ {
+      "dissaggregations1" : "0–4 yrs",
+      "disaggregation_code" : "Y0_4",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "HT06b4_Y0_4_F"
+    }, {
+      "dissaggregations1" : "0–4 yrs",
+      "disaggregation_code" : "Y0_4",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "HT06b4_Y0_4_M"
+    }, {
+      "dissaggregations1" : "5–9 yrs",
+      "disaggregation_code" : "Y5_9",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "HT06b4_Y5_9_F"
+    }, {
+      "dissaggregations1" : "5–9 yrs",
+      "disaggregation_code" : "Y5_9",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "HT06b4_Y5_9_M"
+    }, {
+      "dissaggregations1" : "10–14 yrs",
+      "disaggregation_code" : "Y10_14",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "HT06b4_Y10_14_F"
+    }, {
+      "dissaggregations1" : "10–14 yrs",
+      "disaggregation_code" : "Y10_14",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "HT06b4_Y10_14_M"
+    }, {
+      "dissaggregations1" : "15–19 yrs",
+      "disaggregation_code" : "Y15_19",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "HT06b4_Y15_19_F"
+    }, {
+      "dissaggregations1" : "15–19 yrs",
+      "disaggregation_code" : "Y15_19",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "HT06b4_Y15_19_M"
+    }, {
+      "dissaggregations1" : "20–24 yrs",
+      "disaggregation_code" : "Y20_24",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "HT06b4_Y20_24_F"
+    }, {
+      "dissaggregations1" : "20–24 yrs",
+      "disaggregation_code" : "Y20_24",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "HT06b4_Y20_24_M"
+    }, {
+      "dissaggregations1" : "25–29 yrs",
+      "disaggregation_code" : "Y25_29",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "HT06b4_Y25_29_F"
+    }, {
+      "dissaggregations1" : "25–29 yrs",
+      "disaggregation_code" : "Y25_29",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "HT06b4_Y25_29_M"
+    }, {
+      "dissaggregations1" : "30–39 yrs",
+      "disaggregation_code" : "Y30_39",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "HT06b4_Y30_39_F"
+    }, {
+      "dissaggregations1" : "30–39 yrs",
+      "disaggregation_code" : "Y30_39",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "HT06b4_Y30_39_M"
+    }, {
+      "dissaggregations1" : "40–49 yrs",
+      "disaggregation_code" : "Y40_49",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "HT06b4_Y40_49_F"
+    }, {
+      "dissaggregations1" : "40–49 yrs",
+      "disaggregation_code" : "Y40_49",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "HT06b4_Y40_49_M"
+    }, {
+      "dissaggregations1" : "50+ yrs",
+      "disaggregation_code" : "Y50P",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "HT06b4_Y50P_F"
+    }, {
+      "dissaggregations1" : "50+ yrs",
+      "disaggregation_code" : "Y50P",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "HT06b4_Y50P_M"
+    } ]
+  }, {
+    "indicator_name" : "HT06b5.",
+    "indicator_label" : "HT06b5. Referred to Prevention (Community)",
+    "subsection" : "HIV- Self Test Register",
+    "sqlQuery" : "WITH base_pop AS (\n    SELECT DISTINCT a.client_id AS client_id\n  FROM mamba_fact_encounter_hiv_self_testing a\n  JOIN mamba_fact_patients_latest_patient_demographics mdp\n    ON mdp.client_id = a.client_id\n  WHERE\n    a.encounter_date >= :startDate\n    AND a.encounter_date <= :endDate\n    AND mdp.birthdate IS NOT NULL\n    AND mdp.gender IS NOT NULL\n    AND a.distribution_model = 'Community Testing Point'\n    AND a.confirmatory_test_results = 'NEGATIVE'\n    AND a.linked_to_hiv_prevention_services = 'YES'\n),\nag AS (\n  SELECT\n    ag.age_group_id,\n    ag.label,\n    ag.min_age_days,\n    ag.max_age_days,\n    ag.sort_order\n  FROM report_builder_dim_age_group ag\n  JOIN report_builder_dim_age_category ac\n    ON ac.age_category_id = ag.age_category_id\n  WHERE ac.code = 'HMIS_106A'\n    AND ag.is_active = 1\n),\ngenders AS (\n  SELECT 'F' AS gender\n  UNION ALL\n  SELECT 'M' AS gender\n),\ncnt AS (\n  SELECT\n    ag.age_group_id AS age_group_id,\n    mdp.gender AS gender,\n    COUNT(DISTINCT base_pop.client_id) AS value\n  FROM base_pop\n  JOIN mamba_fact_patients_latest_patient_demographics mdp\n    ON mdp.client_id = base_pop.client_id\n  JOIN ag\n    ON TIMESTAMPDIFF(DAY, mdp.birthdate, :endDate)\n       BETWEEN ag.min_age_days AND ag.max_age_days\n  WHERE mdp.birthdate IS NOT NULL\n    AND mdp.gender IS NOT NULL\n    AND mdp.gender IN ('F','M')\n  GROUP BY ag.age_group_id, mdp.gender\n)\nSELECT\n  ag.label AS age_group,\n  g.gender AS gender,\n  COALESCE(cnt.value, 0) AS value\nFROM ag\nCROSS JOIN genders g\nLEFT JOIN cnt\n    ON cnt.age_group_id = ag.age_group_id\n   AND cnt.gender = g.gender\nORDER BY ag.sort_order, g.gender;",
+    "dissaggregations" : [ "age_group", "gender" ],
+    "values" : [ {
+      "dissaggregations1" : "0–4 yrs",
+      "disaggregation_code" : "Y0_4",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "HT06b5_Y0_4_F"
+    }, {
+      "dissaggregations1" : "0–4 yrs",
+      "disaggregation_code" : "Y0_4",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "HT06b5_Y0_4_M"
+    }, {
+      "dissaggregations1" : "5–9 yrs",
+      "disaggregation_code" : "Y5_9",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "HT06b5_Y5_9_F"
+    }, {
+      "dissaggregations1" : "5–9 yrs",
+      "disaggregation_code" : "Y5_9",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "HT06b5_Y5_9_M"
+    }, {
+      "dissaggregations1" : "10–14 yrs",
+      "disaggregation_code" : "Y10_14",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "HT06b5_Y10_14_F"
+    }, {
+      "dissaggregations1" : "10–14 yrs",
+      "disaggregation_code" : "Y10_14",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "HT06b5_Y10_14_M"
+    }, {
+      "dissaggregations1" : "15–19 yrs",
+      "disaggregation_code" : "Y15_19",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "HT06b5_Y15_19_F"
+    }, {
+      "dissaggregations1" : "15–19 yrs",
+      "disaggregation_code" : "Y15_19",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "HT06b5_Y15_19_M"
+    }, {
+      "dissaggregations1" : "20–24 yrs",
+      "disaggregation_code" : "Y20_24",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "HT06b5_Y20_24_F"
+    }, {
+      "dissaggregations1" : "20–24 yrs",
+      "disaggregation_code" : "Y20_24",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "HT06b5_Y20_24_M"
+    }, {
+      "dissaggregations1" : "25–29 yrs",
+      "disaggregation_code" : "Y25_29",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "HT06b5_Y25_29_F"
+    }, {
+      "dissaggregations1" : "25–29 yrs",
+      "disaggregation_code" : "Y25_29",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "HT06b5_Y25_29_M"
+    }, {
+      "dissaggregations1" : "30–39 yrs",
+      "disaggregation_code" : "Y30_39",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "HT06b5_Y30_39_F"
+    }, {
+      "dissaggregations1" : "30–39 yrs",
+      "disaggregation_code" : "Y30_39",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "HT06b5_Y30_39_M"
+    }, {
+      "dissaggregations1" : "40–49 yrs",
+      "disaggregation_code" : "Y40_49",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "HT06b5_Y40_49_F"
+    }, {
+      "dissaggregations1" : "40–49 yrs",
+      "disaggregation_code" : "Y40_49",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "HT06b5_Y40_49_M"
+    }, {
+      "dissaggregations1" : "50+ yrs",
+      "disaggregation_code" : "Y50P",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "HT06b5_Y50P_F"
+    }, {
+      "dissaggregations1" : "50+ yrs",
+      "disaggregation_code" : "Y50P",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "HT06b5_Y50P_M"
+    } ]
+  } ],
+  "category" : "NATIONAL REPORTS",
+  "categoryUuid" : "f0cbb6d2-24e8-11f1-b92d-f69d311cf98f",
+  "reportType" : "AGGREGATE",
+  "reportBuilderReportUuid" : "8120d90e-5274-4977-955e-d4902b4525bb",
+  "reportDefinitionUuid" : "156ac506-bf32-424f-bc76-3805b8c4d957"
+}

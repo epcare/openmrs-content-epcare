@@ -1,0 +1,1 @@
+{"uuid":"cbde3fc4-833a-11f1-b08c-f4053e2709b9","name":"ARV Orders","creator":"82f18b44-6814-11e8-923f-e9a88dcb533f","dateCreated":1784442397000,"retired":false,"id":12,"code":"ARV","domain":"CLINICAL","configJson":"{\"sourceTable\": \"mamba_fact_patients_latest_arv_order\"}"}

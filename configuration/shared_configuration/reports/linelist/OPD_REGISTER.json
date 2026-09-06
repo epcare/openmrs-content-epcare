@@ -1,0 +1,419 @@
+{
+  "name" : "OPD Register",
+  "description" : "OPD Register - Outpatient Department register with comprehensive patient encounter data",
+  "category" : "FACILITY REPORTS",
+  "reportType" : "LINE_LIST",
+  "limit" : 1000,
+  "parameters" : [ {
+    "name" : "startDate",
+    "label" : "Start Date",
+    "type" : "DATE",
+    "required" : true
+  }, {
+    "name" : "endDate",
+    "label" : "End Date",
+    "type" : "DATE",
+    "required" : true
+  } ],
+  "baseCohortDefinition" : {
+    "type" : "SQL",
+    "name" : "Patients with OPD encounters between dates",
+    "config" : {
+      "sql" : "SELECT DISTINCT e.patient_id\nFROM encounter e\nINNER JOIN encounter_type et ON et.encounter_type_id = e.encounter_type\nWHERE et.uuid = 'ee4780f5-b5eb-423b-932f-00b5879df5ab'\nAND e.encounter_datetime BETWEEN :startDate AND :endDate\nAND e.voided = 0"
+    }
+  },
+  "dataSetDefinitions" : [ {
+    "name" : "OPD",
+    "type" : "PATIENT_DATA_SET",
+    "rowFilter" : {
+      "type" : "SQL",
+      "name" : "Patients with OPD encounters between dates",
+      "config" : {
+        "sql" : "SELECT DISTINCT e.patient_id\nFROM encounter e\nINNER JOIN encounter_type et ON et.encounter_type_id = e.encounter_type\nWHERE et.uuid = 'ee4780f5-b5eb-423b-932f-00b5879df5ab'\nAND e.encounter_datetime BETWEEN :startDate AND :endDate\nAND e.voided = 0"
+      }
+    },
+    "columns" : [ {
+      "name" : "Serial No",
+      "key" : "serial_no",
+      "dataDefinition" : {
+        "type" : "SQL",
+        "config" : {
+          "sql" : "SELECT value_text FROM obs WHERE encounter_id IN (SELECT encounter_id FROM encounter WHERE patient_id = :patientId AND encounter_type = (SELECT encounter_type_id FROM encounter_type WHERE uuid = 'ee4780f5-b5eb-423b-932f-00b5879df5ab') AND encounter_datetime BETWEEN :startDate AND :endDate ORDER BY encounter_datetime DESC LIMIT 1) AND concept_id = 1646 AND voided = 0"
+        }
+      },
+      "repeatResolution" : {
+        "strategy" : "LATEST",
+        "restrictToPeriod" : true,
+        "ignoreVoided" : true
+      }
+    }, {
+      "name" : "Name of patient",
+      "key" : "patient_name",
+      "dataDefinition" : {
+        "type" : "PERSON_NAME",
+        "config" : {
+          "type" : "FULL_NAME",
+          "preferred" : true
+        }
+      }
+    }, {
+      "name" : "Residence",
+      "key" : "residence",
+      "dataDefinition" : {
+        "type" : "PERSON_ADDRESS",
+        "config" : {
+          "type" : "ADDRESS_COMBINATION",
+          "fields" : [ "address5", "address4", "address3" ],
+          "separator" : "\\n"
+        }
+      }
+    }, {
+      "name" : "Age 0-28Days",
+      "key" : "age_0_28_days",
+      "dataDefinition" : {
+        "type" : "CALCULATION",
+        "config" : {
+          "calculation" : "AGE_IN_RANGE",
+          "minAge" : 0,
+          "maxAge" : 0.08,
+          "onDate" : ":endDate"
+        }
+      }
+    }, {
+      "name" : "Age 29Days-4yrs",
+      "key" : "age_29_days_4_yrs",
+      "dataDefinition" : {
+        "type" : "CALCULATION",
+        "config" : {
+          "calculation" : "AGE_IN_RANGE",
+          "minAge" : 0.08,
+          "maxAge" : 5,
+          "onDate" : ":endDate"
+        }
+      }
+    }, {
+      "name" : "Age 5-59yrs",
+      "key" : "age_5_59_yrs",
+      "dataDefinition" : {
+        "type" : "CALCULATION",
+        "config" : {
+          "calculation" : "AGE_IN_RANGE",
+          "minAge" : 5,
+          "maxAge" : 60,
+          "onDate" : ":endDate"
+        }
+      }
+    }, {
+      "name" : "Age 60 and above",
+      "key" : "age_60_plus",
+      "dataDefinition" : {
+        "type" : "CALCULATION",
+        "config" : {
+          "calculation" : "AGE_IN_RANGE",
+          "minAge" : 60,
+          "maxAge" : 200,
+          "onDate" : ":endDate"
+        }
+      }
+    }, {
+      "name" : "Sex",
+      "key" : "sex",
+      "dataDefinition" : {
+        "type" : "PERSON_ATTRIBUTE",
+        "config" : {
+          "type" : "GENDER"
+        }
+      }
+    }, {
+      "name" : "MUAC Weight Height",
+      "key" : "muac_weight_height",
+      "dataDefinition" : {
+        "type" : "SQL",
+        "config" : {
+          "sql" : "SELECT CONCAT(IFNULL((SELECT value_numeric FROM obs WHERE person_id = :patientId AND concept_id = 1343 AND voided = 0 ORDER BY obs_datetime DESC LIMIT 1), ''), '\\n', IFNULL((SELECT value_numeric FROM obs WHERE person_id = :patientId AND concept_id = 5089 AND voided = 0 ORDER BY obs_datetime DESC LIMIT 1), ''), '\\n', IFNULL((SELECT value_numeric FROM obs WHERE person_id = :patientId AND concept_id = 5090 AND voided = 0 ORDER BY obs_datetime DESC LIMIT 1), ''))"
+        }
+      },
+      "repeatResolution" : {
+        "strategy" : "LATEST",
+        "restrictToPeriod" : true,
+        "ignoreVoided" : true
+      }
+    }, {
+      "name" : "BMI Z Score",
+      "key" : "bmi_z_score",
+      "dataDefinition" : {
+        "type" : "SQL",
+        "config" : {
+          "sql" : "SELECT CONCAT(IFNULL((SELECT value_numeric FROM obs WHERE person_id = :patientId AND concept_id = 1342 AND voided = 0 ORDER BY obs_datetime DESC LIMIT 1), ''), '\\n', IFNULL((SELECT cn.name FROM obs o INNER JOIN concept_name cn ON o.value_coded = cn.concept_id WHERE o.person_id = :patientId AND o.concept_id = 1854 AND o.voided = 0 AND cn.locale = 'en' AND cn.concept_name_type = 'FULLY_SPECIFIED' ORDER BY o.obs_datetime DESC LIMIT 1), ''), '\\n', CASE (SELECT value_coded FROM obs WHERE person_id = :patientId AND concept_id = 164088 AND voided = 0 ORDER BY obs_datetime DESC LIMIT 1) WHEN 1115 THEN 'N' WHEN 123814 THEN 'U' END)"
+        }
+      },
+      "repeatResolution" : {
+        "strategy" : "LATEST",
+        "restrictToPeriod" : true,
+        "ignoreVoided" : true
+      }
+    }, {
+      "name" : "Blood Pressure Blood Sugar",
+      "key" : "bp_bs",
+      "dataDefinition" : {
+        "type" : "SQL",
+        "config" : {
+          "sql" : "SELECT CONCAT(IFNULL((SELECT value_numeric FROM obs WHERE person_id = :patientId AND concept_id = 5086 AND voided = 0 ORDER BY obs_datetime DESC LIMIT 1), ''), '/', IFNULL((SELECT value_numeric FROM obs WHERE person_id = :patientId AND concept_id = 5085 AND voided = 0 ORDER BY obs_datetime DESC LIMIT 1), ''), '\\n', IFNULL((SELECT value_numeric FROM obs WHERE person_id = :patientId AND concept_id = 887 AND voided = 0 ORDER BY obs_datetime DESC LIMIT 1), ''))"
+        }
+      },
+      "repeatResolution" : {
+        "strategy" : "LATEST",
+        "restrictToPeriod" : true,
+        "ignoreVoided" : true
+      }
+    }, {
+      "name" : "Next of Kin",
+      "key" : "next_of_kin",
+      "dataDefinition" : {
+        "type" : "OBSERVATION",
+        "config" : {
+          "conceptUuid" : "162729AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+          "conceptName" : "NEXT OF KIN",
+          "strategy" : "LATEST"
+        }
+      },
+      "repeatResolution" : {
+        "strategy" : "LATEST",
+        "restrictToPeriod" : true,
+        "ignoreVoided" : true
+      }
+    }, {
+      "name" : "Need for palliative care",
+      "key" : "palliative_care",
+      "dataDefinition" : {
+        "type" : "SQL",
+        "config" : {
+          "sql" : "SELECT CASE value_coded WHEN 1065 THEN 'Y' WHEN 1066 THEN 'N' ELSE '' END FROM obs WHERE person_id = :patientId AND concept_id = 164924 AND voided = 0 ORDER BY obs_datetime DESC LIMIT 1"
+        }
+      },
+      "repeatResolution" : {
+        "strategy" : "LATEST",
+        "restrictToPeriod" : true,
+        "ignoreVoided" : true
+      }
+    }, {
+      "name" : "Classification New Attendance",
+      "key" : "new_attendance",
+      "dataDefinition" : {
+        "type" : "SQL",
+        "config" : {
+          "sql" : "SELECT CASE value_coded WHEN 1597 THEN 'Y' ELSE '' END FROM obs WHERE person_id = :patientId AND concept_id = 162728 AND voided = 0 ORDER BY obs_datetime DESC LIMIT 1"
+        }
+      },
+      "repeatResolution" : {
+        "strategy" : "LATEST",
+        "restrictToPeriod" : true,
+        "ignoreVoided" : true
+      }
+    }, {
+      "name" : "Classification Re-attendance",
+      "key" : "re_attendance",
+      "dataDefinition" : {
+        "type" : "SQL",
+        "config" : {
+          "sql" : "SELECT CASE value_coded WHEN 164142 THEN 'Y' ELSE '' END FROM obs WHERE person_id = :patientId AND concept_id = 162728 AND voided = 0 ORDER BY obs_datetime DESC LIMIT 1"
+        }
+      },
+      "repeatResolution" : {
+        "strategy" : "LATEST",
+        "restrictToPeriod" : true,
+        "ignoreVoided" : true
+      }
+    }, {
+      "name" : "Tobacco Use Alcohol Use",
+      "key" : "tobacco_alcohol",
+      "dataDefinition" : {
+        "type" : "SQL",
+        "config" : {
+          "sql" : "SELECT CONCAT(CASE (SELECT value_coded FROM obs WHERE person_id = :patientId AND concept_id = 163731 AND voided = 0 ORDER BY obs_datetime DESC LIMIT 1) WHEN 1065 THEN 'Y' WHEN 1066 THEN 'N' ELSE '' END, '\\n', CASE (SELECT value_coded FROM obs WHERE person_id = :patientId AND concept_id = 159449 AND voided = 0 ORDER BY obs_datetime DESC LIMIT 1) WHEN 1065 THEN 'Y' WHEN 1066 THEN 'N' ELSE '' END)"
+        }
+      },
+      "repeatResolution" : {
+        "strategy" : "LATEST",
+        "restrictToPeriod" : true,
+        "ignoreVoided" : true
+      }
+    }, {
+      "name" : "Fever",
+      "key" : "fever",
+      "dataDefinition" : {
+        "type" : "SQL",
+        "config" : {
+          "sql" : "SELECT CASE value_coded WHEN 5945 THEN 'Yes' ELSE 'No' END FROM obs WHERE person_id = :patientId AND concept_id = 1069 AND voided = 0 ORDER BY obs_datetime DESC LIMIT 1"
+        }
+      },
+      "repeatResolution" : {
+        "strategy" : "LATEST",
+        "restrictToPeriod" : true,
+        "ignoreVoided" : true
+      }
+    }, {
+      "name" : "Malaria Tests Done",
+      "key" : "malaria_tests_done",
+      "dataDefinition" : {
+        "type" : "SQL",
+        "config" : {
+          "sql" : "SELECT CASE value_coded WHEN 32 THEN 'B/S' WHEN 1643 THEN 'RDT' WHEN 1118 THEN 'ND' ELSE '' END FROM obs WHERE person_id = :patientId AND concept_id = 164433 AND voided = 0 ORDER BY obs_datetime DESC LIMIT 1"
+        }
+      },
+      "repeatResolution" : {
+        "strategy" : "LATEST",
+        "restrictToPeriod" : true,
+        "ignoreVoided" : true
+      }
+    }, {
+      "name" : "Malaria Test Results",
+      "key" : "malaria_test_results",
+      "dataDefinition" : {
+        "type" : "SQL",
+        "config" : {
+          "sql" : "SELECT CASE value_coded WHEN 703 THEN 'POS' WHEN 664 THEN 'NEG' WHEN 1118 THEN 'ND' ELSE '' END FROM obs WHERE person_id = :patientId AND concept_id = 164434 AND voided = 0 ORDER BY obs_datetime DESC LIMIT 1"
+        }
+      },
+      "repeatResolution" : {
+        "strategy" : "LATEST",
+        "restrictToPeriod" : true,
+        "ignoreVoided" : true
+      }
+    }, {
+      "name" : "New presumed TB case",
+      "key" : "tb_presumed",
+      "dataDefinition" : {
+        "type" : "SQL",
+        "config" : {
+          "sql" : "SELECT CASE value_coded WHEN 1065 THEN 'Y' WHEN 1066 THEN 'N' ELSE '' END FROM obs WHERE person_id = :patientId AND concept_id = 99498 AND voided = 0 ORDER BY obs_datetime DESC LIMIT 1"
+        }
+      },
+      "repeatResolution" : {
+        "strategy" : "LATEST",
+        "restrictToPeriod" : true,
+        "ignoreVoided" : true
+      }
+    }, {
+      "name" : "Patient sent to lab",
+      "key" : "sent_to_lab",
+      "dataDefinition" : {
+        "type" : "SQL",
+        "config" : {
+          "sql" : "SELECT CASE value_coded WHEN 90073 THEN 'Y' ELSE '' END FROM obs WHERE person_id = :patientId AND concept_id = 90216 AND voided = 0 ORDER BY obs_datetime DESC LIMIT 1"
+        }
+      },
+      "repeatResolution" : {
+        "strategy" : "LATEST",
+        "restrictToPeriod" : true,
+        "ignoreVoided" : true
+      }
+    }, {
+      "name" : "Lab TB result",
+      "key" : "lab_tb_result",
+      "dataDefinition" : {
+        "type" : "SQL",
+        "config" : {
+          "sql" : "SELECT CASE value_coded WHEN 703 THEN 'POS' WHEN 664 THEN 'NEG' WHEN 1175 THEN 'N/A' ELSE '' END FROM obs WHERE person_id = :patientId AND concept_id = 160108 AND voided = 0 ORDER BY obs_datetime DESC LIMIT 1"
+        }
+      },
+      "repeatResolution" : {
+        "strategy" : "LATEST",
+        "restrictToPeriod" : true,
+        "ignoreVoided" : true
+      }
+    }, {
+      "name" : "Linked to TB clinic",
+      "key" : "linked_tb_clinic",
+      "dataDefinition" : {
+        "type" : "SQL",
+        "config" : {
+          "sql" : "SELECT CASE value_coded WHEN 1065 THEN 'Y' WHEN 1066 THEN 'N' ELSE '' END FROM obs WHERE person_id = :patientId AND concept_id = 164435 AND voided = 0 ORDER BY obs_datetime DESC LIMIT 1"
+        }
+      },
+      "repeatResolution" : {
+        "strategy" : "LATEST",
+        "restrictToPeriod" : true,
+        "ignoreVoided" : true
+      }
+    }, {
+      "name" : "New diagnosis",
+      "key" : "diagnosis",
+      "dataDefinition" : {
+        "type" : "SQL",
+        "config" : {
+          "sql" : "SELECT REPLACE(GROUP_CONCAT(CONCAT('\"', UCASE(cn.name), '\"\\n')), ',', '') FROM obs o INNER JOIN concept_name cn ON o.value_coded = cn.concept_id WHERE o.person_id = :patientId AND o.concept_id = 163149 AND o.voided = 0 AND cn.locale = 'en' AND cn.concept_name_type = 'FULLY_SPECIFIED' AND o.obs_datetime BETWEEN :startDate AND :endDate"
+        }
+      },
+      "repeatResolution" : {
+        "strategy" : "LATEST",
+        "restrictToPeriod" : true,
+        "ignoreVoided" : true
+      }
+    }, {
+      "name" : "Drugs Treatment",
+      "key" : "drugs_treatment",
+      "dataDefinition" : {
+        "type" : "SQL",
+        "config" : {
+          "sql" : "SELECT REPLACE(GROUP_CONCAT(CONCAT('\"', UCASE(cn.name), '\"\\n')), ',', '') FROM obs o INNER JOIN concept_name cn ON o.value_coded = cn.concept_id WHERE o.person_id = :patientId AND o.concept_id = 1282 AND o.voided = 0 AND cn.locale = 'en' AND cn.concept_name_type = 'FULLY_SPECIFIED' AND o.obs_datetime BETWEEN :startDate AND :endDate"
+        }
+      },
+      "repeatResolution" : {
+        "strategy" : "LATEST",
+        "restrictToPeriod" : true,
+        "ignoreVoided" : true
+      }
+    }, {
+      "name" : "Disability",
+      "key" : "disability",
+      "dataDefinition" : {
+        "type" : "SQL",
+        "config" : {
+          "sql" : "SELECT CASE value_coded WHEN 1065 THEN 'Y' WHEN 1066 THEN 'N' ELSE '' END FROM obs WHERE person_id = :patientId AND concept_id = 162558 AND voided = 0 ORDER BY obs_datetime DESC LIMIT 1"
+        }
+      },
+      "repeatResolution" : {
+        "strategy" : "LATEST",
+        "restrictToPeriod" : true,
+        "ignoreVoided" : true
+      }
+    }, {
+      "name" : "Ref in Num",
+      "key" : "ref_in_num",
+      "dataDefinition" : {
+        "type" : "OBSERVATION",
+        "config" : {
+          "conceptUuid" : "164436AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+          "conceptName" : "REFERRED IN NUMBER",
+          "strategy" : "LATEST"
+        }
+      },
+      "repeatResolution" : {
+        "strategy" : "LATEST",
+        "restrictToPeriod" : true,
+        "ignoreVoided" : true
+      }
+    }, {
+      "name" : "Ref out Num",
+      "key" : "ref_out_num",
+      "dataDefinition" : {
+        "type" : "OBSERVATION",
+        "config" : {
+          "conceptUuid" : "99767AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+          "conceptName" : "REFERRED OUT NUMBER",
+          "strategy" : "LATEST"
+        }
+      },
+      "repeatResolution" : {
+        "strategy" : "LATEST",
+        "restrictToPeriod" : true,
+        "ignoreVoided" : true
+      }
+    } ]
+  } ],
+  "categoryUuid" : "d947663c-24e8-11f1-b92d-f69d311cf98f",
+  "reportBuilderReportUuid" : "df041e1d-0043-4a01-815b-c9f66edcac7e",
+  "reportDefinitionUuid" : "891830f1-135e-484e-af63-54c88c0f72e6",
+  "reportLibraryUuid" : "15f70759-a042-4dc1-92bb-b2351039c654"
+}

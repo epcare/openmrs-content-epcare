@@ -1,0 +1,393 @@
+{
+  "name" : "ANC Register 2019",
+  "description" : "ANC Register 2019 - Comprehensive antenatal care register with enhanced maternal health indicators",
+  "category" : "FACILITY REPORTS",
+  "reportType" : "LINE_LIST",
+  "limit" : 1000,
+  "parameters" : [ {
+    "name" : "startDate",
+    "label" : "Start Date",
+    "type" : "DATE",
+    "required" : true
+  }, {
+    "name" : "endDate",
+    "label" : "End Date",
+    "type" : "DATE",
+    "required" : true
+  } ],
+  "baseCohortDefinition" : {
+    "type" : "SQL",
+    "name" : "Patient Cohort",
+    "config" : {
+      "sql" : "SELECT DISTINCT e.patient_id FROM encounter e INNER JOIN person p ON e.patient_id = p.person_id WHERE p.gender = 'F' AND e.encounter_type = (SELECT encounter_type_id FROM encounter_type WHERE uuid = '8d5b27bc-c2cc-11de-8d13-0010c6dffd0f') AND e.encounter_datetime BETWEEN :startDate AND :endDate AND e.voided = 0"
+    }
+  },
+  "dataSetDefinitions" : [ {
+    "name" : "PATIENT_LIST",
+    "type" : "PATIENT_DATA_SET",
+    "rowFilter" : {
+      "type" : "SQL",
+      "name" : "Patient Cohort",
+      "config" : {
+        "sql" : "SELECT DISTINCT e.patient_id FROM encounter e INNER JOIN person p ON e.patient_id = p.person_id WHERE p.gender = 'F' AND e.encounter_type = (SELECT encounter_type_id FROM encounter_type WHERE uuid = '8d5b27bc-c2cc-11de-8d13-0010c6dffd0f') AND e.encounter_datetime BETWEEN :startDate AND :endDate AND e.voided = 0"
+      }
+    },
+    "columns" : [ {
+      "name" : "Clinic Number",
+      "key" : "clinic_number",
+      "dataDefinition" : {
+        "type" : "IDENTIFIER",
+        "config" : {
+          "identifierTypeUuid" : "e1731641-30ab-102d-86b0-7a5022ba4115",
+          "preferred" : true
+        }
+      },
+      "repeatResolution" : {
+        "strategy" : "LATEST",
+        "ignoreVoided" : true
+      },
+      "_metadata" : {
+        "id" : "col-0",
+        "position" : 0
+      }
+    }, {
+      "name" : "Patient Name",
+      "key" : "patient_name",
+      "dataDefinition" : {
+        "type" : "PERSON_NAME",
+        "config" : {
+          "type" : "FULL_NAME",
+          "preferred" : true
+        }
+      },
+      "_metadata" : {
+        "id" : "col-1",
+        "position" : 1
+      }
+    }, {
+      "name" : "Age",
+      "key" : "age",
+      "dataDefinition" : {
+        "type" : "CALCULATION",
+        "config" : {
+          "calculation" : "AGE",
+          "onDate" : ":endDate"
+        }
+      },
+      "_metadata" : {
+        "id" : "col-2",
+        "position" : 2
+      }
+    }, {
+      "name" : "EDD",
+      "key" : "edd",
+      "dataDefinition" : {
+        "type" : "OBSERVATION",
+        "config" : {
+          "conceptUuid" : "5548",
+          "conceptName" : "",
+          "strategy" : "LATEST"
+        }
+      },
+      "_metadata" : {
+        "id" : "col-3",
+        "position" : 3
+      }
+    }, {
+      "name" : "Gravida",
+      "key" : "gravida",
+      "dataDefinition" : {
+        "type" : "OBSERVATION",
+        "config" : {
+          "conceptUuid" : "5624",
+          "conceptName" : "",
+          "strategy" : "LATEST"
+        }
+      },
+      "_metadata" : {
+        "id" : "col-4",
+        "position" : 4
+      }
+    }, {
+      "name" : "Parity",
+      "key" : "parity",
+      "dataDefinition" : {
+        "type" : "OBSERVATION",
+        "config" : {
+          "conceptUuid" : "5625",
+          "conceptName" : "",
+          "strategy" : "LATEST"
+        }
+      },
+      "_metadata" : {
+        "id" : "col-5",
+        "position" : 5
+      }
+    }, {
+      "name" : "GA (weeks)",
+      "key" : "ga_weeks",
+      "dataDefinition" : {
+        "type" : "SQL",
+        "config" : {
+          "sql" : "SELECT FLOOR(DATEDIFF(CURDATE(), (SELECT value_datetime FROM obs WHERE person_id = :patientId AND concept_id = (SELECT concept_id FROM concept WHERE uuid = '5598') AND obs_datetime &lt;= :endDate ORDER BY obs_datetime DESC LIMIT 1))/7) FROM dual"
+        }
+      },
+      "_metadata" : {
+        "id" : "col-6",
+        "position" : 6
+      }
+    }, {
+      "name" : "HIV Status",
+      "key" : "hiv_status",
+      "dataDefinition" : {
+        "type" : "OBSERVATION",
+        "config" : {
+          "conceptUuid" : "f2ba3c44-e3e6-49d9-a1b5-26b8d0db75fe",
+          "conceptName" : "",
+          "strategy" : "LATEST"
+        }
+      },
+      "_metadata" : {
+        "id" : "col-7",
+        "position" : 7
+      }
+    }, {
+      "name" : "HIV Test Date",
+      "key" : "hiv_test_date",
+      "dataDefinition" : {
+        "type" : "OBSERVATION",
+        "config" : {
+          "conceptUuid" : "f2ba3c44-e3e6-49d9-a1b5-26b8d0db75fe",
+          "conceptName" : "",
+          "strategy" : "LATEST"
+        }
+      },
+      "_metadata" : {
+        "id" : "col-8",
+        "position" : 8
+      }
+    }, {
+      "name" : "ART Status",
+      "key" : "art_status",
+      "dataDefinition" : {
+        "type" : "OBSERVATION",
+        "config" : {
+          "conceptUuid" : "5538",
+          "conceptName" : "",
+          "strategy" : "LATEST"
+        }
+      },
+      "_metadata" : {
+        "id" : "col-9",
+        "position" : 9
+      }
+    }, {
+      "name" : "Syphilis Test",
+      "key" : "syphilis_test",
+      "dataDefinition" : {
+        "type" : "OBSERVATION",
+        "config" : {
+          "conceptUuid" : "608",
+          "conceptName" : "",
+          "strategy" : "LATEST"
+        }
+      },
+      "_metadata" : {
+        "id" : "col-10",
+        "position" : 10
+      }
+    }, {
+      "name" : "Syphilis Result",
+      "key" : "syphilis_result",
+      "dataDefinition" : {
+        "type" : "OBSERVATION",
+        "config" : {
+          "conceptUuid" : "856",
+          "conceptName" : "",
+          "strategy" : "LATEST"
+        }
+      },
+      "_metadata" : {
+        "id" : "col-11",
+        "position" : 11
+      }
+    }, {
+      "name" : "TTV Doses",
+      "key" : "ttv_doses",
+      "dataDefinition" : {
+        "type" : "SQL",
+        "config" : {
+          "sql" : "SELECT COUNT(*) FROM obs WHERE concept_id = (SELECT concept_id FROM concept WHERE uuid = '5547') AND person_id = :patientId AND obs_datetime BETWEEN :startDate AND :endDate AND voided = 0"
+        }
+      },
+      "_metadata" : {
+        "id" : "col-12",
+        "position" : 12
+      }
+    }, {
+      "name" : "ITN Received",
+      "key" : "itn_received",
+      "dataDefinition" : {
+        "type" : "OBSERVATION",
+        "config" : {
+          "conceptUuid" : "5546",
+          "conceptName" : "",
+          "strategy" : "LATEST"
+        }
+      },
+      "_metadata" : {
+        "id" : "col-13",
+        "position" : 13
+      }
+    }, {
+      "name" : "MUAC (cm)",
+      "key" : "muac_cm",
+      "dataDefinition" : {
+        "type" : "OBSERVATION",
+        "config" : {
+          "conceptUuid" : "1343",
+          "conceptName" : "",
+          "strategy" : "LATEST"
+        }
+      },
+      "_metadata" : {
+        "id" : "col-14",
+        "position" : 14
+      }
+    }, {
+      "name" : "Hb (g/dL)",
+      "key" : "hb_g_dl",
+      "dataDefinition" : {
+        "type" : "OBSERVATION",
+        "config" : {
+          "conceptUuid" : "856",
+          "conceptName" : "",
+          "strategy" : "LATEST"
+        }
+      },
+      "_metadata" : {
+        "id" : "col-15",
+        "position" : 15
+      }
+    }, {
+      "name" : "BP (mmHg)",
+      "key" : "bp_mmhg",
+      "dataDefinition" : {
+        "type" : "OBSERVATION",
+        "config" : {
+          "conceptUuid" : "5549",
+          "conceptName" : "",
+          "strategy" : "LATEST"
+        }
+      },
+      "_metadata" : {
+        "id" : "col-16",
+        "position" : 16
+      }
+    }, {
+      "name" : "Urine Protein",
+      "key" : "urine_protein",
+      "dataDefinition" : {
+        "type" : "OBSERVATION",
+        "config" : {
+          "conceptUuid" : "5550",
+          "conceptName" : "",
+          "strategy" : "LATEST"
+        }
+      },
+      "_metadata" : {
+        "id" : "col-17",
+        "position" : 17
+      }
+    }, {
+      "name" : "ANC Visits",
+      "key" : "anc_visits",
+      "dataDefinition" : {
+        "type" : "SQL",
+        "config" : {
+          "sql" : "SELECT COUNT(*) FROM encounter WHERE encounter_type = (SELECT encounter_type_id FROM encounter_type WHERE uuid = '8185a348-c768-49f8-9725-98015f7e1a87') AND patient_id = :patientId AND encounter_datetime BETWEEN :startDate AND :endDate AND voided = 0"
+        }
+      },
+      "repeatResolution" : {
+        "strategy" : "LATEST",
+        "orderBy" : "encounter_date",
+        "restrictToPeriod" : false,
+        "ignoreVoided" : true
+      },
+      "_metadata" : {
+        "id" : "col-18",
+        "position" : 18
+      }
+    }, {
+      "name" : "Last ANC Visit",
+      "key" : "last_anc_visit",
+      "dataDefinition" : {
+        "type" : "SQL",
+        "config" : {
+          "sql" : "SELECT MAX(encounter_datetime) FROM encounter WHERE encounter_type = (SELECT encounter_type_id FROM encounter_type WHERE uuid = '8185a348-c768-49f8-9725-98015f7e1a87') AND patient_id = :patientId AND encounter_datetime BETWEEN :startDate AND :endDate AND voided = 0"
+        }
+      },
+      "repeatResolution" : {
+        "strategy" : "LATEST",
+        "orderBy" : "encounter_date",
+        "restrictToPeriod" : false,
+        "ignoreVoided" : true
+      },
+      "_metadata" : {
+        "id" : "col-19",
+        "position" : 19
+      }
+    }, {
+      "name" : "Next Appointment",
+      "key" : "next_appointment",
+      "dataDefinition" : {
+        "type" : "SQL",
+        "config" : {
+          "sql" : "SELECT start_date FROM appointment WHERE patient_id = :patientId AND start_date &gt;= :startDate AND voided = 0 ORDER BY start_date ASC LIMIT 1"
+        }
+      },
+      "repeatResolution" : {
+        "strategy" : "LATEST",
+        "orderBy" : "start_date",
+        "restrictToPeriod" : false,
+        "ignoreVoided" : true
+      },
+      "_metadata" : {
+        "id" : "col-20",
+        "position" : 20
+      }
+    }, {
+      "name" : "Risk Factors",
+      "key" : "risk_factors",
+      "dataDefinition" : {
+        "type" : "SQL",
+        "config" : {
+          "sql" : "SELECT GROUP_CONCAT(value_text SEPARATOR ', ') FROM obs WHERE concept_id = (SELECT concept_id FROM concept WHERE uuid = '5551') AND person_id = :patientId AND obs_datetime BETWEEN :startDate AND :endDate AND voided = 0"
+        }
+      },
+      "_metadata" : {
+        "id" : "col-21",
+        "position" : 21
+      }
+    }, {
+      "name" : "EMTCT Code",
+      "key" : "emtct_code",
+      "dataDefinition" : {
+        "type" : "OBSERVATION",
+        "config" : {
+          "conceptUuid" : "5552",
+          "conceptName" : "",
+          "strategy" : "LATEST"
+        }
+      },
+      "_metadata" : {
+        "id" : "col-22",
+        "position" : 22
+      }
+    } ]
+  } ],
+  "categoryUuid" : "d947663c-24e8-11f1-b92d-f69d311cf98f",
+  "reportBuilderReportUuid" : "84979f3e-8ecf-11f1-9fe4-aae065588bae",
+  "reportDefinitionUuid" : "bce1236b-e7e1-4369-a0e8-af55b3e358ef",
+  "reportLibraryUuid" : "d09a9836-da4c-4556-a06a-d8da46a3a2e0"
+}

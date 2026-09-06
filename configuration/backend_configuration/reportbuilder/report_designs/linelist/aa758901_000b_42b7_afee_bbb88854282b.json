@@ -1,0 +1,256 @@
+{
+  "name" : "HIV Testing Services (HTS)Register",
+  "description" : "HIV Testing Services (HTS)Register",
+  "category" : "FACILITY_REPORTS",
+  "reportType" : "LINELIST",
+  "limit" : 1000,
+  "parameters" : [ {
+    "name" : "startDate",
+    "label" : "Start Date",
+    "type" : "DATE",
+    "required" : true
+  }, {
+    "name" : "endDate",
+    "label" : "End Date",
+    "type" : "DATE",
+    "required" : true
+  } ],
+  "baseCohortDefinition" : {
+    "type" : "SQL",
+    "name" : "Patients with HTS encounters during period",
+    "config" : {
+      "sql" : "SELECT DISTINCT e.patient_id FROM encounter e WHERE e.encounter_type = (SELECT encounter_type_id FROM encounter_type WHERE uuid = '264daIZd-f80e-48fe-nba9-P37f2W1905Pv') AND e.encounter_datetime >= :startDate AND e.encounter_datetime <= :endDate AND e.voided = 0"
+    }
+  },
+  "dataSetDefinitions" : [ {
+    "name" : "HTS",
+    "type" : "PATIENT_DATA_SET",
+    "rowFilter" : {
+      "type" : "SQL",
+      "name" : "Patients with HTS encounters during period",
+      "config" : {
+        "sql" : "SELECT DISTINCT e.patient_id FROM encounter e WHERE e.encounter_type = (SELECT encounter_type_id FROM encounter_type WHERE uuid = '264daIZd-f80e-48fe-nba9-P37f2W1905Pv') AND e.encounter_datetime >= :startDate AND e.encounter_datetime <= :endDate AND e.voided = 0"
+      }
+    },
+    "columns" : [ {
+      "name" : "date",
+      "key" : "date",
+      "dataDefinition" : {
+        "type" : "SQL",
+        "config" : {
+          "sql" : "SELECT DATE(e.encounter_datetime) FROM encounter e WHERE e.patient_id = :patientId AND e.encounter_type = (SELECT encounter_type_id FROM encounter_type WHERE uuid = '264daIZd-f80e-48fe-nba9-P37f2W1905Pv') AND e.encounter_datetime >= :startDate AND e.encounter_datetime <= :endDate AND e.voided = 0 ORDER BY e.encounter_datetime ASC LIMIT 1"
+        }
+      },
+      "repeatResolution" : {
+        "strategy" : "LATEST",
+        "restrictToPeriod" : false,
+        "ignoreVoided" : true
+      }
+    }, {
+      "name" : "first_name",
+      "key" : "first_name",
+      "dataDefinition" : {
+        "type" : "PERSON_NAME",
+        "config" : {
+          "type" : "GIVEN_NAME"
+        }
+      }
+    }, {
+      "name" : "last_name",
+      "key" : "last_name",
+      "dataDefinition" : {
+        "type" : "PERSON_NAME",
+        "config" : {
+          "type" : "FAMILY_NAME"
+        }
+      }
+    }, {
+      "name" : "age",
+      "key" : "age",
+      "dataDefinition" : {
+        "type" : "SQL",
+        "config" : {
+          "sql" : "SELECT TIMESTAMPDIFF(YEAR, p.birthdate, e.encounter_datetime) FROM encounter e INNER JOIN person p ON e.patient_id = p.person_id WHERE e.patient_id = :patientId AND e.encounter_type = (SELECT encounter_type_id FROM encounter_type WHERE uuid = '264daIZd-f80e-48fe-nba9-P37f2W1905Pv') AND e.encounter_datetime >= :startDate AND e.encounter_datetime <= :endDate AND e.voided = 0 ORDER BY e.encounter_datetime ASC LIMIT 1"
+        }
+      },
+      "repeatResolution" : {
+        "strategy" : "LATEST",
+        "restrictToPeriod" : false,
+        "ignoreVoided" : true
+      }
+    }, {
+      "name" : "sex",
+      "key" : "sex",
+      "dataDefinition" : {
+        "type" : "PERSON_ATTRIBUTE",
+        "config" : {
+          "type" : "GENDER"
+        }
+      }
+    }, {
+      "name" : "marital",
+      "key" : "marital",
+      "dataDefinition" : {
+        "type" : "SQL",
+        "config" : {
+          "sql" : "SELECT CASE WHEN pa.value_text IS NOT NULL THEN pa.value_text WHEN pa.value_coded IN (SELECT concept_id FROM concept WHERE uuid IN ('90005', '5555')) THEN 'SINGLE' WHEN pa.value_coded IN (SELECT concept_id FROM concept WHERE uuid = '90006') THEN 'MARRIED' WHEN pa.value_coded IN (SELECT concept_id FROM concept WHERE uuid IN ('90007', '1056')) THEN 'DIVORCED/SEPARATED' WHEN pa.value_coded IN (SELECT concept_id FROM concept WHERE uuid = '90009') THEN 'WIDOWED' WHEN pa.value_coded IN (SELECT concept_id FROM concept WHERE uuid = '90280') THEN 'CHILD' WHEN pa.value_coded IN (SELECT concept_id FROM concept WHERE uuid IN ('1057', '1060')) THEN 'NEVER MARRIED/LIVING WITH PARTNER' ELSE '' END FROM person_attribute pa WHERE pa.person_id = :patientId AND pa.person_attribute_type_id = (SELECT person_attribute_type_id FROM person_attribute_type WHERE uuid = '8d871f2a-c2cc-11de-8d13-0010c6dffd0f') AND pa.voided = 0"
+        }
+      }
+    }, {
+      "name" : "district",
+      "key" : "district",
+      "dataDefinition" : {
+        "type" : "PERSON_ADDRESS",
+        "config" : {
+          "type" : "ADDRESS_FIELD",
+          "field" : "address2"
+        }
+      }
+    }, {
+      "name" : "sub_county",
+      "key" : "sub_county",
+      "dataDefinition" : {
+        "type" : "PERSON_ADDRESS",
+        "config" : {
+          "type" : "ADDRESS_FIELD",
+          "field" : "address3"
+        }
+      }
+    }, {
+      "name" : "parish",
+      "key" : "parish",
+      "dataDefinition" : {
+        "type" : "PERSON_ADDRESS",
+        "config" : {
+          "type" : "ADDRESS_FIELD",
+          "field" : "address4"
+        }
+      }
+    }, {
+      "name" : "village",
+      "key" : "village",
+      "dataDefinition" : {
+        "type" : "PERSON_ADDRESS",
+        "config" : {
+          "type" : "ADDRESS_FIELD",
+          "field" : "address5"
+        }
+      }
+    }, {
+      "name" : "telephone",
+      "key" : "telephone",
+      "dataDefinition" : {
+        "type" : "PERSON_ATTRIBUTE",
+        "config" : {
+          "type" : "ATTRIBUTE",
+          "attributeTypeUuid" : "14d4f066-15f5-102d-96e4-000c29c2a5d7"
+        }
+      }
+    }, {
+      "name" : "tested",
+      "key" : "tested",
+      "dataDefinition" : {
+        "type" : "SQL",
+        "config" : {
+          "sql" : "SELECT CASE WHEN o.value_coded IS NOT NULL THEN 'Y' ELSE 'N' END FROM obs o INNER JOIN encounter e ON o.encounter_id = e.encounter_id WHERE o.concept_id = 99493 AND o.person_id = :patientId AND e.encounter_datetime >= :startDate AND e.encounter_datetime <= :endDate AND o.voided = 0 AND e.voided = 0 ORDER BY o.obs_datetime ASC LIMIT 1"
+        }
+      },
+      "repeatResolution" : {
+        "strategy" : "LATEST",
+        "restrictToPeriod" : false,
+        "ignoreVoided" : true,
+        "orderBy" : "obs_datetime"
+      }
+    }, {
+      "name" : "results",
+      "key" : "results",
+      "dataDefinition" : {
+        "type" : "SQL",
+        "config" : {
+          "sql" : "SELECT (SELECT cn.name FROM concept_name cn WHERE cn.concept_id = o.value_coded AND cn.locale = 'en' AND cn.concept_name_type = 'FULLY_SPECIFIED' AND cn.voided = 0) FROM obs o WHERE o.concept_id = 99493 AND o.person_id = :patientId AND o.obs_datetime >= :startDate AND o.obs_datetime <= :endDate AND o.voided = 0 ORDER BY o.obs_datetime ASC LIMIT 1"
+        }
+      },
+      "repeatResolution" : {
+        "strategy" : "LATEST",
+        "restrictToPeriod" : false,
+        "ignoreVoided" : true,
+        "orderBy" : "obs_datetime"
+      }
+    }, {
+      "name" : "linked",
+      "key" : "linked",
+      "dataDefinition" : {
+        "type" : "SQL",
+        "config" : {
+          "sql" : "SELECT CASE WHEN o.value_coded IN (SELECT concept_id FROM concept WHERE uuid = '90003') THEN 'Y' ELSE 'N' END FROM obs o WHERE o.concept_id = 162982 AND o.person_id = :patientId AND o.obs_datetime >= :startDate AND o.obs_datetime <= :endDate AND o.voided = 0 ORDER BY o.obs_datetime ASC LIMIT 1"
+        }
+      },
+      "repeatResolution" : {
+        "strategy" : "LATEST",
+        "restrictToPeriod" : false,
+        "ignoreVoided" : true,
+        "orderBy" : "obs_datetime"
+      }
+    }, {
+      "name" : "first",
+      "key" : "first",
+      "dataDefinition" : {
+        "type" : "SQL",
+        "config" : {
+          "sql" : "SELECT CASE WHEN o.value_coded IN (SELECT concept_id FROM concept WHERE uuid = '90003') THEN 'Y' ELSE 'N' END FROM obs o WHERE o.concept_id = 165180 AND o.person_id = :patientId AND o.obs_datetime >= :startDate AND o.obs_datetime <= :endDate AND o.voided = 0 ORDER BY o.obs_datetime ASC LIMIT 1"
+        }
+      },
+      "repeatResolution" : {
+        "strategy" : "LATEST",
+        "restrictToPeriod" : false,
+        "ignoreVoided" : true,
+        "orderBy" : "obs_datetime"
+      }
+    }, {
+      "name" : "counselled",
+      "key" : "counselled",
+      "dataDefinition" : {
+        "type" : "SQL",
+        "config" : {
+          "sql" : "SELECT CASE WHEN o.value_coded IN (SELECT concept_id FROM concept WHERE uuid = '90003') THEN 'Y' ELSE 'N' END FROM obs o WHERE o.concept_id = 162918 AND o.person_id = :patientId AND o.obs_datetime >= :startDate AND o.obs_datetime <= :endDate AND o.voided = 0 ORDER BY o.obs_datetime ASC LIMIT 1"
+        }
+      },
+      "repeatResolution" : {
+        "strategy" : "LATEST",
+        "restrictToPeriod" : false,
+        "ignoreVoided" : true,
+        "orderBy" : "obs_datetime"
+      }
+    }, {
+      "name" : "received",
+      "key" : "received",
+      "dataDefinition" : {
+        "type" : "SQL",
+        "config" : {
+          "sql" : "SELECT CASE WHEN o1.value_coded IN (SELECT concept_id FROM concept WHERE uuid = '90003') OR o2.value_coded IN (SELECT concept_id FROM concept WHERE uuid = '90003') THEN 'Y' ELSE 'N' END FROM obs o1 INNER JOIN encounter e1 ON o1.encounter_id = e1.encounter_id LEFT JOIN obs o2 ON o2.person_id = :patientId AND o2.concept_id = 165183 AND o2.voided = 0 WHERE o1.concept_id = 99494 AND o1.person_id = :patientId AND o1.obs_datetime >= :startDate AND o1.obs_datetime <= :endDate AND o1.voided = 0 AND e1.voided = 0 ORDER BY o1.obs_datetime ASC LIMIT 1"
+        }
+      },
+      "repeatResolution" : {
+        "strategy" : "LATEST",
+        "restrictToPeriod" : false,
+        "ignoreVoided" : true,
+        "orderBy" : "obs_datetime"
+      }
+    }, {
+      "name" : "tb",
+      "key" : "tb",
+      "dataDefinition" : {
+        "type" : "SQL",
+        "config" : {
+          "sql" : "SELECT CASE WHEN o.value_coded IN (SELECT concept_id FROM concept WHERE uuid = '90003') THEN 'Y' ELSE 'N' END FROM obs o WHERE o.concept_id = 99498 AND o.person_id = :patientId AND o.obs_datetime >= :startDate AND o.obs_datetime <= :endDate AND o.voided = 0 ORDER BY o.obs_datetime ASC LIMIT 1"
+        }
+      },
+      "repeatResolution" : {
+        "strategy" : "LATEST",
+        "restrictToPeriod" : false,
+        "ignoreVoided" : true,
+        "orderBy" : "obs_datetime"
+      }
+    } ]
+  } ]
+}

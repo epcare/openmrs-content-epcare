@@ -1,0 +1,241 @@
+{
+  "version" : 1,
+  "name" : "TX RTT",
+  "code" : "TX_RTT",
+  "report_fields" : [ {
+    "indicator_name" : "TX_RTT_CD4_less_than_200",
+    "indicator_label" : "TX-RTT cd4 less than 200",
+    "subsection" : "TX_RTT: Core Indicators",
+    "sqlQuery" : "WITH base_pop AS (\n  SELECT DISTINCT a.client_id AS patient_id\n  FROM (\n    SELECT\n      client_id,\n      TIMESTAMPDIFF(\n        DAY,\n        MAX(return_visit_date),\n        :endDate\n      ) AS ltfp_days\n    FROM mamba_fact_encounter_hiv_art_card\n    WHERE encounter_date <= :endDate\n      AND return_visit_date >= :startDate\n    GROUP BY client_id\n  ) a\n\n  LEFT JOIN (\n    SELECT person_id\n    FROM person\n    WHERE dead = 1\n      AND death_date <= :endDate\n  ) p\n    ON p.person_id = a.client_id\n\n  LEFT JOIN (\n    SELECT DISTINCT mf_to.client_id\n    FROM mamba_fact_transfer_out mf_to\n    LEFT JOIN mamba_fact_transfer_in mf_ti\n      ON mf_ti.client_id = mf_to.client_id\n    WHERE mf_to.transfer_out_date <= :endDate\n      AND (\n        mf_ti.client_id IS NULL\n        OR mf_to.transfer_out_date > mf_ti.transfer_in_date\n      )\n  ) mfto\n    ON mfto.client_id = a.client_id\n\n  INNER JOIN (\n    SELECT DISTINCT previous.client_id\n    FROM (\n      SELECT\n        client_id,\n        TIMESTAMPDIFF(\n          DAY,\n          MAX(return_visit_date),\n          DATE_SUB(:endDate, INTERVAL 3 MONTH)\n        ) AS ltfp_days\n      FROM mamba_fact_encounter_hiv_art_card\n      WHERE encounter_date <= DATE_SUB(:endDate, INTERVAL 3 MONTH)\n        AND return_visit_date <= DATE_SUB(:endDate, INTERVAL 3 MONTH)\n      GROUP BY client_id\n    ) previous\n    WHERE previous.ltfp_days > 28\n  ) lost_in_previous_quarter\n    ON lost_in_previous_quarter.client_id = a.client_id\n\n  INNER JOIN (\n    SELECT DISTINCT client_id\n    FROM mamba_fact_encounter_hiv_art_card\n    WHERE cd4 < 200\n      AND encounter_date BETWEEN :startDate AND :endDate\n  ) cd4\n    ON cd4.client_id = a.client_id\n\n  WHERE a.ltfp_days <= 28\n    AND p.person_id IS NULL\n    AND mfto.client_id IS NULL\n),\nag AS (\n  SELECT\n    ag.age_group_id,\n    ag.label,\n    ag.min_age_days,\n    ag.max_age_days,\n    ag.sort_order\n  FROM report_builder_dim_age_group ag\n  JOIN report_builder_dim_age_category ac\n    ON ac.age_category_id = ag.age_category_id\n  WHERE ac.code = 'MOH_105_OPD_DIAG'\n    AND ag.is_active = 1\n),\ngenders AS (\n  SELECT 'F' AS gender\n  UNION ALL\n  SELECT 'M' AS gender\n),\ncnt AS (\n  SELECT\n    ag.age_group_id,\n    mdp.gender,\n    COUNT(DISTINCT base_pop.patient_id) AS value\n  FROM base_pop\n  JOIN mamba_fact_patients_latest_patient_demographics mdp\n    ON mdp.patient_id = base_pop.patient_id\n  JOIN ag\n    ON TIMESTAMPDIFF(DAY, mdp.birthdate, :endDate)\n       BETWEEN ag.min_age_days AND ag.max_age_days\n  WHERE mdp.birthdate IS NOT NULL\n    AND mdp.gender IS NOT NULL\n    AND mdp.gender IN ('F','M')\n  GROUP BY ag.age_group_id, mdp.gender\n)\nSELECT\n  ag.label AS age_group,\n  g.gender AS gender,\n  COALESCE(cnt.value, 0) AS value\nFROM ag\nCROSS JOIN genders g\nLEFT JOIN cnt\n  ON cnt.age_group_id = ag.age_group_id\n AND cnt.gender = g.gender\nORDER BY ag.sort_order, g.gender;",
+    "dissaggregations" : [ "age_group", "gender" ],
+    "values" : [ {
+      "dissaggregations1" : "0-28d",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "TX_RTT_CD4_less_than_200_0_28d_F"
+    }, {
+      "dissaggregations1" : "0-28d",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "TX_RTT_CD4_less_than_200_0_28d_M"
+    }, {
+      "dissaggregations1" : "29d-4yrs",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "TX_RTT_CD4_less_than_200_29d_4yrs_F"
+    }, {
+      "dissaggregations1" : "29d-4yrs",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "TX_RTT_CD4_less_than_200_29d_4yrs_M"
+    }, {
+      "dissaggregations1" : "5-9yrs",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "TX_RTT_CD4_less_than_200_5_9yrs_F"
+    }, {
+      "dissaggregations1" : "5-9yrs",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "TX_RTT_CD4_less_than_200_5_9yrs_M"
+    }, {
+      "dissaggregations1" : "10-19yrs",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "TX_RTT_CD4_less_than_200_10_19yrs_F"
+    }, {
+      "dissaggregations1" : "10-19yrs",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "TX_RTT_CD4_less_than_200_10_19yrs_M"
+    }, {
+      "dissaggregations1" : "20yrs+",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "TX_RTT_CD4_less_than_200_20yrsplus_F"
+    }, {
+      "dissaggregations1" : "20yrs+",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "TX_RTT_CD4_less_than_200_20yrsplus_M"
+    } ]
+  }, {
+    "indicator_name" : "TX_RTT_CD4_greater_or_equal_200",
+    "indicator_label" : "TX-RTT cd4 greater or equal 200",
+    "subsection" : "TX_RTT: Core Indicators",
+    "sqlQuery" : "WITH base_pop AS (\n  SELECT DISTINCT a.client_id AS patient_id\n  FROM (\n    SELECT\n      client_id,\n      TIMESTAMPDIFF(\n        DAY,\n        MAX(return_visit_date),\n        :endDate\n      ) AS ltfp_days\n    FROM mamba_fact_encounter_hiv_art_card\n    WHERE encounter_date <= :endDate\n      AND return_visit_date >= :startDate\n    GROUP BY client_id\n  ) a\n\n  LEFT JOIN (\n    SELECT person_id\n    FROM person\n    WHERE dead = 1\n      AND death_date <= :endDate\n  ) p\n    ON p.person_id = a.client_id\n\n  LEFT JOIN (\n    SELECT DISTINCT mf_to.client_id\n    FROM mamba_fact_transfer_out mf_to\n    LEFT JOIN mamba_fact_transfer_in mf_ti\n      ON mf_ti.client_id = mf_to.client_id\n    WHERE mf_to.transfer_out_date <= :endDate\n      AND (\n        mf_ti.client_id IS NULL\n        OR mf_to.transfer_out_date > mf_ti.transfer_in_date\n      )\n  ) mfto\n    ON mfto.client_id = a.client_id\n\n  INNER JOIN (\n    SELECT DISTINCT previous.client_id\n    FROM (\n      SELECT\n        client_id,\n        TIMESTAMPDIFF(\n          DAY,\n          MAX(return_visit_date),\n          DATE_SUB(:endDate, INTERVAL 3 MONTH)\n        ) AS ltfp_days\n      FROM mamba_fact_encounter_hiv_art_card\n      WHERE encounter_date <= DATE_SUB(:endDate, INTERVAL 3 MONTH)\n        AND return_visit_date <= DATE_SUB(:endDate, INTERVAL 3 MONTH)\n      GROUP BY client_id\n    ) previous\n    WHERE previous.ltfp_days > 28\n  ) lost_in_previous_quarter\n    ON lost_in_previous_quarter.client_id = a.client_id\n\n  INNER JOIN (\n    SELECT DISTINCT client_id\n    FROM mamba_fact_encounter_hiv_art_card\n    WHERE cd4 >= 200\n      AND encounter_date BETWEEN :startDate AND :endDate\n  ) cd4\n    ON cd4.client_id = a.client_id\n\n  WHERE a.ltfp_days <= 28\n    AND p.person_id IS NULL\n    AND mfto.client_id IS NULL\n),\nag AS (\n  SELECT\n    ag.age_group_id,\n    ag.label,\n    ag.min_age_days,\n    ag.max_age_days,\n    ag.sort_order\n  FROM report_builder_dim_age_group ag\n  JOIN report_builder_dim_age_category ac\n    ON ac.age_category_id = ag.age_category_id\n  WHERE ac.code = 'MOH_105_OPD_DIAG'\n    AND ag.is_active = 1\n),\ngenders AS (\n  SELECT 'F' AS gender\n  UNION ALL\n  SELECT 'M' AS gender\n),\ncnt AS (\n  SELECT\n    ag.age_group_id,\n    mdp.gender,\n    COUNT(DISTINCT base_pop.patient_id) AS value\n  FROM base_pop\n  JOIN mamba_fact_patients_latest_patient_demographics mdp\n    ON mdp.patient_id = base_pop.patient_id\n  JOIN ag\n    ON TIMESTAMPDIFF(DAY, mdp.birthdate, :endDate)\n       BETWEEN ag.min_age_days AND ag.max_age_days\n  WHERE mdp.birthdate IS NOT NULL\n    AND mdp.gender IS NOT NULL\n    AND mdp.gender IN ('F','M')\n  GROUP BY ag.age_group_id, mdp.gender\n)\nSELECT\n  ag.label AS age_group,\n  g.gender AS gender,\n  COALESCE(cnt.value, 0) AS value\nFROM ag\nCROSS JOIN genders g\nLEFT JOIN cnt\n  ON cnt.age_group_id = ag.age_group_id\n AND cnt.gender = g.gender\nORDER BY ag.sort_order, g.gender;",
+    "dissaggregations" : [ "age_group", "gender" ],
+    "values" : [ {
+      "dissaggregations1" : "0-28d",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "TX_RTT_CD4_greater_or_equal_200_0_28d_F"
+    }, {
+      "dissaggregations1" : "0-28d",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "TX_RTT_CD4_greater_or_equal_200_0_28d_M"
+    }, {
+      "dissaggregations1" : "29d-4yrs",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "TX_RTT_CD4_greater_or_equal_200_29d_4yrs_F"
+    }, {
+      "dissaggregations1" : "29d-4yrs",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "TX_RTT_CD4_greater_or_equal_200_29d_4yrs_M"
+    }, {
+      "dissaggregations1" : "5-9yrs",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "TX_RTT_CD4_greater_or_equal_200_5_9yrs_F"
+    }, {
+      "dissaggregations1" : "5-9yrs",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "TX_RTT_CD4_greater_or_equal_200_5_9yrs_M"
+    }, {
+      "dissaggregations1" : "10-19yrs",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "TX_RTT_CD4_greater_or_equal_200_10_19yrs_F"
+    }, {
+      "dissaggregations1" : "10-19yrs",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "TX_RTT_CD4_greater_or_equal_200_10_19yrs_M"
+    }, {
+      "dissaggregations1" : "20yrs+",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "TX_RTT_CD4_greater_or_equal_200_20yrsplus_F"
+    }, {
+      "dissaggregations1" : "20yrs+",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "TX_RTT_CD4_greater_or_equal_200_20yrsplus_M"
+    } ]
+  }, {
+    "indicator_name" : "TX_RTT_CD4_UNKNOWN",
+    "indicator_label" : "TX-RTT cd4 unknown",
+    "subsection" : "TX_RTT: Core Indicators",
+    "sqlQuery" : "WITH base_pop AS (\n  SELECT DISTINCT a.client_id AS patient_id\n  FROM (\n    SELECT\n      client_id,\n      TIMESTAMPDIFF(\n        DAY,\n        MAX(return_visit_date),\n        :endDate\n      ) AS ltfp_days\n    FROM mamba_fact_encounter_hiv_art_card\n    WHERE encounter_date <= :endDate\n      AND return_visit_date >= :startDate\n    GROUP BY client_id\n  ) a\n\n  LEFT JOIN (\n    SELECT person_id\n    FROM person\n    WHERE dead = 1\n      AND death_date <= :endDate\n  ) p\n    ON p.person_id = a.client_id\n\n  LEFT JOIN (\n    SELECT DISTINCT mf_to.client_id\n    FROM mamba_fact_transfer_out mf_to\n    LEFT JOIN mamba_fact_transfer_in mf_ti\n      ON mf_ti.client_id = mf_to.client_id\n    WHERE mf_to.transfer_out_date <= :endDate\n      AND (\n        mf_ti.client_id IS NULL\n        OR mf_to.transfer_out_date > mf_ti.transfer_in_date\n      )\n  ) mfto\n    ON mfto.client_id = a.client_id\n\n  INNER JOIN (\n    SELECT DISTINCT previous.client_id\n    FROM (\n      SELECT\n        client_id,\n        TIMESTAMPDIFF(\n          DAY,\n          MAX(return_visit_date),\n          DATE_SUB(:endDate, INTERVAL 3 MONTH)\n        ) AS ltfp_days\n      FROM mamba_fact_encounter_hiv_art_card\n      WHERE encounter_date <= DATE_SUB(:endDate, INTERVAL 3 MONTH)\n        AND return_visit_date <= DATE_SUB(:endDate, INTERVAL 3 MONTH)\n      GROUP BY client_id\n    ) previous\n    WHERE previous.ltfp_days > 28\n  ) lost_in_previous_quarter\n    ON lost_in_previous_quarter.client_id = a.client_id\n\n  INNER JOIN (\n    SELECT DISTINCT client_id\n    FROM mamba_fact_encounter_hiv_art_card\n    WHERE cd4 IS NULL\n      AND encounter_date BETWEEN :startDate AND :endDate\n  ) cd4\n    ON cd4.client_id = a.client_id\n\n  WHERE a.ltfp_days <= 28\n    AND p.person_id IS NULL\n    AND mfto.client_id IS NULL\n),\nag AS (\n  SELECT\n    ag.age_group_id,\n    ag.label,\n    ag.min_age_days,\n    ag.max_age_days,\n    ag.sort_order\n  FROM report_builder_dim_age_group ag\n  JOIN report_builder_dim_age_category ac\n    ON ac.age_category_id = ag.age_category_id\n  WHERE ac.code = 'MOH_105_OPD_DIAG'\n    AND ag.is_active = 1\n),\ngenders AS (\n  SELECT 'F' AS gender\n  UNION ALL\n  SELECT 'M' AS gender\n),\ncnt AS (\n  SELECT\n    ag.age_group_id,\n    mdp.gender,\n    COUNT(DISTINCT base_pop.patient_id) AS value\n  FROM base_pop\n  JOIN mamba_fact_patients_latest_patient_demographics mdp\n    ON mdp.patient_id = base_pop.patient_id\n  JOIN ag\n    ON TIMESTAMPDIFF(DAY, mdp.birthdate, :endDate)\n       BETWEEN ag.min_age_days AND ag.max_age_days\n  WHERE mdp.birthdate IS NOT NULL\n    AND mdp.gender IS NOT NULL\n    AND mdp.gender IN ('F','M')\n  GROUP BY ag.age_group_id, mdp.gender\n)\nSELECT\n  ag.label AS age_group,\n  g.gender AS gender,\n  COALESCE(cnt.value, 0) AS value\nFROM ag\nCROSS JOIN genders g\nLEFT JOIN cnt\n  ON cnt.age_group_id = ag.age_group_id\n AND cnt.gender = g.gender\nORDER BY ag.sort_order, g.gender;",
+    "dissaggregations" : [ "age_group", "gender" ],
+    "values" : [ {
+      "dissaggregations1" : "0-28d",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "TX_RTT_CD4_UNKNOWN_0_28d_F"
+    }, {
+      "dissaggregations1" : "0-28d",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "TX_RTT_CD4_UNKNOWN_0_28d_M"
+    }, {
+      "dissaggregations1" : "29d-4yrs",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "TX_RTT_CD4_UNKNOWN_29d_4yrs_F"
+    }, {
+      "dissaggregations1" : "29d-4yrs",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "TX_RTT_CD4_UNKNOWN_29d_4yrs_M"
+    }, {
+      "dissaggregations1" : "5-9yrs",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "TX_RTT_CD4_UNKNOWN_5_9yrs_F"
+    }, {
+      "dissaggregations1" : "5-9yrs",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "TX_RTT_CD4_UNKNOWN_5_9yrs_M"
+    }, {
+      "dissaggregations1" : "10-19yrs",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "TX_RTT_CD4_UNKNOWN_10_19yrs_F"
+    }, {
+      "dissaggregations1" : "10-19yrs",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "TX_RTT_CD4_UNKNOWN_10_19yrs_M"
+    }, {
+      "dissaggregations1" : "20yrs+",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "TX_RTT_CD4_UNKNOWN_20yrsplus_F"
+    }, {
+      "dissaggregations1" : "20yrs+",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "TX_RTT_CD4_UNKNOWN_20yrsplus_M"
+    } ]
+  }, {
+    "indicator_name" : "TX_RTT_CD4_NOT_ELIGIBLE",
+    "indicator_label" : "TX-RTT cd4 not eligible",
+    "subsection" : "TX_RTT: Core Indicators",
+    "sqlQuery" : "WITH base_pop AS (\n  SELECT DISTINCT a.client_id AS patient_id\n  FROM (\n    SELECT\n      client_id,\n      TIMESTAMPDIFF(\n        DAY,\n        MAX(return_visit_date),\n        :endDate\n      ) AS ltfp_days\n    FROM mamba_fact_encounter_hiv_art_card\n    WHERE encounter_date <= :endDate\n      AND return_visit_date >= :startDate\n    GROUP BY client_id\n  ) a\n\n  LEFT JOIN (\n    SELECT person_id\n    FROM person\n    WHERE dead = 1\n      AND death_date <= :endDate\n  ) p\n    ON p.person_id = a.client_id\n\n  LEFT JOIN (\n    SELECT DISTINCT mf_to.client_id\n    FROM mamba_fact_transfer_out mf_to\n    LEFT JOIN mamba_fact_transfer_in mf_ti\n      ON mf_ti.client_id = mf_to.client_id\n    WHERE mf_to.transfer_out_date <= :endDate\n      AND (\n        mf_ti.client_id IS NULL\n        OR mf_to.transfer_out_date > mf_ti.transfer_in_date\n      )\n  ) mfto\n    ON mfto.client_id = a.client_id\n\n  INNER JOIN (\n    SELECT DISTINCT previous.client_id\n    FROM (\n      SELECT\n        client_id,\n        TIMESTAMPDIFF(\n          DAY,\n          MAX(return_visit_date),\n          DATE_SUB(:endDate, INTERVAL 3 MONTH)\n        ) AS ltfp_days\n      FROM mamba_fact_encounter_hiv_art_card\n      WHERE encounter_date <= DATE_SUB(:endDate, INTERVAL 3 MONTH)\n        AND return_visit_date <= DATE_SUB(:endDate, INTERVAL 3 MONTH)\n      GROUP BY client_id\n    ) previous\n    WHERE previous.ltfp_days > 28\n      AND previous.ltfp_days <= 89\n  ) lost_in_previous_quarter\n    ON lost_in_previous_quarter.client_id = a.client_id\n\n  INNER JOIN (\n    SELECT DISTINCT client_id\n    FROM mamba_fact_encounter_hiv_art_card\n    WHERE cd4 IS NULL\n      AND encounter_date BETWEEN :startDate AND :endDate\n  ) cd4\n    ON cd4.client_id = a.client_id\n\n  WHERE a.ltfp_days <= 28\n    AND p.person_id IS NULL\n    AND mfto.client_id IS NULL\n),\nag AS (\n  SELECT\n    ag.age_group_id,\n    ag.label,\n    ag.min_age_days,\n    ag.max_age_days,\n    ag.sort_order\n  FROM report_builder_dim_age_group ag\n  JOIN report_builder_dim_age_category ac\n    ON ac.age_category_id = ag.age_category_id\n  WHERE ac.code = 'MOH_105_OPD_DIAG'\n    AND ag.is_active = 1\n),\ngenders AS (\n  SELECT 'F' AS gender\n  UNION ALL\n  SELECT 'M' AS gender\n),\ncnt AS (\n  SELECT\n    ag.age_group_id,\n    mdp.gender,\n    COUNT(DISTINCT base_pop.patient_id) AS value\n  FROM base_pop\n  JOIN mamba_fact_patients_latest_patient_demographics mdp\n    ON mdp.patient_id = base_pop.patient_id\n  JOIN ag\n    ON TIMESTAMPDIFF(DAY, mdp.birthdate, :endDate)\n       BETWEEN ag.min_age_days AND ag.max_age_days\n  WHERE mdp.birthdate IS NOT NULL\n    AND mdp.gender IS NOT NULL\n    AND mdp.gender IN ('F','M')\n  GROUP BY ag.age_group_id, mdp.gender\n)\nSELECT\n  ag.label AS age_group,\n  g.gender AS gender,\n  COALESCE(cnt.value, 0) AS value\nFROM ag\nCROSS JOIN genders g\nLEFT JOIN cnt\n  ON cnt.age_group_id = ag.age_group_id\n AND cnt.gender = g.gender\nORDER BY ag.sort_order, g.gender;",
+    "dissaggregations" : [ "age_group", "gender" ],
+    "values" : [ {
+      "dissaggregations1" : "0-28d",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "TX_RTT_CD4_NOT_ELIGIBLE_0_28d_F"
+    }, {
+      "dissaggregations1" : "0-28d",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "TX_RTT_CD4_NOT_ELIGIBLE_0_28d_M"
+    }, {
+      "dissaggregations1" : "29d-4yrs",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "TX_RTT_CD4_NOT_ELIGIBLE_29d_4yrs_F"
+    }, {
+      "dissaggregations1" : "29d-4yrs",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "TX_RTT_CD4_NOT_ELIGIBLE_29d_4yrs_M"
+    }, {
+      "dissaggregations1" : "5-9yrs",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "TX_RTT_CD4_NOT_ELIGIBLE_5_9yrs_F"
+    }, {
+      "dissaggregations1" : "5-9yrs",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "TX_RTT_CD4_NOT_ELIGIBLE_5_9yrs_M"
+    }, {
+      "dissaggregations1" : "10-19yrs",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "TX_RTT_CD4_NOT_ELIGIBLE_10_19yrs_F"
+    }, {
+      "dissaggregations1" : "10-19yrs",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "TX_RTT_CD4_NOT_ELIGIBLE_10_19yrs_M"
+    }, {
+      "dissaggregations1" : "20yrs+",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "TX_RTT_CD4_NOT_ELIGIBLE_20yrsplus_F"
+    }, {
+      "dissaggregations1" : "20yrs+",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "TX_RTT_CD4_NOT_ELIGIBLE_20yrsplus_M"
+    } ]
+  }, {
+    "indicator_name" : "TX_RTT_PWIDS",
+    "indicator_label" : "TX RTT PWIDS",
+    "subsection" : "TX_RTT: Core Indicators",
+    "sqlQuery" : "WITH base_pop AS (\n  SELECT DISTINCT a.client_id AS patient_id\n  FROM (\n    SELECT\n      client_id,\n      TIMESTAMPDIFF(\n        DAY,\n        MAX(return_visit_date),\n        :endDate\n      ) AS ltfp_days\n    FROM mamba_fact_encounter_hiv_art_card\n    WHERE encounter_date <= :endDate\n      AND return_visit_date >= :startDate\n    GROUP BY client_id\n  ) a\n\n  LEFT JOIN (\n    SELECT person_id\n    FROM person\n    WHERE dead = 1\n      AND death_date <= :endDate\n  ) p\n    ON p.person_id = a.client_id\n\n  LEFT JOIN (\n    SELECT DISTINCT mf_to.client_id\n    FROM mamba_fact_transfer_out mf_to\n    LEFT JOIN mamba_fact_transfer_in mf_ti\n      ON mf_ti.client_id = mf_to.client_id\n    WHERE mf_to.transfer_out_date <= :endDate\n      AND (\n        mf_ti.client_id IS NULL\n        OR mf_to.transfer_out_date > mf_ti.transfer_in_date\n      )\n  ) mfto\n    ON mfto.client_id = a.client_id\n\n  INNER JOIN (\n    SELECT DISTINCT previous.client_id\n    FROM (\n      SELECT\n        client_id,\n        TIMESTAMPDIFF(\n          DAY,\n          MAX(return_visit_date),\n          DATE_SUB(:endDate, INTERVAL 3 MONTH)\n        ) AS ltfp_days\n      FROM mamba_fact_encounter_hiv_art_card\n      WHERE encounter_date <= DATE_SUB(:endDate, INTERVAL 3 MONTH)\n        AND return_visit_date <= DATE_SUB(:endDate, INTERVAL 3 MONTH)\n      GROUP BY client_id\n    ) previous\n    WHERE previous.ltfp_days > 28\n  ) lost_in_previous_quarter\n    ON lost_in_previous_quarter.client_id = a.client_id\n\n  INNER JOIN (\n    SELECT DISTINCT client_id\n    FROM mamba_fact_encounter_hiv_art_summary\n    WHERE special_category = 'Current drug user'\n  ) special_category\n    ON special_category.client_id = a.client_id\n\n  WHERE a.ltfp_days <= 28\n    AND p.person_id IS NULL\n    AND mfto.client_id IS NULL\n),\nag AS (\n  SELECT\n    ag.age_group_id,\n    ag.label,\n    ag.min_age_days,\n    ag.max_age_days,\n    ag.sort_order\n  FROM report_builder_dim_age_group ag\n  JOIN report_builder_dim_age_category ac\n    ON ac.age_category_id = ag.age_category_id\n  WHERE ac.code = 'MOH_105_OPD_DIAG'\n    AND ag.is_active = 1\n),\ngenders AS (\n  SELECT 'F' AS gender\n  UNION ALL\n  SELECT 'M' AS gender\n),\ncnt AS (\n  SELECT\n    ag.age_group_id,\n    mdp.gender,\n    COUNT(DISTINCT base_pop.patient_id) AS value\n  FROM base_pop\n  JOIN mamba_fact_patients_latest_patient_demographics mdp\n    ON mdp.patient_id = base_pop.patient_id\n  JOIN ag\n    ON TIMESTAMPDIFF(DAY, mdp.birthdate, :endDate)\n       BETWEEN ag.min_age_days AND ag.max_age_days\n  WHERE mdp.birthdate IS NOT NULL\n    AND mdp.gender IS NOT NULL\n    AND mdp.gender IN ('F','M')\n  GROUP BY ag.age_group_id, mdp.gender\n)\nSELECT\n  ag.label AS age_group,\n  g.gender AS gender,\n  COALESCE(cnt.value, 0) AS value\nFROM ag\nCROSS JOIN genders g\nLEFT JOIN cnt\n  ON cnt.age_group_id = ag.age_group_id\n AND cnt.gender = g.gender\nORDER BY ag.sort_order, g.gender;",
+    "dissaggregations" : [ "age_group", "gender" ],
+    "values" : [ {
+      "dissaggregations1" : "0-28d",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "TX_RTT_PWIDS_0_28d_F"
+    }, {
+      "dissaggregations1" : "0-28d",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "TX_RTT_PWIDS_0_28d_M"
+    }, {
+      "dissaggregations1" : "29d-4yrs",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "TX_RTT_PWIDS_29d_4yrs_F"
+    }, {
+      "dissaggregations1" : "29d-4yrs",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "TX_RTT_PWIDS_29d_4yrs_M"
+    }, {
+      "dissaggregations1" : "5-9yrs",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "TX_RTT_PWIDS_5_9yrs_F"
+    }, {
+      "dissaggregations1" : "5-9yrs",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "TX_RTT_PWIDS_5_9yrs_M"
+    }, {
+      "dissaggregations1" : "10-19yrs",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "TX_RTT_PWIDS_10_19yrs_F"
+    }, {
+      "dissaggregations1" : "10-19yrs",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "TX_RTT_PWIDS_10_19yrs_M"
+    }, {
+      "dissaggregations1" : "20yrs+",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "TX_RTT_PWIDS_20yrsplus_F"
+    }, {
+      "dissaggregations1" : "20yrs+",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "TX_RTT_PWIDS_20yrsplus_M"
+    } ]
+  } ]
+}

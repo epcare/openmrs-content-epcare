@@ -1,0 +1,169 @@
+{
+  "name" : "Infants Due Appointment",
+  "description" : "Infants List Due for Appointment",
+  "category" : "FACILITY_REPORTS",
+  "reportType" : "LINELIST",
+  "limit" : 1000,
+  "parameters" : [ {
+    "name" : "startDate",
+    "label" : "Start Date",
+    "type" : "DATE",
+    "required" : true
+  }, {
+    "name" : "endDate",
+    "label" : "End Date",
+    "type" : "DATE",
+    "required" : true
+  } ],
+  "baseCohortDefinition" : {
+    "type" : "SQL",
+    "name" : "EID infants due for appointment (not yet enrolled)",
+    "config" : {
+      "sql" : "SELECT DISTINCT e.patient_id FROM person p WHERE p.birthdate >= DATE_SUB(:startDate, INTERVAL 24 MONTH) AND p.birthdate <= :endDate AND p.gender = 'F' AND p.voided = 0 AND EXISTS (SELECT 1 FROM obs WHERE concept_id = (SELECT concept_id FROM concept WHERE uuid IN ('e1d84780-c736-4f2b-8724-82e1fd7ed08d', 'e1d81c60-c736-4f2b-8724-82e1fd7ed08d', 'e1d84480-c736-4f2b-8724-82e1fd7ed08d')) AND person_id = p.person_id AND value_coded IN (SELECT concept_id FROM concept WHERE uuid IN ('703', '664')) AND voided = 0) AND EXISTS (SELECT 1 FROM obs WHERE concept_id = (SELECT concept_id FROM concept WHERE uuid = 'a89a8f20-1350-11df-a1f1-0024e8c6b857') AND person_id = p.person_id AND value_coded = (SELECT concept_id FROM concept WHERE uuid = '1065') AND voided = 0) AND EXISTS (SELECT 1 FROM obs o WHERE o.concept_id = (SELECT concept_id FROM concept WHERE uuid = '5096') AND o.person_id = p.person_id AND o.value_datetime >= :startDate AND o.value_datetime <= :endDate AND o.voided = 0) AND p.patient_id NOT IN (SELECT DISTINCT e.patient_id FROM encounter e WHERE e.encounter_type IN (SELECT encounter_type_id FROM encounter_type WHERE uuid = '8d5b27bc-c2cc-11de-8d13-0010c6dffd0f') AND e.encounter_datetime BETWEEN :startDate AND :endDate AND e.voided = 0)"
+    }
+  },
+  "dataSetDefinitions" : [ {
+    "name" : "Appointments",
+    "type" : "PATIENT_DATA_SET",
+    "rowFilter" : {
+      "type" : "SQL",
+      "name" : "EID infants due for appointment (not yet enrolled)",
+      "config" : {
+        "sql" : "SELECT DISTINCT e.patient_id FROM person p WHERE p.birthdate >= DATE_SUB(:startDate, INTERVAL 24 MONTH) AND p.birthdate <= :endDate AND p.gender = 'F' AND p.voided = 0 AND EXISTS (SELECT 1 FROM obs WHERE concept_id = (SELECT concept_id FROM concept WHERE uuid IN ('e1d84780-c736-4f2b-8724-82e1fd7ed08d', 'e1d81c60-c736-4f2b-8724-82e1fd7ed08d', 'e1d84480-c736-4f2b-8724-82e1fd7ed08d')) AND person_id = p.person_id AND value_coded IN (SELECT concept_id FROM concept WHERE uuid IN ('703', '664')) AND voided = 0) AND EXISTS (SELECT 1 FROM obs WHERE concept_id = (SELECT concept_id FROM concept WHERE uuid = 'a89a8f20-1350-11df-a1f1-0024e8c6b857') AND person_id = p.person_id AND value_coded = (SELECT concept_id FROM concept WHERE uuid = '1065') AND voided = 0) AND EXISTS (SELECT 1 FROM obs o WHERE o.concept_id = (SELECT concept_id FROM concept WHERE uuid = '5096') AND o.person_id = p.person_id AND o.value_datetime >= :startDate AND o.value_datetime <= :endDate AND o.voided = 0) AND p.patient_id NOT IN (SELECT DISTINCT e.patient_id FROM encounter e WHERE e.encounter_type IN (SELECT encounter_type_id FROM encounter_type WHERE uuid = '8d5b27bc-c2cc-11de-8d13-0010c6dffd0f') AND e.encounter_datetime BETWEEN :startDate AND :endDate AND e.voided = 0)"
+      }
+    },
+    "columns" : [ {
+      "name" : "EID No",
+      "key" : "eid_no",
+      "dataDefinition" : {
+        "type" : "IDENTIFIER",
+        "config" : {
+          "identifierTypeUuid" : "2c5b695d-4bf3-452f-8a7c-fe3ee3432ffe",
+          "preferred" : true
+        }
+      }
+    }, {
+      "name" : "Infant Name",
+      "key" : "infant_name",
+      "dataDefinition" : {
+        "type" : "PERSON_NAME",
+        "config" : {
+          "type" : "FULL_NAME",
+          "preferred" : true
+        }
+      }
+    }, {
+      "name" : "Birth Date",
+      "key" : "birth_date",
+      "dataDefinition" : {
+        "type" : "PERSON_ATTRIBUTE",
+        "config" : {
+          "type" : "BIRTHDATE"
+        }
+      },
+      "repeatResolution" : {
+        "strategy" : "LATEST",
+        "restrictToPeriod" : false,
+        "ignoreVoided" : true
+      }
+    }, {
+      "name" : "Age",
+      "key" : "age",
+      "dataDefinition" : {
+        "type" : "CALCULATION",
+        "config" : {
+          "calculation" : "AGE_IN_MONTHS",
+          "onDate" : "${endDate}"
+        }
+      }
+    }, {
+      "name" : "Sex",
+      "key" : "sex",
+      "dataDefinition" : {
+        "type" : "PERSON_ATTRIBUTE",
+        "config" : {
+          "type" : "GENDER"
+        }
+      }
+    }, {
+      "name" : "Mother Name",
+      "key" : "mother_name",
+      "dataDefinition" : {
+        "type" : "SQL",
+        "config" : {
+          "sql" : "SELECT CONCAT(pn.given_name, ' ', pn.family_name) FROM obs o INNER JOIN person_relationship pr ON o.person_id = pr.person_a AND pr.voided = 0 INNER JOIN person p ON pr.person_b = p.person_id INNER JOIN person_name pn ON p.person_id = pn.person_id WHERE o.concept_id = (SELECT concept_id FROM concept WHERE uuid = '99776') AND o.person_id = :patientId AND o.voided = 0 ORDER BY o.obs_datetime DESC LIMIT 1"
+        }
+      },
+      "repeatResolution" : {
+        "strategy" : "LATEST",
+        "restrictToPeriod" : false,
+        "ignoreVoided" : true,
+        "orderBy" : "obs_datetime"
+      }
+    }, {
+      "name" : "Mother Phone",
+      "key" : "mother_phone",
+      "dataDefinition" : {
+        "type" : "SQL",
+        "config" : {
+          "sql" : "SELECT pa.value_text FROM obs o INNER JOIN person_relationship pr ON o.person_id = pr.person_a AND pr.voided = 0 INNER JOIN person p ON pr.person_b = p.person_id LEFT JOIN person_attribute pa ON p.person_id = pa.person_id AND pa.voided = 0 WHERE pa.person_attribute_type_id = 14 AND o.concept_id = (SELECT concept_id FROM concept WHERE uuid = '99776') AND o.person_id = :patientId AND o.voided = 0 ORDER BY o.obs_datetime DESC LIMIT 1"
+        }
+      },
+      "repeatResolution" : {
+        "strategy" : "LATEST",
+        "restrictToPeriod" : false,
+        "ignoreVoided" : true,
+        "orderBy" : "obs_datetime"
+      }
+    }, {
+      "name" : "Mother ART No",
+      "key" : "mother_art_no",
+      "dataDefinition" : {
+        "type" : "SQL",
+        "config" : {
+          "sql" : "SELECT pi.identifier FROM obs o INNER JOIN person_relationship pr ON o.person_id = pr.person_a AND pr.voided = 0 INNER JOIN person p ON pr.person_b = p.person_id INNER JOIN patient_identifier pi ON p.person_id = pi.patient_id AND pi.voided = 0 INNER JOIN patient_identifier_type pit ON pi.identifier_type = pit.patient_identifier_type_id WHERE pit.uuid = 'e1731641-30ab-102d-86b0-7a5022ba4115' AND o.concept_id = (SELECT concept_id FROM concept WHERE uuid = '99776') AND o.person_id = :patientId AND o.obs_datetime BETWEEN :startDate AND :endDate AND o.voided = 0 ORDER BY o.obs_datetime DESC LIMIT 1"
+        }
+      },
+      "repeatResolution" : {
+        "strategy" : "LATEST",
+        "restrictToPeriod" : false,
+        "ignoreVoided" : true,
+        "orderBy" : "obs_datetime"
+      }
+    }, {
+      "name" : "Parish",
+      "key" : "parish",
+      "dataDefinition" : {
+        "type" : "PERSON_ADDRESS",
+        "config" : {
+          "type" : "ADDRESS_FIELD",
+          "field" : "address4"
+        }
+      }
+    }, {
+      "name" : "Village",
+      "key" : "village",
+      "dataDefinition" : {
+        "type" : "PERSON_ADDRESS",
+        "config" : {
+          "type" : "ADDRESS_FIELD",
+          "field" : "address5"
+        }
+      }
+    }, {
+      "name" : "NextAppointmentDate",
+      "key" : "nextappointmentdate",
+      "dataDefinition" : {
+        "type" : "SQL",
+        "config" : {
+          "sql" : "SELECT DATE(o.value_datetime) FROM obs o WHERE o.concept_id = (SELECT concept_id FROM concept WHERE uuid = '5096') AND o.person_id = :patientId AND o.value_datetime >= :startDate AND o.value_datetime <= :endDate AND o.voided = 0 ORDER BY o.value_datetime DESC LIMIT 1"
+        }
+      },
+      "repeatResolution" : {
+        "strategy" : "LATEST",
+        "restrictToPeriod" : false,
+        "ignoreVoided" : true
+      }
+    } ]
+  } ]
+}

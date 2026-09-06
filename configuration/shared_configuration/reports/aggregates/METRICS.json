@@ -1,0 +1,294 @@
+{
+  "version" : 1,
+  "name" : "METRICS",
+  "code" : "METRICS",
+  "report_fields" : [ {
+    "indicator_name" : "TRIAGE",
+    "indicator_label" : "Triage",
+    "subsection" : "METRICS: Core Indicators",
+    "sqlQuery" : "WITH base_pop AS (\n    SELECT 'triage',COUNT(e.encounter_id)\n  FROM encounter e\n           INNER JOIN encounter_type et ON e.encounter_type = et.encounter_type_id\n  WHERE et.uuid = '67a71486-1a54-468f-ac3e-7091a9a79584'\n    AND e.encounter_datetime >= :startDate\n    AND e.encounter_datetime <= :endDate\n  AND e.voided = 0\n),\nag AS (\n  SELECT\n    ag.age_group_id,\n    ag.label,\n    ag.min_age_days,\n    ag.max_age_days,\n    ag.sort_order\n  FROM report_builder_dim_age_group ag\n  JOIN report_builder_dim_age_category ac\n    ON ac.age_category_id = ag.age_category_id\n  WHERE ac.code = 'MOH_105_OPD_DIAG'\n    AND ag.is_active = 1\n),\ngenders AS (\n  SELECT 'F' AS gender\n  UNION ALL\n  SELECT 'M' AS gender\n),\ncnt AS (\n  SELECT\n    ag.age_group_id AS age_group_id,\n    mdp.gender AS gender,\n    COUNT(DISTINCT base_pop.patient_id) AS value\n  FROM base_pop\n  JOIN mamba_fact_patients_latest_patient_demographics mdp\n    ON mdp.patient_id = base_pop.patient_id\n  JOIN ag\n    ON TIMESTAMPDIFF(DAY, mdp.birthdate, :endDate)\n       BETWEEN ag.min_age_days AND ag.max_age_days\n  WHERE mdp.birthdate IS NOT NULL\n    AND mdp.gender IS NOT NULL\n    AND mdp.gender IN ('F','M')\n  GROUP BY ag.age_group_id, mdp.gender\n)\nSELECT\n  ag.label AS age_group,\n  g.gender AS gender,\n  COALESCE(cnt.value, 0) AS value\nFROM ag\nCROSS JOIN genders g\nLEFT JOIN cnt\n    ON cnt.age_group_id = ag.age_group_id\n   AND cnt.gender = g.gender\nORDER BY ag.sort_order, g.gender;",
+    "dissaggregations" : [ "age_group", "gender" ],
+    "values" : [ {
+      "dissaggregations1" : "0-28d",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "TRIAGE_0_28d_F"
+    }, {
+      "dissaggregations1" : "0-28d",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "TRIAGE_0_28d_M"
+    }, {
+      "dissaggregations1" : "29d-4yrs",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "TRIAGE_29d_4yrs_F"
+    }, {
+      "dissaggregations1" : "29d-4yrs",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "TRIAGE_29d_4yrs_M"
+    }, {
+      "dissaggregations1" : "5-9yrs",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "TRIAGE_5_9yrs_F"
+    }, {
+      "dissaggregations1" : "5-9yrs",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "TRIAGE_5_9yrs_M"
+    }, {
+      "dissaggregations1" : "10-19yrs",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "TRIAGE_10_19yrs_F"
+    }, {
+      "dissaggregations1" : "10-19yrs",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "TRIAGE_10_19yrs_M"
+    }, {
+      "dissaggregations1" : "20+ yrs",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "TRIAGE_20plus_yrs_F"
+    }, {
+      "dissaggregations1" : "20+ yrs",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "TRIAGE_20plus_yrs_M"
+    } ]
+  }, {
+    "indicator_name" : "CLINICIAN",
+    "indicator_label" : "Clinician",
+    "subsection" : "METRICS: Core Indicators",
+    "sqlQuery" : "WITH base_pop AS (\n    SELECT 'clinician', COUNT(e.encounter_id)\n  FROM encounter e\n           INNER JOIN encounter_type et ON e.encounter_type = et.encounter_type_id\n  WHERE et.uuid IN ('8d5b27bc-c2cc-11de-8d13-0010c6dffd0f', '8d5b2be0-c2cc-11de-8d13-0010c6dffd0f',\n                    '334bf97e-28e2-4a27-8727-a5ce31c7cd66', '334bf97e-28e2-4a27-8727-a5ce31c7cd66')\n    AND e.encounter_datetime >= :startDate\n    AND e.encounter_datetime <= :endDate\n    AND e.voided = 0\n),\nag AS (\n  SELECT\n    ag.age_group_id,\n    ag.label,\n    ag.min_age_days,\n    ag.max_age_days,\n    ag.sort_order\n  FROM report_builder_dim_age_group ag\n  JOIN report_builder_dim_age_category ac\n    ON ac.age_category_id = ag.age_category_id\n  WHERE ac.code = 'MOH_105_OPD_DIAG'\n    AND ag.is_active = 1\n),\ngenders AS (\n  SELECT 'F' AS gender\n  UNION ALL\n  SELECT 'M' AS gender\n),\ncnt AS (\n  SELECT\n    ag.age_group_id AS age_group_id,\n    mdp.gender AS gender,\n    COUNT(DISTINCT base_pop.patient_id) AS value\n  FROM base_pop\n  JOIN mamba_fact_patients_latest_patient_demographics mdp\n    ON mdp.patient_id = base_pop.patient_id\n  JOIN ag\n    ON TIMESTAMPDIFF(DAY, mdp.birthdate, :endDate)\n       BETWEEN ag.min_age_days AND ag.max_age_days\n  WHERE mdp.birthdate IS NOT NULL\n    AND mdp.gender IS NOT NULL\n    AND mdp.gender IN ('F','M')\n  GROUP BY ag.age_group_id, mdp.gender\n)\nSELECT\n  ag.label AS age_group,\n  g.gender AS gender,\n  COALESCE(cnt.value, 0) AS value\nFROM ag\nCROSS JOIN genders g\nLEFT JOIN cnt\n    ON cnt.age_group_id = ag.age_group_id\n   AND cnt.gender = g.gender\nORDER BY ag.sort_order, g.gender;",
+    "dissaggregations" : [ "age_group", "gender" ],
+    "values" : [ {
+      "dissaggregations1" : "0-28d",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "CLINICIAN_0_28d_F"
+    }, {
+      "dissaggregations1" : "0-28d",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "CLINICIAN_0_28d_M"
+    }, {
+      "dissaggregations1" : "29d-4yrs",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "CLINICIAN_29d_4yrs_F"
+    }, {
+      "dissaggregations1" : "29d-4yrs",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "CLINICIAN_29d_4yrs_M"
+    }, {
+      "dissaggregations1" : "5-9yrs",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "CLINICIAN_5_9yrs_F"
+    }, {
+      "dissaggregations1" : "5-9yrs",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "CLINICIAN_5_9yrs_M"
+    }, {
+      "dissaggregations1" : "10-19yrs",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "CLINICIAN_10_19yrs_F"
+    }, {
+      "dissaggregations1" : "10-19yrs",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "CLINICIAN_10_19yrs_M"
+    }, {
+      "dissaggregations1" : "20+ yrs",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "CLINICIAN_20plus_yrs_F"
+    }, {
+      "dissaggregations1" : "20+ yrs",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "CLINICIAN_20plus_yrs_M"
+    } ]
+  }, {
+    "indicator_name" : "PHARMACY",
+    "indicator_label" : "Pharmacy",
+    "subsection" : "METRICS: Core Indicators",
+    "sqlQuery" : "WITH base_pop AS (\n    SELECT 'pharmacy', COUNT(e.encounter_id)\n  FROM encounter e\n           INNER JOIN encounter_type et ON e.encounter_type = et.encounter_type_id\n  WHERE et.uuid IN ('dbe038cd-cad5-439d-a761-a6d6d680219c')\n    AND e.encounter_datetime >= :startDate\n    AND e.encounter_datetime <= :endDate\n    AND e.voided = 0\n),\nag AS (\n  SELECT\n    ag.age_group_id,\n    ag.label,\n    ag.min_age_days,\n    ag.max_age_days,\n    ag.sort_order\n  FROM report_builder_dim_age_group ag\n  JOIN report_builder_dim_age_category ac\n    ON ac.age_category_id = ag.age_category_id\n  WHERE ac.code = 'MOH_105_OPD_DIAG'\n    AND ag.is_active = 1\n),\ngenders AS (\n  SELECT 'F' AS gender\n  UNION ALL\n  SELECT 'M' AS gender\n),\ncnt AS (\n  SELECT\n    ag.age_group_id AS age_group_id,\n    mdp.gender AS gender,\n    COUNT(DISTINCT base_pop.patient_id) AS value\n  FROM base_pop\n  JOIN mamba_fact_patients_latest_patient_demographics mdp\n    ON mdp.patient_id = base_pop.patient_id\n  JOIN ag\n    ON TIMESTAMPDIFF(DAY, mdp.birthdate, :endDate)\n       BETWEEN ag.min_age_days AND ag.max_age_days\n  WHERE mdp.birthdate IS NOT NULL\n    AND mdp.gender IS NOT NULL\n    AND mdp.gender IN ('F','M')\n  GROUP BY ag.age_group_id, mdp.gender\n)\nSELECT\n  ag.label AS age_group,\n  g.gender AS gender,\n  COALESCE(cnt.value, 0) AS value\nFROM ag\nCROSS JOIN genders g\nLEFT JOIN cnt\n    ON cnt.age_group_id = ag.age_group_id\n   AND cnt.gender = g.gender\nORDER BY ag.sort_order, g.gender;",
+    "dissaggregations" : [ "age_group", "gender" ],
+    "values" : [ {
+      "dissaggregations1" : "0-28d",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "PHARMACY_0_28d_F"
+    }, {
+      "dissaggregations1" : "0-28d",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "PHARMACY_0_28d_M"
+    }, {
+      "dissaggregations1" : "29d-4yrs",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "PHARMACY_29d_4yrs_F"
+    }, {
+      "dissaggregations1" : "29d-4yrs",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "PHARMACY_29d_4yrs_M"
+    }, {
+      "dissaggregations1" : "5-9yrs",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "PHARMACY_5_9yrs_F"
+    }, {
+      "dissaggregations1" : "5-9yrs",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "PHARMACY_5_9yrs_M"
+    }, {
+      "dissaggregations1" : "10-19yrs",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "PHARMACY_10_19yrs_F"
+    }, {
+      "dissaggregations1" : "10-19yrs",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "PHARMACY_10_19yrs_M"
+    }, {
+      "dissaggregations1" : "20+ yrs",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "PHARMACY_20plus_yrs_F"
+    }, {
+      "dissaggregations1" : "20+ yrs",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "PHARMACY_20plus_yrs_M"
+    } ]
+  }, {
+    "indicator_name" : "LAB",
+    "indicator_label" : "Lab",
+    "subsection" : "METRICS: Core Indicators",
+    "sqlQuery" : "WITH base_pop AS (\n    SELECT 'lab', COUNT(e.encounter_id)\n  FROM encounter e\n           INNER JOIN encounter_type et ON e.encounter_type = et.encounter_type_id\n  WHERE et.uuid IN ('cbf01392-ca29-11e9-a32f-2a2ae2dbcce4')\n    AND e.encounter_datetime >= :startDate\n    AND e.encounter_datetime <= :endDate\n    AND e.voided = 0\n),\nag AS (\n  SELECT\n    ag.age_group_id,\n    ag.label,\n    ag.min_age_days,\n    ag.max_age_days,\n    ag.sort_order\n  FROM report_builder_dim_age_group ag\n  JOIN report_builder_dim_age_category ac\n    ON ac.age_category_id = ag.age_category_id\n  WHERE ac.code = 'MOH_105_OPD_DIAG'\n    AND ag.is_active = 1\n),\ngenders AS (\n  SELECT 'F' AS gender\n  UNION ALL\n  SELECT 'M' AS gender\n),\ncnt AS (\n  SELECT\n    ag.age_group_id AS age_group_id,\n    mdp.gender AS gender,\n    COUNT(DISTINCT base_pop.patient_id) AS value\n  FROM base_pop\n  JOIN mamba_fact_patients_latest_patient_demographics mdp\n    ON mdp.patient_id = base_pop.patient_id\n  JOIN ag\n    ON TIMESTAMPDIFF(DAY, mdp.birthdate, :endDate)\n       BETWEEN ag.min_age_days AND ag.max_age_days\n  WHERE mdp.birthdate IS NOT NULL\n    AND mdp.gender IS NOT NULL\n    AND mdp.gender IN ('F','M')\n  GROUP BY ag.age_group_id, mdp.gender\n)\nSELECT\n  ag.label AS age_group,\n  g.gender AS gender,\n  COALESCE(cnt.value, 0) AS value\nFROM ag\nCROSS JOIN genders g\nLEFT JOIN cnt\n    ON cnt.age_group_id = ag.age_group_id\n   AND cnt.gender = g.gender\nORDER BY ag.sort_order, g.gender;",
+    "dissaggregations" : [ "age_group", "gender" ],
+    "values" : [ {
+      "dissaggregations1" : "0-28d",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "LAB_0_28d_F"
+    }, {
+      "dissaggregations1" : "0-28d",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "LAB_0_28d_M"
+    }, {
+      "dissaggregations1" : "29d-4yrs",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "LAB_29d_4yrs_F"
+    }, {
+      "dissaggregations1" : "29d-4yrs",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "LAB_29d_4yrs_M"
+    }, {
+      "dissaggregations1" : "5-9yrs",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "LAB_5_9yrs_F"
+    }, {
+      "dissaggregations1" : "5-9yrs",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "LAB_5_9yrs_M"
+    }, {
+      "dissaggregations1" : "10-19yrs",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "LAB_10_19yrs_F"
+    }, {
+      "dissaggregations1" : "10-19yrs",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "LAB_10_19yrs_M"
+    }, {
+      "dissaggregations1" : "20+ yrs",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "LAB_20plus_yrs_F"
+    }, {
+      "dissaggregations1" : "20+ yrs",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "LAB_20plus_yrs_M"
+    } ]
+  }, {
+    "indicator_name" : "VL_SEND",
+    "indicator_label" : "vl send",
+    "subsection" : "METRICS: Core Indicators",
+    "sqlQuery" : "WITH base_pop AS (\n    SELECT 'vl', COUNT(s.status)\n  FROM sync_task s\n           INNER JOIN sync_task_type st ON s.sync_task_type = st.sync_task_type_id\n  WHERE st.uuid = 'f9b2fa5d-5d37-4fd9-b20a-a0cab664f520'\n    AND s.status_code IN (200, 201)\n    AND s.date_created >=:startDate and s.date_created <= :endDate\n    AND s.voided = 0\n),\nag AS (\n  SELECT\n    ag.age_group_id,\n    ag.label,\n    ag.min_age_days,\n    ag.max_age_days,\n    ag.sort_order\n  FROM report_builder_dim_age_group ag\n  JOIN report_builder_dim_age_category ac\n    ON ac.age_category_id = ag.age_category_id\n  WHERE ac.code = 'MOH_105_OPD_DIAG'\n    AND ag.is_active = 1\n),\ngenders AS (\n  SELECT 'F' AS gender\n  UNION ALL\n  SELECT 'M' AS gender\n),\ncnt AS (\n  SELECT\n    ag.age_group_id AS age_group_id,\n    mdp.gender AS gender,\n    COUNT(DISTINCT base_pop.patient_id) AS value\n  FROM base_pop\n  JOIN mamba_fact_patients_latest_patient_demographics mdp\n    ON mdp.patient_id = base_pop.patient_id\n  JOIN ag\n    ON TIMESTAMPDIFF(DAY, mdp.birthdate, :endDate)\n       BETWEEN ag.min_age_days AND ag.max_age_days\n  WHERE mdp.birthdate IS NOT NULL\n    AND mdp.gender IS NOT NULL\n    AND mdp.gender IN ('F','M')\n  GROUP BY ag.age_group_id, mdp.gender\n)\nSELECT\n  ag.label AS age_group,\n  g.gender AS gender,\n  COALESCE(cnt.value, 0) AS value\nFROM ag\nCROSS JOIN genders g\nLEFT JOIN cnt\n    ON cnt.age_group_id = ag.age_group_id\n   AND cnt.gender = g.gender\nORDER BY ag.sort_order, g.gender;",
+    "dissaggregations" : [ "age_group", "gender" ],
+    "values" : [ {
+      "dissaggregations1" : "0-28d",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "VL_SEND_0_28d_F"
+    }, {
+      "dissaggregations1" : "0-28d",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "VL_SEND_0_28d_M"
+    }, {
+      "dissaggregations1" : "29d-4yrs",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "VL_SEND_29d_4yrs_F"
+    }, {
+      "dissaggregations1" : "29d-4yrs",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "VL_SEND_29d_4yrs_M"
+    }, {
+      "dissaggregations1" : "5-9yrs",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "VL_SEND_5_9yrs_F"
+    }, {
+      "dissaggregations1" : "5-9yrs",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "VL_SEND_5_9yrs_M"
+    }, {
+      "dissaggregations1" : "10-19yrs",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "VL_SEND_10_19yrs_F"
+    }, {
+      "dissaggregations1" : "10-19yrs",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "VL_SEND_10_19yrs_M"
+    }, {
+      "dissaggregations1" : "20+ yrs",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "VL_SEND_20plus_yrs_F"
+    }, {
+      "dissaggregations1" : "20+ yrs",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "VL_SEND_20plus_yrs_M"
+    } ]
+  }, {
+    "indicator_name" : "VL_RECEIVE",
+    "indicator_label" : "vl receive",
+    "subsection" : "METRICS: Core Indicators",
+    "sqlQuery" : "WITH base_pop AS (\n    SELECT 'vl', COUNT(s.status)\n  FROM sync_task s\n           INNER JOIN sync_task_type st ON s.sync_task_type = st.sync_task_type_id\n  WHERE st.uuid = '3396dcf0-2106-4e73-9b90-c63978c3a8b4'\n    AND s.status_code IN (200, 201)\n    AND s.date_created >=:startDate and s.date_created <= :endDate\n    AND s.voided = 0\n),\nag AS (\n  SELECT\n    ag.age_group_id,\n    ag.label,\n    ag.min_age_days,\n    ag.max_age_days,\n    ag.sort_order\n  FROM report_builder_dim_age_group ag\n  JOIN report_builder_dim_age_category ac\n    ON ac.age_category_id = ag.age_category_id\n  WHERE ac.code = 'MOH_105_OPD_DIAG'\n    AND ag.is_active = 1\n),\ngenders AS (\n  SELECT 'F' AS gender\n  UNION ALL\n  SELECT 'M' AS gender\n),\ncnt AS (\n  SELECT\n    ag.age_group_id AS age_group_id,\n    mdp.gender AS gender,\n    COUNT(DISTINCT base_pop.patient_id) AS value\n  FROM base_pop\n  JOIN mamba_fact_patients_latest_patient_demographics mdp\n    ON mdp.patient_id = base_pop.patient_id\n  JOIN ag\n    ON TIMESTAMPDIFF(DAY, mdp.birthdate, :endDate)\n       BETWEEN ag.min_age_days AND ag.max_age_days\n  WHERE mdp.birthdate IS NOT NULL\n    AND mdp.gender IS NOT NULL\n    AND mdp.gender IN ('F','M')\n  GROUP BY ag.age_group_id, mdp.gender\n)\nSELECT\n  ag.label AS age_group,\n  g.gender AS gender,\n  COALESCE(cnt.value, 0) AS value\nFROM ag\nCROSS JOIN genders g\nLEFT JOIN cnt\n    ON cnt.age_group_id = ag.age_group_id\n   AND cnt.gender = g.gender\nORDER BY ag.sort_order, g.gender;",
+    "dissaggregations" : [ "age_group", "gender" ],
+    "values" : [ {
+      "dissaggregations1" : "0-28d",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "VL_RECEIVE_0_28d_F"
+    }, {
+      "dissaggregations1" : "0-28d",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "VL_RECEIVE_0_28d_M"
+    }, {
+      "dissaggregations1" : "29d-4yrs",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "VL_RECEIVE_29d_4yrs_F"
+    }, {
+      "dissaggregations1" : "29d-4yrs",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "VL_RECEIVE_29d_4yrs_M"
+    }, {
+      "dissaggregations1" : "5-9yrs",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "VL_RECEIVE_5_9yrs_F"
+    }, {
+      "dissaggregations1" : "5-9yrs",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "VL_RECEIVE_5_9yrs_M"
+    }, {
+      "dissaggregations1" : "10-19yrs",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "VL_RECEIVE_10_19yrs_F"
+    }, {
+      "dissaggregations1" : "10-19yrs",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "VL_RECEIVE_10_19yrs_M"
+    }, {
+      "dissaggregations1" : "20+ yrs",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "VL_RECEIVE_20plus_yrs_F"
+    }, {
+      "dissaggregations1" : "20+ yrs",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "VL_RECEIVE_20plus_yrs_M"
+    } ]
+  } ],
+  "category" : "NATIONAL REPORTS",
+  "categoryUuid" : "f0cbb6d2-24e8-11f1-b92d-f69d311cf98f",
+  "reportType" : "AGGREGATE",
+  "reportBuilderReportUuid" : "dcd1f91a-04c8-4ae1-ac44-6abfdc91c98a",
+  "reportDefinitionUuid" : "34d801eb-35b0-4e5d-a59d-c6c2056223f6",
+  "reportLibraryUuid" : "d01bd80d-02cd-4038-a06d-f9dcb85fe232"
+}
