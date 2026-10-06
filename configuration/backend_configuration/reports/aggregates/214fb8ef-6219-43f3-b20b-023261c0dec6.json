@@ -1,0 +1,743 @@
+{
+  "version" : 1,
+  "name" : "TX CURR",
+  "code" : "TX_CURR",
+  "report_fields" : [ {
+    "indicator_name" : "TX_CURR",
+    "indicator_label" : "TX-CURR",
+    "subsection" : "TX_CURR: Core Indicators",
+    "sqlQuery" : "WITH base_pop AS (\n    SELECT DISTINCT a.client_id AS client_id FROM (\n      SELECT\n          client_id,\n          TIMESTAMPDIFF(\n              DAY,\n              MAX(return_visit_date),\n              :endDate\n          ) AS ltfp_days\n      FROM mamba_fact_encounter_hiv_art_card\n      WHERE encounter_date <= :endDate\n        AND return_visit_date >= :startDate\n      GROUP BY client_id\n  ) a\n),\nag AS (\n  SELECT\n    ag.age_group_id,\n    ag.label,\n    ag.min_age_days,\n    ag.max_age_days,\n    ag.sort_order\n  FROM report_builder_dim_age_group ag\n  JOIN report_builder_dim_age_category ac\n    ON ac.age_category_id = ag.age_category_id\n  WHERE ac.code = 'MOH_105_OPD_DIAG'\n    AND ag.is_active = 1\n),\ngenders AS (\n  SELECT 'F' AS gender\n  UNION ALL\n  SELECT 'M' AS gender\n),\ncnt AS (\n  SELECT\n    ag.age_group_id AS age_group_id,\n    mdp.gender AS gender,\n    COUNT(DISTINCT base_pop.client_id) AS value\n  FROM base_pop\n  JOIN mamba_fact_patients_latest_patient_demographics mdp\n    ON mdp.client_id = base_pop.client_id\n  JOIN ag\n    ON TIMESTAMPDIFF(DAY, mdp.birthdate, :endDate)\n       BETWEEN ag.min_age_days AND ag.max_age_days\n  WHERE mdp.birthdate IS NOT NULL\n    AND mdp.gender IS NOT NULL\n    AND mdp.gender IN ('F','M')\n  GROUP BY ag.age_group_id, mdp.gender\n)\nSELECT\n  ag.label AS age_group,\n  g.gender AS gender,\n  COALESCE(cnt.value, 0) AS value\nFROM ag\nCROSS JOIN genders g\nLEFT JOIN cnt\n    ON cnt.age_group_id = ag.age_group_id\n   AND cnt.gender = g.gender\nORDER BY ag.sort_order, g.gender;",
+    "dissaggregations" : [ "age_group", "gender" ],
+    "values" : [ {
+      "dissaggregations1" : "0-28d",
+      "disaggregation_code" : "D0_28",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "TX_CURR_D0_28_F"
+    }, {
+      "dissaggregations1" : "0-28d",
+      "disaggregation_code" : "D0_28",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "TX_CURR_D0_28_M"
+    }, {
+      "dissaggregations1" : "29d-4yrs",
+      "disaggregation_code" : "D29_4Y",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "TX_CURR_D29_4Y_F"
+    }, {
+      "dissaggregations1" : "29d-4yrs",
+      "disaggregation_code" : "D29_4Y",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "TX_CURR_D29_4Y_M"
+    }, {
+      "dissaggregations1" : "5-9yrs",
+      "disaggregation_code" : "Y5_9",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "TX_CURR_Y5_9_F"
+    }, {
+      "dissaggregations1" : "5-9yrs",
+      "disaggregation_code" : "Y5_9",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "TX_CURR_Y5_9_M"
+    }, {
+      "dissaggregations1" : "10-19yrs",
+      "disaggregation_code" : "Y10_19",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "TX_CURR_Y10_19_F"
+    }, {
+      "dissaggregations1" : "10-19yrs",
+      "disaggregation_code" : "Y10_19",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "TX_CURR_Y10_19_M"
+    }, {
+      "dissaggregations1" : "20+yrs",
+      "disaggregation_code" : "Y20P",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "TX_CURR_Y20P_F"
+    }, {
+      "dissaggregations1" : "20+yrs",
+      "disaggregation_code" : "Y20P",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "TX_CURR_Y20P_M"
+    } ]
+  }, {
+    "indicator_name" : "TX_CURR_DISPENSING_3_MONTHS",
+    "indicator_label" : "TX-CURR dispensing 3 months",
+    "subsection" : "TX_CURR: Core Indicators",
+    "sqlQuery" : "WITH base_pop AS (\n    SELECT DISTINCT a.client_id AS client_id FROM (SELECT client_id, TIMESTAMPDIFF(DAY, MAX(return_visit_date), :endDate) ltfp_days\n        FROM mamba_fact_encounter_hiv_art_card\n        WHERE encounter_date <= :endDate\n          AND return_visit_date >= :startDate\n),\nag AS (\n  SELECT\n    ag.age_group_id,\n    ag.label,\n    ag.min_age_days,\n    ag.max_age_days,\n    ag.sort_order\n  FROM report_builder_dim_age_group ag\n  JOIN report_builder_dim_age_category ac\n    ON ac.age_category_id = ag.age_category_id\n  WHERE ac.code = 'MOH_105_OPD_DIAG'\n    AND ag.is_active = 1\n),\ngenders AS (\n  SELECT 'F' AS gender\n  UNION ALL\n  SELECT 'M' AS gender\n),\ncnt AS (\n  SELECT\n    ag.age_group_id AS age_group_id,\n    mdp.gender AS gender,\n    COUNT(DISTINCT base_pop.client_id) AS value\n  FROM base_pop\n  JOIN mamba_fact_patients_latest_patient_demographics mdp\n    ON mdp.client_id = base_pop.client_id\n  JOIN ag\n    ON TIMESTAMPDIFF(DAY, mdp.birthdate, :endDate)\n       BETWEEN ag.min_age_days AND ag.max_age_days\n  WHERE mdp.birthdate IS NOT NULL\n    AND mdp.gender IS NOT NULL\n    AND mdp.gender IN ('F','M')\n  GROUP BY ag.age_group_id, mdp.gender\n)\nSELECT\n  ag.label AS age_group,\n  g.gender AS gender,\n  COALESCE(cnt.value, 0) AS value\nFROM ag\nCROSS JOIN genders g\nLEFT JOIN cnt\n    ON cnt.age_group_id = ag.age_group_id\n   AND cnt.gender = g.gender\nORDER BY ag.sort_order, g.gender;",
+    "dissaggregations" : [ "age_group", "gender" ],
+    "values" : [ {
+      "dissaggregations1" : "0-28d",
+      "disaggregation_code" : "D0_28",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "TX_CURR_DISPENSING_3_MONTHS_D0_28_F"
+    }, {
+      "dissaggregations1" : "0-28d",
+      "disaggregation_code" : "D0_28",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "TX_CURR_DISPENSING_3_MONTHS_D0_28_M"
+    }, {
+      "dissaggregations1" : "29d-4yrs",
+      "disaggregation_code" : "D29_4Y",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "TX_CURR_DISPENSING_3_MONTHS_D29_4Y_F"
+    }, {
+      "dissaggregations1" : "29d-4yrs",
+      "disaggregation_code" : "D29_4Y",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "TX_CURR_DISPENSING_3_MONTHS_D29_4Y_M"
+    }, {
+      "dissaggregations1" : "5-9yrs",
+      "disaggregation_code" : "Y5_9",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "TX_CURR_DISPENSING_3_MONTHS_Y5_9_F"
+    }, {
+      "dissaggregations1" : "5-9yrs",
+      "disaggregation_code" : "Y5_9",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "TX_CURR_DISPENSING_3_MONTHS_Y5_9_M"
+    }, {
+      "dissaggregations1" : "10-19yrs",
+      "disaggregation_code" : "Y10_19",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "TX_CURR_DISPENSING_3_MONTHS_Y10_19_F"
+    }, {
+      "dissaggregations1" : "10-19yrs",
+      "disaggregation_code" : "Y10_19",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "TX_CURR_DISPENSING_3_MONTHS_Y10_19_M"
+    }, {
+      "dissaggregations1" : "20+yrs",
+      "disaggregation_code" : "Y20P",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "TX_CURR_DISPENSING_3_MONTHS_Y20P_F"
+    }, {
+      "dissaggregations1" : "20+yrs",
+      "disaggregation_code" : "Y20P",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "TX_CURR_DISPENSING_3_MONTHS_Y20P_M"
+    } ]
+  }, {
+    "indicator_name" : "TX_CURR_DISPENSING_3_TO_5_MONTHS",
+    "indicator_label" : "TX-CURR dispensing 3 to 5 months",
+    "subsection" : "TX_CURR: Core Indicators",
+    "sqlQuery" : "WITH base_pop AS (\n    SELECT DISTINCT a.client_id AS client_id FROM (SELECT client_id, TIMESTAMPDIFF(DAY, MAX(return_visit_date), :endDate) ltfp_days\n        FROM mamba_fact_encounter_hiv_art_card\n        WHERE encounter_date <= :endDate\n          AND return_visit_date >= :startDate\n),\nag AS (\n  SELECT\n    ag.age_group_id,\n    ag.label,\n    ag.min_age_days,\n    ag.max_age_days,\n    ag.sort_order\n  FROM report_builder_dim_age_group ag\n  JOIN report_builder_dim_age_category ac\n    ON ac.age_category_id = ag.age_category_id\n  WHERE ac.code = 'MOH_105_OPD_DIAG'\n    AND ag.is_active = 1\n),\ngenders AS (\n  SELECT 'F' AS gender\n  UNION ALL\n  SELECT 'M' AS gender\n),\ncnt AS (\n  SELECT\n    ag.age_group_id AS age_group_id,\n    mdp.gender AS gender,\n    COUNT(DISTINCT base_pop.client_id) AS value\n  FROM base_pop\n  JOIN mamba_fact_patients_latest_patient_demographics mdp\n    ON mdp.client_id = base_pop.client_id\n  JOIN ag\n    ON TIMESTAMPDIFF(DAY, mdp.birthdate, :endDate)\n       BETWEEN ag.min_age_days AND ag.max_age_days\n  WHERE mdp.birthdate IS NOT NULL\n    AND mdp.gender IS NOT NULL\n    AND mdp.gender IN ('F','M')\n  GROUP BY ag.age_group_id, mdp.gender\n)\nSELECT\n  ag.label AS age_group,\n  g.gender AS gender,\n  COALESCE(cnt.value, 0) AS value\nFROM ag\nCROSS JOIN genders g\nLEFT JOIN cnt\n    ON cnt.age_group_id = ag.age_group_id\n   AND cnt.gender = g.gender\nORDER BY ag.sort_order, g.gender;",
+    "dissaggregations" : [ "age_group", "gender" ],
+    "values" : [ {
+      "dissaggregations1" : "0-28d",
+      "disaggregation_code" : "D0_28",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "TX_CURR_DISPENSING_3_TO_5_MONTHS_D0_28_F"
+    }, {
+      "dissaggregations1" : "0-28d",
+      "disaggregation_code" : "D0_28",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "TX_CURR_DISPENSING_3_TO_5_MONTHS_D0_28_M"
+    }, {
+      "dissaggregations1" : "29d-4yrs",
+      "disaggregation_code" : "D29_4Y",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "TX_CURR_DISPENSING_3_TO_5_MONTHS_D29_4Y_F"
+    }, {
+      "dissaggregations1" : "29d-4yrs",
+      "disaggregation_code" : "D29_4Y",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "TX_CURR_DISPENSING_3_TO_5_MONTHS_D29_4Y_M"
+    }, {
+      "dissaggregations1" : "5-9yrs",
+      "disaggregation_code" : "Y5_9",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "TX_CURR_DISPENSING_3_TO_5_MONTHS_Y5_9_F"
+    }, {
+      "dissaggregations1" : "5-9yrs",
+      "disaggregation_code" : "Y5_9",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "TX_CURR_DISPENSING_3_TO_5_MONTHS_Y5_9_M"
+    }, {
+      "dissaggregations1" : "10-19yrs",
+      "disaggregation_code" : "Y10_19",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "TX_CURR_DISPENSING_3_TO_5_MONTHS_Y10_19_F"
+    }, {
+      "dissaggregations1" : "10-19yrs",
+      "disaggregation_code" : "Y10_19",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "TX_CURR_DISPENSING_3_TO_5_MONTHS_Y10_19_M"
+    }, {
+      "dissaggregations1" : "20+yrs",
+      "disaggregation_code" : "Y20P",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "TX_CURR_DISPENSING_3_TO_5_MONTHS_Y20P_F"
+    }, {
+      "dissaggregations1" : "20+yrs",
+      "disaggregation_code" : "Y20P",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "TX_CURR_DISPENSING_3_TO_5_MONTHS_Y20P_M"
+    } ]
+  }, {
+    "indicator_name" : "TX_CURR_DISPENSING_6_MONTHS",
+    "indicator_label" : "TX-CURR dispensing 6 months",
+    "subsection" : "TX_CURR: Core Indicators",
+    "sqlQuery" : "WITH base_pop AS (\n    SELECT DISTINCT a.client_id AS client_id FROM (SELECT client_id, TIMESTAMPDIFF(DAY, MAX(return_visit_date), :endDate) ltfp_days\n        FROM mamba_fact_encounter_hiv_art_card\n        WHERE encounter_date <= :endDate\n          AND return_visit_date >= :startDate\n),\nag AS (\n  SELECT\n    ag.age_group_id,\n    ag.label,\n    ag.min_age_days,\n    ag.max_age_days,\n    ag.sort_order\n  FROM report_builder_dim_age_group ag\n  JOIN report_builder_dim_age_category ac\n    ON ac.age_category_id = ag.age_category_id\n  WHERE ac.code = 'MOH_105_OPD_DIAG'\n    AND ag.is_active = 1\n),\ngenders AS (\n  SELECT 'F' AS gender\n  UNION ALL\n  SELECT 'M' AS gender\n),\ncnt AS (\n  SELECT\n    ag.age_group_id AS age_group_id,\n    mdp.gender AS gender,\n    COUNT(DISTINCT base_pop.client_id) AS value\n  FROM base_pop\n  JOIN mamba_fact_patients_latest_patient_demographics mdp\n    ON mdp.client_id = base_pop.client_id\n  JOIN ag\n    ON TIMESTAMPDIFF(DAY, mdp.birthdate, :endDate)\n       BETWEEN ag.min_age_days AND ag.max_age_days\n  WHERE mdp.birthdate IS NOT NULL\n    AND mdp.gender IS NOT NULL\n    AND mdp.gender IN ('F','M')\n  GROUP BY ag.age_group_id, mdp.gender\n)\nSELECT\n  ag.label AS age_group,\n  g.gender AS gender,\n  COALESCE(cnt.value, 0) AS value\nFROM ag\nCROSS JOIN genders g\nLEFT JOIN cnt\n    ON cnt.age_group_id = ag.age_group_id\n   AND cnt.gender = g.gender\nORDER BY ag.sort_order, g.gender;",
+    "dissaggregations" : [ "age_group", "gender" ],
+    "values" : [ {
+      "dissaggregations1" : "0-28d",
+      "disaggregation_code" : "D0_28",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "TX_CURR_DISPENSING_6_MONTHS_D0_28_F"
+    }, {
+      "dissaggregations1" : "0-28d",
+      "disaggregation_code" : "D0_28",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "TX_CURR_DISPENSING_6_MONTHS_D0_28_M"
+    }, {
+      "dissaggregations1" : "29d-4yrs",
+      "disaggregation_code" : "D29_4Y",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "TX_CURR_DISPENSING_6_MONTHS_D29_4Y_F"
+    }, {
+      "dissaggregations1" : "29d-4yrs",
+      "disaggregation_code" : "D29_4Y",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "TX_CURR_DISPENSING_6_MONTHS_D29_4Y_M"
+    }, {
+      "dissaggregations1" : "5-9yrs",
+      "disaggregation_code" : "Y5_9",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "TX_CURR_DISPENSING_6_MONTHS_Y5_9_F"
+    }, {
+      "dissaggregations1" : "5-9yrs",
+      "disaggregation_code" : "Y5_9",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "TX_CURR_DISPENSING_6_MONTHS_Y5_9_M"
+    }, {
+      "dissaggregations1" : "10-19yrs",
+      "disaggregation_code" : "Y10_19",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "TX_CURR_DISPENSING_6_MONTHS_Y10_19_F"
+    }, {
+      "dissaggregations1" : "10-19yrs",
+      "disaggregation_code" : "Y10_19",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "TX_CURR_DISPENSING_6_MONTHS_Y10_19_M"
+    }, {
+      "dissaggregations1" : "20+yrs",
+      "disaggregation_code" : "Y20P",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "TX_CURR_DISPENSING_6_MONTHS_Y20P_F"
+    }, {
+      "dissaggregations1" : "20+yrs",
+      "disaggregation_code" : "Y20P",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "TX_CURR_DISPENSING_6_MONTHS_Y20P_M"
+    } ]
+  }, {
+    "indicator_name" : "TX_CURR_WEIGHT_AND_SEX",
+    "indicator_label" : "TX-CURR weight and sex",
+    "subsection" : "TX_CURR: Core Indicators",
+    "sqlQuery" : "WITH base_pop AS (\n    -- Error: Could not extract population SQL from this complex indicator.\n  -- Indicator: TX-CURR weight and sex (TX_CURR_WEIGHT_AND_SEX)\n  -- Complex indicators with multiple GROUP BY clauses or age_group/gender aggregation need to have a clear population query structure.\n  -- Ensure the indicator has a subquery with: SELECT client_id FROM ... GROUP BY client_id\n),\nag AS (\n  SELECT\n    ag.age_group_id,\n    ag.label,\n    ag.min_age_days,\n    ag.max_age_days,\n    ag.sort_order\n  FROM report_builder_dim_age_group ag\n  JOIN report_builder_dim_age_category ac\n    ON ac.age_category_id = ag.age_category_id\n  WHERE ac.code = 'MOH_105_OPD_DIAG'\n    AND ag.is_active = 1\n),\ngenders AS (\n  SELECT 'F' AS gender\n  UNION ALL\n  SELECT 'M' AS gender\n),\ncnt AS (\n  SELECT\n    ag.age_group_id AS age_group_id,\n    mdp.gender AS gender,\n    COUNT(DISTINCT base_pop.client_id) AS value\n  FROM base_pop\n  JOIN mamba_fact_patients_latest_patient_demographics mdp\n    ON mdp.client_id = base_pop.client_id\n  JOIN ag\n    ON TIMESTAMPDIFF(DAY, mdp.birthdate, :endDate)\n       BETWEEN ag.min_age_days AND ag.max_age_days\n  WHERE mdp.birthdate IS NOT NULL\n    AND mdp.gender IS NOT NULL\n    AND mdp.gender IN ('F','M')\n  GROUP BY ag.age_group_id, mdp.gender\n)\nSELECT\n  ag.label AS age_group,\n  g.gender AS gender,\n  COALESCE(cnt.value, 0) AS value\nFROM ag\nCROSS JOIN genders g\nLEFT JOIN cnt\n    ON cnt.age_group_id = ag.age_group_id\n   AND cnt.gender = g.gender\nORDER BY ag.sort_order, g.gender;",
+    "dissaggregations" : [ "age_group", "gender" ],
+    "values" : [ {
+      "dissaggregations1" : "0-28d",
+      "disaggregation_code" : "D0_28",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "TX_CURR_WEIGHT_AND_SEX_D0_28_F"
+    }, {
+      "dissaggregations1" : "0-28d",
+      "disaggregation_code" : "D0_28",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "TX_CURR_WEIGHT_AND_SEX_D0_28_M"
+    }, {
+      "dissaggregations1" : "29d-4yrs",
+      "disaggregation_code" : "D29_4Y",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "TX_CURR_WEIGHT_AND_SEX_D29_4Y_F"
+    }, {
+      "dissaggregations1" : "29d-4yrs",
+      "disaggregation_code" : "D29_4Y",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "TX_CURR_WEIGHT_AND_SEX_D29_4Y_M"
+    }, {
+      "dissaggregations1" : "5-9yrs",
+      "disaggregation_code" : "Y5_9",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "TX_CURR_WEIGHT_AND_SEX_Y5_9_F"
+    }, {
+      "dissaggregations1" : "5-9yrs",
+      "disaggregation_code" : "Y5_9",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "TX_CURR_WEIGHT_AND_SEX_Y5_9_M"
+    }, {
+      "dissaggregations1" : "10-19yrs",
+      "disaggregation_code" : "Y10_19",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "TX_CURR_WEIGHT_AND_SEX_Y10_19_F"
+    }, {
+      "dissaggregations1" : "10-19yrs",
+      "disaggregation_code" : "Y10_19",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "TX_CURR_WEIGHT_AND_SEX_Y10_19_M"
+    }, {
+      "dissaggregations1" : "20+yrs",
+      "disaggregation_code" : "Y20P",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "TX_CURR_WEIGHT_AND_SEX_Y20P_F"
+    }, {
+      "dissaggregations1" : "20+yrs",
+      "disaggregation_code" : "Y20P",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "TX_CURR_WEIGHT_AND_SEX_Y20P_M"
+    } ]
+  }, {
+    "indicator_name" : "TX_CURR_WEIGHT_AND_SEX_AND_DTG",
+    "indicator_label" : "TX-CURR weight and sex and DTG",
+    "subsection" : "TX_CURR: Core Indicators",
+    "sqlQuery" : "WITH base_pop AS (\n    SELECT DISTINCT a.client_id AS client_id FROM (SELECT client_id, TIMESTAMPDIFF(DAY, MAX(return_visit_date), :endDate) ltfp_days\n        FROM mamba_fact_encounter_hiv_art_card\n        WHERE encounter_date <= :endDate\n          AND return_visit_date >= :startDate\n),\nag AS (\n  SELECT\n    ag.age_group_id,\n    ag.label,\n    ag.min_age_days,\n    ag.max_age_days,\n    ag.sort_order\n  FROM report_builder_dim_age_group ag\n  JOIN report_builder_dim_age_category ac\n    ON ac.age_category_id = ag.age_category_id\n  WHERE ac.code = 'MOH_105_OPD_DIAG'\n    AND ag.is_active = 1\n),\ngenders AS (\n  SELECT 'F' AS gender\n  UNION ALL\n  SELECT 'M' AS gender\n),\ncnt AS (\n  SELECT\n    ag.age_group_id AS age_group_id,\n    mdp.gender AS gender,\n    COUNT(DISTINCT base_pop.client_id) AS value\n  FROM base_pop\n  JOIN mamba_fact_patients_latest_patient_demographics mdp\n    ON mdp.client_id = base_pop.client_id\n  JOIN ag\n    ON TIMESTAMPDIFF(DAY, mdp.birthdate, :endDate)\n       BETWEEN ag.min_age_days AND ag.max_age_days\n  WHERE mdp.birthdate IS NOT NULL\n    AND mdp.gender IS NOT NULL\n    AND mdp.gender IN ('F','M')\n  GROUP BY ag.age_group_id, mdp.gender\n)\nSELECT\n  ag.label AS age_group,\n  g.gender AS gender,\n  COALESCE(cnt.value, 0) AS value\nFROM ag\nCROSS JOIN genders g\nLEFT JOIN cnt\n    ON cnt.age_group_id = ag.age_group_id\n   AND cnt.gender = g.gender\nORDER BY ag.sort_order, g.gender;",
+    "dissaggregations" : [ "age_group", "gender" ],
+    "values" : [ {
+      "dissaggregations1" : "0-28d",
+      "disaggregation_code" : "D0_28",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "TX_CURR_WEIGHT_AND_SEX_AND_DTG_D0_28_F"
+    }, {
+      "dissaggregations1" : "0-28d",
+      "disaggregation_code" : "D0_28",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "TX_CURR_WEIGHT_AND_SEX_AND_DTG_D0_28_M"
+    }, {
+      "dissaggregations1" : "29d-4yrs",
+      "disaggregation_code" : "D29_4Y",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "TX_CURR_WEIGHT_AND_SEX_AND_DTG_D29_4Y_F"
+    }, {
+      "dissaggregations1" : "29d-4yrs",
+      "disaggregation_code" : "D29_4Y",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "TX_CURR_WEIGHT_AND_SEX_AND_DTG_D29_4Y_M"
+    }, {
+      "dissaggregations1" : "5-9yrs",
+      "disaggregation_code" : "Y5_9",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "TX_CURR_WEIGHT_AND_SEX_AND_DTG_Y5_9_F"
+    }, {
+      "dissaggregations1" : "5-9yrs",
+      "disaggregation_code" : "Y5_9",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "TX_CURR_WEIGHT_AND_SEX_AND_DTG_Y5_9_M"
+    }, {
+      "dissaggregations1" : "10-19yrs",
+      "disaggregation_code" : "Y10_19",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "TX_CURR_WEIGHT_AND_SEX_AND_DTG_Y10_19_F"
+    }, {
+      "dissaggregations1" : "10-19yrs",
+      "disaggregation_code" : "Y10_19",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "TX_CURR_WEIGHT_AND_SEX_AND_DTG_Y10_19_M"
+    }, {
+      "dissaggregations1" : "20+yrs",
+      "disaggregation_code" : "Y20P",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "TX_CURR_WEIGHT_AND_SEX_AND_DTG_Y20P_F"
+    }, {
+      "dissaggregations1" : "20+yrs",
+      "disaggregation_code" : "Y20P",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "TX_CURR_WEIGHT_AND_SEX_AND_DTG_Y20P_M"
+    } ]
+  }, {
+    "indicator_name" : "TX_CURR_WEIGHT_AND_SEX_AND_DTG_ABOVE_15",
+    "indicator_label" : "TX-CURR weight and sex and DTG above 15",
+    "subsection" : "TX_CURR: Core Indicators",
+    "sqlQuery" : "WITH base_pop AS (\n    SELECT DISTINCT a.client_id AS client_id FROM (SELECT client_id, TIMESTAMPDIFF(DAY, MAX(return_visit_date), :endDate) ltfp_days\n        FROM mamba_fact_encounter_hiv_art_card\n        WHERE encounter_date <= :endDate\n          AND return_visit_date >= :startDate\n),\nag AS (\n  SELECT\n    ag.age_group_id,\n    ag.label,\n    ag.min_age_days,\n    ag.max_age_days,\n    ag.sort_order\n  FROM report_builder_dim_age_group ag\n  JOIN report_builder_dim_age_category ac\n    ON ac.age_category_id = ag.age_category_id\n  WHERE ac.code = 'MOH_105_OPD_DIAG'\n    AND ag.is_active = 1\n),\ngenders AS (\n  SELECT 'F' AS gender\n  UNION ALL\n  SELECT 'M' AS gender\n),\ncnt AS (\n  SELECT\n    ag.age_group_id AS age_group_id,\n    mdp.gender AS gender,\n    COUNT(DISTINCT base_pop.client_id) AS value\n  FROM base_pop\n  JOIN mamba_fact_patients_latest_patient_demographics mdp\n    ON mdp.client_id = base_pop.client_id\n  JOIN ag\n    ON TIMESTAMPDIFF(DAY, mdp.birthdate, :endDate)\n       BETWEEN ag.min_age_days AND ag.max_age_days\n  WHERE mdp.birthdate IS NOT NULL\n    AND mdp.gender IS NOT NULL\n    AND mdp.gender IN ('F','M')\n  GROUP BY ag.age_group_id, mdp.gender\n)\nSELECT\n  ag.label AS age_group,\n  g.gender AS gender,\n  COALESCE(cnt.value, 0) AS value\nFROM ag\nCROSS JOIN genders g\nLEFT JOIN cnt\n    ON cnt.age_group_id = ag.age_group_id\n   AND cnt.gender = g.gender\nORDER BY ag.sort_order, g.gender;",
+    "dissaggregations" : [ "age_group", "gender" ],
+    "values" : [ {
+      "dissaggregations1" : "0-28d",
+      "disaggregation_code" : "D0_28",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "TX_CURR_WEIGHT_AND_SEX_AND_DTG_ABOVE_15_D0_28_F"
+    }, {
+      "dissaggregations1" : "0-28d",
+      "disaggregation_code" : "D0_28",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "TX_CURR_WEIGHT_AND_SEX_AND_DTG_ABOVE_15_D0_28_M"
+    }, {
+      "dissaggregations1" : "29d-4yrs",
+      "disaggregation_code" : "D29_4Y",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "TX_CURR_WEIGHT_AND_SEX_AND_DTG_ABOVE_15_D29_4Y_F"
+    }, {
+      "dissaggregations1" : "29d-4yrs",
+      "disaggregation_code" : "D29_4Y",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "TX_CURR_WEIGHT_AND_SEX_AND_DTG_ABOVE_15_D29_4Y_M"
+    }, {
+      "dissaggregations1" : "5-9yrs",
+      "disaggregation_code" : "Y5_9",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "TX_CURR_WEIGHT_AND_SEX_AND_DTG_ABOVE_15_Y5_9_F"
+    }, {
+      "dissaggregations1" : "5-9yrs",
+      "disaggregation_code" : "Y5_9",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "TX_CURR_WEIGHT_AND_SEX_AND_DTG_ABOVE_15_Y5_9_M"
+    }, {
+      "dissaggregations1" : "10-19yrs",
+      "disaggregation_code" : "Y10_19",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "TX_CURR_WEIGHT_AND_SEX_AND_DTG_ABOVE_15_Y10_19_F"
+    }, {
+      "dissaggregations1" : "10-19yrs",
+      "disaggregation_code" : "Y10_19",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "TX_CURR_WEIGHT_AND_SEX_AND_DTG_ABOVE_15_Y10_19_M"
+    }, {
+      "dissaggregations1" : "20+yrs",
+      "disaggregation_code" : "Y20P",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "TX_CURR_WEIGHT_AND_SEX_AND_DTG_ABOVE_15_Y20P_F"
+    }, {
+      "dissaggregations1" : "20+yrs",
+      "disaggregation_code" : "Y20P",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "TX_CURR_WEIGHT_AND_SEX_AND_DTG_ABOVE_15_Y20P_M"
+    } ]
+  }, {
+    "indicator_name" : "TX_CURR_KP",
+    "indicator_label" : "TX-CURR-KP",
+    "subsection" : "Key Population Other",
+    "sqlQuery" : "WITH base_pop AS (\n    SELECT DISTINCT a.client_id AS client_id FROM (\n      SELECT\n          client_id,\n          TIMESTAMPDIFF(\n              DAY,\n              MAX(return_visit_date),\n              :endDate\n          ) AS ltfp_days\n      FROM mamba_fact_encounter_hiv_art_card\n      WHERE encounter_date <= :endDate\n        AND return_visit_date >= :startDate\n      GROUP BY client_id\n  ) a\n),\nag AS (\n  SELECT\n    ag.age_group_id,\n    ag.label,\n    ag.min_age_days,\n    ag.max_age_days,\n    ag.sort_order\n  FROM report_builder_dim_age_group ag\n  JOIN report_builder_dim_age_category ac\n    ON ac.age_category_id = ag.age_category_id\n  WHERE ac.code = 'HMIS_106A'\n    AND ag.is_active = 1\n),\ngenders AS (\n  SELECT 'F' AS gender\n  UNION ALL\n  SELECT 'M' AS gender\n),\ncnt AS (\n  SELECT\n    ag.age_group_id AS age_group_id,\n    mdp.gender AS gender,\n    COUNT(DISTINCT base_pop.client_id) AS value\n  FROM base_pop\n  JOIN mamba_fact_patients_latest_patient_demographics mdp\n    ON mdp.client_id = base_pop.client_id\n  JOIN ag\n    ON TIMESTAMPDIFF(DAY, mdp.birthdate, :endDate)\n       BETWEEN ag.min_age_days AND ag.max_age_days\n  WHERE mdp.birthdate IS NOT NULL\n    AND mdp.gender IS NOT NULL\n    AND mdp.gender IN ('F','M')\n  GROUP BY ag.age_group_id, mdp.gender\n)\nSELECT\n  ag.label AS age_group,\n  g.gender AS gender,\n  COALESCE(cnt.value, 0) AS value\nFROM ag\nCROSS JOIN genders g\nLEFT JOIN cnt\n    ON cnt.age_group_id = ag.age_group_id\n   AND cnt.gender = g.gender\nORDER BY ag.sort_order, g.gender;",
+    "dissaggregations" : [ "age_group", "gender" ],
+    "values" : [ {
+      "dissaggregations1" : "0–4yrs",
+      "disaggregation_code" : "Y0_4",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "TX_CURR_KP_Y0_4_F"
+    }, {
+      "dissaggregations1" : "0–4yrs",
+      "disaggregation_code" : "Y0_4",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "TX_CURR_KP_Y0_4_M"
+    }, {
+      "dissaggregations1" : "5–9yrs",
+      "disaggregation_code" : "Y5_9",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "TX_CURR_KP_Y5_9_F"
+    }, {
+      "dissaggregations1" : "5–9yrs",
+      "disaggregation_code" : "Y5_9",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "TX_CURR_KP_Y5_9_M"
+    }, {
+      "dissaggregations1" : "10–14yrs",
+      "disaggregation_code" : "Y10_14",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "TX_CURR_KP_Y10_14_F"
+    }, {
+      "dissaggregations1" : "10–14yrs",
+      "disaggregation_code" : "Y10_14",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "TX_CURR_KP_Y10_14_M"
+    }, {
+      "dissaggregations1" : "15–19yrs",
+      "disaggregation_code" : "Y15_19",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "TX_CURR_KP_Y15_19_F"
+    }, {
+      "dissaggregations1" : "15–19yrs",
+      "disaggregation_code" : "Y15_19",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "TX_CURR_KP_Y15_19_M"
+    }, {
+      "dissaggregations1" : "20–24yrs",
+      "disaggregation_code" : "Y20_24",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "TX_CURR_KP_Y20_24_F"
+    }, {
+      "dissaggregations1" : "20–24yrs",
+      "disaggregation_code" : "Y20_24",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "TX_CURR_KP_Y20_24_M"
+    }, {
+      "dissaggregations1" : "25–29yrs",
+      "disaggregation_code" : "Y25_29",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "TX_CURR_KP_Y25_29_F"
+    }, {
+      "dissaggregations1" : "25–29yrs",
+      "disaggregation_code" : "Y25_29",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "TX_CURR_KP_Y25_29_M"
+    }, {
+      "dissaggregations1" : "30–39yrs",
+      "disaggregation_code" : "Y30_39",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "TX_CURR_KP_Y30_39_F"
+    }, {
+      "dissaggregations1" : "30–39yrs",
+      "disaggregation_code" : "Y30_39",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "TX_CURR_KP_Y30_39_M"
+    }, {
+      "dissaggregations1" : "40–49yrs",
+      "disaggregation_code" : "Y40_49",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "TX_CURR_KP_Y40_49_F"
+    }, {
+      "dissaggregations1" : "40–49yrs",
+      "disaggregation_code" : "Y40_49",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "TX_CURR_KP_Y40_49_M"
+    }, {
+      "dissaggregations1" : "50+yrs",
+      "disaggregation_code" : "Y50P",
+      "dissaggregations2" : "F",
+      "value_place_holder" : "TX_CURR_KP_Y50P_F"
+    }, {
+      "dissaggregations1" : "50+yrs",
+      "disaggregation_code" : "Y50P",
+      "dissaggregations2" : "M",
+      "value_place_holder" : "TX_CURR_KP_Y50P_M"
+    } ]
+  } ],
+  "category" : "MER INDICATOR LINELIST",
+  "categoryUuid" : "cc92263b-0e27-4363-8071-b0c0ac2353b2",
+  "reportType" : "AGGREGATE",
+  "reportBuilderReportUuid" : "214fb8ef-6219-43f3-b20b-023261c0dec6",
+  "reportDefinitionUuid" : "8ac9f87a-06a2-4d76-8cbd-23e50fde2836",
+  "reportLibraryUuid" : "815d794c-0380-4d77-aa28-8fc95298d2a8",
+  "reportDesignTemplate" : {
+    "version" : 1,
+    "name" : "TX CURR",
+    "code" : "TX_CURR",
+    "template" : "section-tabular",
+    "arrayName" : "results",
+    "defaultValue" : 0,
+    "groups" : [ {
+      "title" : "Core Indicators",
+      "rows" : [ {
+        "type" : "section-label",
+        "label" : "Core Indicators",
+        "indent" : 0,
+        "span" : "all",
+        "emphasis" : "section",
+        "showTotal" : false,
+        "showDisaggregation" : false
+      }, {
+        "type" : "indicator",
+        "label" : "TX_CURR. TX-CURR",
+        "indent" : 1,
+        "code" : "TX_CURR",
+        "span" : "label-only",
+        "emphasis" : "normal",
+        "showTotal" : true,
+        "showDisaggregation" : true,
+        "keyPattern" : "{code}_{age}_{sex}",
+        "dims" : {
+          "age" : "MOH_105_OPD_DIAG",
+          "sex" : "sex"
+        }
+      }, {
+        "type" : "indicator",
+        "label" : "TX_CURR_DISPENSING_3_MONTHS. TX-CURR dispensing 3 months",
+        "indent" : 1,
+        "code" : "TX_CURR_DISPENSING_3_MONTHS",
+        "span" : "label-only",
+        "emphasis" : "normal",
+        "showTotal" : true,
+        "showDisaggregation" : true,
+        "keyPattern" : "{code}_{age}_{sex}",
+        "dims" : {
+          "age" : "MOH_105_OPD_DIAG",
+          "sex" : "sex"
+        }
+      }, {
+        "type" : "indicator",
+        "label" : "TX_CURR_DISPENSING_3_TO_5_MONTHS. TX-CURR dispensing 3 to 5 months",
+        "indent" : 1,
+        "code" : "TX_CURR_DISPENSING_3_TO_5_MONTHS",
+        "span" : "label-only",
+        "emphasis" : "normal",
+        "showTotal" : true,
+        "showDisaggregation" : true,
+        "keyPattern" : "{code}_{age}_{sex}",
+        "dims" : {
+          "age" : "MOH_105_OPD_DIAG",
+          "sex" : "sex"
+        }
+      }, {
+        "type" : "indicator",
+        "label" : "TX_CURR_DISPENSING_6_MONTHS. TX-CURR dispensing 6 months",
+        "indent" : 1,
+        "code" : "TX_CURR_DISPENSING_6_MONTHS",
+        "span" : "label-only",
+        "emphasis" : "normal",
+        "showTotal" : true,
+        "showDisaggregation" : true,
+        "keyPattern" : "{code}_{age}_{sex}",
+        "dims" : {
+          "age" : "MOH_105_OPD_DIAG",
+          "sex" : "sex"
+        }
+      }, {
+        "type" : "indicator",
+        "label" : "TX_CURR_WEIGHT_AND_SEX. TX-CURR weight and sex",
+        "indent" : 1,
+        "code" : "TX_CURR_WEIGHT_AND_SEX",
+        "span" : "label-only",
+        "emphasis" : "normal",
+        "showTotal" : true,
+        "showDisaggregation" : true,
+        "keyPattern" : "{code}_{age}_{sex}",
+        "dims" : {
+          "age" : "MOH_105_OPD_DIAG",
+          "sex" : "sex"
+        }
+      }, {
+        "type" : "indicator",
+        "label" : "TX_CURR_WEIGHT_AND_SEX_AND_DTG. TX-CURR weight and sex and DTG",
+        "indent" : 1,
+        "code" : "TX_CURR_WEIGHT_AND_SEX_AND_DTG",
+        "span" : "label-only",
+        "emphasis" : "normal",
+        "showTotal" : true,
+        "showDisaggregation" : true,
+        "keyPattern" : "{code}_{age}_{sex}",
+        "dims" : {
+          "age" : "MOH_105_OPD_DIAG",
+          "sex" : "sex"
+        }
+      }, {
+        "type" : "indicator",
+        "label" : "TX_CURR_WEIGHT_AND_SEX_AND_DTG_ABOVE_15. TX-CURR weight and sex and DTG above 15",
+        "indent" : 1,
+        "code" : "TX_CURR_WEIGHT_AND_SEX_AND_DTG_ABOVE_15",
+        "span" : "label-only",
+        "emphasis" : "normal",
+        "showTotal" : true,
+        "showDisaggregation" : true,
+        "keyPattern" : "{code}_{age}_{sex}",
+        "dims" : {
+          "age" : "MOH_105_OPD_DIAG",
+          "sex" : "sex"
+        }
+      } ]
+    }, {
+      "title" : "Key Population Other",
+      "rows" : [ {
+        "type" : "section-label",
+        "label" : "Key Population Other",
+        "indent" : 0,
+        "span" : "all",
+        "emphasis" : "section",
+        "showTotal" : false,
+        "showDisaggregation" : false
+      }, {
+        "type" : "indicator",
+        "label" : "TX_CURR_KP. TX-CURR-KP",
+        "indent" : 1,
+        "code" : "TX_CURR_KP",
+        "span" : "label-only",
+        "emphasis" : "normal",
+        "showTotal" : true,
+        "showDisaggregation" : true,
+        "keyPattern" : "{code}_{age}_{sex}",
+        "dims" : {
+          "age" : "HMIS_106A",
+          "sex" : "sex"
+        }
+      }, {
+        "type" : "indicator",
+        "label" : "TX_CURR_KP. TX-CURR-KP",
+        "indent" : 1,
+        "code" : "TX_CURR_KP",
+        "span" : "label-only",
+        "emphasis" : "normal",
+        "showTotal" : true,
+        "showDisaggregation" : true,
+        "keyPattern" : "{code}_{age}_{sex}",
+        "dims" : {
+          "age" : "HMIS_106A",
+          "sex" : "sex"
+        }
+      } ]
+    } ],
+    "dimensions" : {
+      "sex" : [ {
+        "id" : "F",
+        "label" : "Female"
+      }, {
+        "id" : "M",
+        "label" : "Male"
+      } ],
+      "MOH_105_OPD_DIAG" : [ {
+        "id" : "D0_28",
+        "label" : "0-28d"
+      }, {
+        "id" : "D29_4Y",
+        "label" : "29d-4yrs"
+      }, {
+        "id" : "Y5_9",
+        "label" : "5-9yrs"
+      }, {
+        "id" : "Y10_19",
+        "label" : "10-19yrs"
+      }, {
+        "id" : "Y20P",
+        "label" : "20+yrs"
+      } ],
+      "HMIS_106A" : [ {
+        "id" : "Y0_4",
+        "label" : "0–4yrs"
+      }, {
+        "id" : "Y5_9",
+        "label" : "5–9yrs"
+      }, {
+        "id" : "Y10_14",
+        "label" : "10–14yrs"
+      }, {
+        "id" : "Y15_19",
+        "label" : "15–19yrs"
+      }, {
+        "id" : "Y20_24",
+        "label" : "20–24yrs"
+      }, {
+        "id" : "Y25_29",
+        "label" : "25–29yrs"
+      }, {
+        "id" : "Y30_39",
+        "label" : "30–39yrs"
+      }, {
+        "id" : "Y40_49",
+        "label" : "40–49yrs"
+      }, {
+        "id" : "Y50P",
+        "label" : "50+yrs"
+      } ]
+    },
+    "dhis2" : {
+      "enabled" : false,
+      "rows" : [ ]
+    }
+  },
+  "description" : "TX CURR aggregate report",
+  "formatVersion" : 2,
+  "definitionSpec" : {
+    "designPath" : "aggregates/214fb8ef-6219-43f3-b20b-023261c0dec6.json",
+    "dataSetKey" : "defaultDataSet",
+    "parameters" : [ {
+      "name" : "startDate",
+      "label" : "Start Date",
+      "type" : "DATE",
+      "required" : true
+    }, {
+      "name" : "endDate",
+      "label" : "End Date",
+      "type" : "DATE",
+      "required" : true
+    } ],
+    "parameterMappings" : {
+      "startDate" : "${startDate}",
+      "endDate" : "${endDate}"
+    }
+  }
+}
